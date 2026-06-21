@@ -1,0 +1,6 @@
+All group members introduced themselves, talking about their backgrounds, project experience, strengths, weaknesses, etc. Based on the discussion had, for the majority of people in the group this course is their first real introduction to team-based software development.
+
+The discussion then shifted to what the project consists of and if everybody is on board with the idea:
+The idea is a Letterboxd-like website for board games. Letterboxd is a social-media-like platform where users can log films and TV shows, write reviews for them, and post them to their profile, where other users can see them and interact with them. Users can build a top-4 film list, and connect with other users based on the kind of movies they like. The project idea is similar to this but with board games, and features concerning board game session planning with friends and board game recommendations based on user taste were considered for implementation.
+
+Details about the project were also discussed, such as how webpage mechanisms should be implemented to ensure a low barrier to entry for new users, while also preserving a sense of authenticity that draws in people already experienced in board games.
