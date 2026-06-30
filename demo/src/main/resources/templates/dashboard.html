@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="name">Username prints here</div>
+
+    <input type="hidden" id="username" th:value="${username}"/>
+    <form action="/logout" method="post">
+        <button type="submit">Logout</button>
+    </form>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const targetDiv = document.getElementById("name");
+            const username = document.getElementById("username").value;
+            targetDiv.innerHTML = "Welcome, " + username + "!";
+        });
+    </script>
+</body>
+</html>
