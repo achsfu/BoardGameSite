@@ -3,15 +3,12 @@ package com.cardboardboxed.demo.controllers;
 import com.cardboardboxed.demo.useracounts.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.*;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpSession;
 import java.time.Duration;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -28,23 +25,21 @@ public class LoginController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    private String getCookie(HttpServletRequest request, String name) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (name.equals(cookie.getName())) {
-                    System.out.println("Found cookie: " + name + " with value: " + cookie.getValue());
-                    return cookie.getValue();
-                }
-            }
+    private HttpSession getSession(HttpServletRequest request) {
+        return request.getSession(false);
+    }
+
+    private String getLoggedInUsername(HttpServletRequest request) {
+        HttpSession session = getSession(request);
+        if (session == null) {
+            return null;
         }
-        System.out.println("Cookie not found: " + name);
-        return null;
+        return (String) session.getAttribute("AUTH_USER");
     }
 
     @GetMapping("/login")
     public String showLoginForm(HttpServletRequest request) {
-        if (getCookie(request, "AUTH-TOKEN") != null) {
+        if (getLoggedInUsername(request) != null) {
             System.out.println("User is already logged in, redirecting to dashboard.");
             return "redirect:/dashboard";
         }
@@ -52,22 +47,18 @@ public class LoginController {
     }
 
     @PostMapping("/login")
-    public String processLogin(@RequestParam String username, @RequestParam String password, HttpServletRequest request, HttpServletResponse response) {
+    public String processLogin(@RequestParam String username, @RequestParam String password, HttpServletRequest request) {
         
-        if (getCookie(request, "AUTH-TOKEN") != null) {
+        if (getLoggedInUsername(request) != null) {
             // If the token is present, it means the user is already logged in
             return "redirect:/dashboard";
         }
 
         User user = userRepository.findByUsername(username);
         if (user != null && passwordEncoder.matches(password, user.getPassword())) {
-            // Successful login - set cookie
-            Cookie cookie = new Cookie("AUTH-TOKEN", username);
-            cookie.setPath("/");
-            cookie.setMaxAge((int) Duration.ofDays(1).getSeconds());
-            cookie.setHttpOnly(true);
-            cookie.setSecure(false);
-            response.addCookie(cookie);
+            HttpSession session = request.getSession(true);
+            session.setAttribute("AUTH_USER", username);
+            session.setMaxInactiveInterval((int) Duration.ofDays(1).getSeconds());
             return "redirect:/dashboard";
         } else {
             // Failed login
@@ -77,7 +68,7 @@ public class LoginController {
 
     @GetMapping("/register")
     public String showRegistrationForm(HttpServletRequest request) {
-        if (getCookie(request, "AUTH-TOKEN") != null) {
+        if (getLoggedInUsername(request) != null) {
             System.out.println("User is already logged in, redirecting to dashboard.");
             return "redirect:/dashboard";
         }
@@ -87,7 +78,7 @@ public class LoginController {
     @PostMapping("/register")
     public String processRegistration(@RequestParam String username, @RequestParam String password, @RequestParam String password2, HttpServletRequest request) {
 
-        if (getCookie(request, "AUTH-TOKEN") != null) {
+        if (getLoggedInUsername(request) != null) {
             // If the token is present, it means the user is already logged in
             return "redirect:/dashboard";
         }
@@ -104,12 +95,13 @@ public class LoginController {
 
     @GetMapping("/dashboard")
     public String showDashboard(Model model, HttpServletRequest request) {
-        if (getCookie(request, "AUTH-TOKEN") == null) {
+        String username = getLoggedInUsername(request);
+        if (username == null) {
             // If the token is not present, it means the user is not logged in
             return "redirect:/login.html?error=Please+log+in+to+access+the+dashboard";
         }
 
-        model.addAttribute("username", getCookie(request, "AUTH-TOKEN"));
+        model.addAttribute("username", username);
         // Add any necessary attributes to the model for the dashboard view
         return "dashboard.html"; // Return the name of the dashboard view template
     }
