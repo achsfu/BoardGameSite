@@ -25,7 +25,7 @@ public class SecurityConfig {
             .formLogin(AbstractHttpConfigurer::disable)
             .httpBasic(AbstractHttpConfigurer::disable)
             .csrf(AbstractHttpConfigurer::disable)
-            // Allow all requests to pass (customize rules based on your API needs)
+            // Allow all requests to pass
             .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
             .logout(logout -> logout.logoutUrl("/logout")
             .logoutSuccessUrl("/login")
