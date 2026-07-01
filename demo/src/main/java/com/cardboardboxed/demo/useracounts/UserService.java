@@ -6,9 +6,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Service
 public class UserService {
-    
-    private UserRepository userRepository;
 
+    private UserRepository userRepository;
     private PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -17,15 +16,25 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public User registerUser(String username, String password) {
-        // Check if the username already exists
+    public User registerUser(String username, String password, String role) {
+        if (username == null || username.isBlank()) {
+            throw new IllegalArgumentException("Username is required");
+        }
+
+        if (password == null || password.length() < 6) {
+            throw new IllegalArgumentException("Password must be at least 6 characters");
+        }
+
         if (userRepository.findByUsername(username) != null) {
             throw new IllegalArgumentException("Username already exists");
         }
 
-        // Encode the password before saving
+        if (role == null || role.isBlank()) {
+            role = "PLAYER";
+        }
+
         String encodedPassword = passwordEncoder.encode(password);
-        User user = new User(username, encodedPassword);
+        User user = new User(username, encodedPassword, role);
         return userRepository.save(user);
     }
 }
