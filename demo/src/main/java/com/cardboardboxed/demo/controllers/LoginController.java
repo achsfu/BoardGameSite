@@ -92,7 +92,6 @@ public class LoginController {
             @RequestParam String username,
             @RequestParam String password,
             @RequestParam String password2,
-            @RequestParam String role,
             HttpServletRequest request
     ) {
         if (getLoggedInUsername(request) != null) {
@@ -104,7 +103,7 @@ public class LoginController {
         }
 
         try {
-            userService.registerUser(username, password, role);
+            userService.registerUser(username, password);
         } catch (IllegalArgumentException e) {
             return "redirect:/register?error=" + URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8);
         }

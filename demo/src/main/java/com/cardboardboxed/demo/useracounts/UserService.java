@@ -16,7 +16,7 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public User registerUser(String username, String password, String role) {
+    public User registerUser(String username, String password) {
         if (username == null || username.isBlank()) {
             throw new IllegalArgumentException("Username is required");
         }
@@ -29,12 +29,12 @@ public class UserService {
             throw new IllegalArgumentException("Username already exists");
         }
 
-        if (role == null || role.isBlank()) {
-            role = "PLAYER";
-        }
-
         String encodedPassword = passwordEncoder.encode(password);
-        User user = new User(username, encodedPassword, role);
+
+        // New users register as normal players by default.
+        // Role changes should be handled later by an admin user-management page.
+        User user = new User(username, encodedPassword, "PLAYER");
+
         return userRepository.save(user);
     }
 }
