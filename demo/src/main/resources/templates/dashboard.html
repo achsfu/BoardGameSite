@@ -3,22 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Dashboard | BoardGameBoard</title>
+    <link rel="stylesheet" href="/css/site.css">
 </head>
 <body>
-    <div id="name">Username prints here</div>
+<div class="app-shell">
+    <nav class="top-nav">
+        <a href="/" class="brand">BoardGameBoard</a>
 
-    <input type="hidden" id="username" th:value="${username}"/>
-    <form action="/logout" method="post">
-        <button type="submit">Logout</button>
-    </form>
+        <form action="/logout" method="post">
+            <button type="submit" class="secondary-button">Logout</button>
+        </form>
+    </nav>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const targetDiv = document.getElementById("name");
-            const username = document.getElementById("username").value;
-            targetDiv.innerHTML = "Welcome, " + username + "!";
-        });
-    </script>
+    <main class="dashboard">
+        <section class="hero-card">
+            <p class="eyebrow" th:text="${role}">PLAYER</p>
+            <h1 th:text="'Welcome, ' + ${username} + '!'">Welcome!</h1>
+            <p>
+                Track your board games, write reviews, build lists, and plan future game nights with friends.
+            </p>
+        </section>
+
+        <section class="grid">
+            <div class="feature-card">
+                <h2>Your Profile</h2>
+                <p>View your board game activity, favorite games, and future profile details.</p>
+                <a href="#" class="text-link">Coming soon</a>
+            </div>
+
+            <div class="feature-card">
+                <h2>Write a Review</h2>
+                <p>Post your thoughts on a game you played recently.</p>
+                <button type="button" class="primary-button" onclick="openReviewModal()">
+                    Post Review
+                </button>
+            </div>
+
+            <div class="feature-card">
+                <h2>Top 5 Games</h2>
+                <p>Create a personal top-five board game list for your profile.</p>
+                <a href="#" class="text-link">Coming soon</a>
+            </div>
+
+            <div class="feature-card" th:if="${role == 'ORGANIZER'}">
+                <h2>Organizer View</h2>
+                <p>
+                    As a Game Night Organizer, you will eventually be able to plan sessions,
+                    invite friends, and suggest games for groups.
+                </p>
+                <a href="#" class="text-link">Organizer tools coming soon</a>
+            </div>
+
+            <div class="feature-card" th:if="${role == 'PLAYER'}">
+                <h2>Player View</h2>
+                <p>
+                    As a Player, you can focus on logging games, writing reviews,
+                    and building your personal board game profile.
+                </p>
+                <a href="#" class="text-link">Player tools coming soon</a>
+            </div>
+        </section>
+    </main>
+</div>
+
+<div id="reviewModal" class="modal-backdrop" style="display:none;">
+    <div class="modal large-modal">
+        <h2>Post a Review</h2>
+        <p class="muted">This modal is the start of the review-posting feature for iteration 1.</p>
+
+        <form>
+            <div class="form-group">
+                <label for="gameTitle">Board Game Title</label>
+                <input type="text" id="gameTitle" placeholder="Example: Catan">
+            </div>
+
+            <div class="form-group">
+                <label for="rating">Rating</label>
+                <select id="rating">
+                    <option>5 - Loved it</option>
+                    <option>4 - Really liked it</option>
+                    <option>3 - It was okay</option>
+                    <option>2 - Not for me</option>
+                    <option>1 - Did not enjoy it</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="reviewText">Review</label>
+                <textarea id="reviewText" placeholder="Write your thoughts..."></textarea>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="secondary-button" onclick="closeReviewModal()">
+                    Cancel
+                </button>
+                <button type="button" class="primary-button" onclick="closeReviewModal()">
+                    Save Draft
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openReviewModal() {
+        const modal = document.getElementById('reviewModal');
+        console.log("Opening review modal", modal);
+
+        if (modal) {
+            modal.style.display = 'flex';
+        }
+    }
+
+    function closeReviewModal() {
+        const modal = document.getElementById('reviewModal');
+
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    window.addEventListener('click', function(event) {
+        const modal = document.getElementById('reviewModal');
+
+        if (event.target === modal) {
+            closeReviewModal();
+        }
+    });
+</script>
 </body>
 </html>
