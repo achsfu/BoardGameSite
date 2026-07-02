@@ -6,9 +6,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Service
 public class UserService {
-    
-    private UserRepository userRepository;
 
+    private UserRepository userRepository;
     private PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -18,14 +17,24 @@ public class UserService {
     }
 
     public User registerUser(String username, String password) {
-        // Check if the username already exists
+        if (username == null || username.isBlank()) {
+            throw new IllegalArgumentException("Username is required");
+        }
+
+        if (password == null || password.length() < 6) {
+            throw new IllegalArgumentException("Password must be at least 6 characters");
+        }
+
         if (userRepository.findByUsername(username) != null) {
             throw new IllegalArgumentException("Username already exists");
         }
 
-        // Encode the password before saving
         String encodedPassword = passwordEncoder.encode(password);
-        User user = new User(username, encodedPassword);
+
+        // New users register as normal players by default.
+        // Role changes should be handled later by an admin user-management page.
+        User user = new User(username, encodedPassword, "PLAYER");
+
         return userRepository.save(user);
     }
 }

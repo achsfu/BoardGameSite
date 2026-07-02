@@ -17,12 +17,17 @@ public class User {
     private String username;
     private String password;
 
+    // Simple role field for iteration 1 role-based views.
+    // Example values: PLAYER, ORGANIZER
+    private String role;
+
     public User() {
     }
 
-    public User(String username, String password) {
+    public User(String username, String password, String role) {
         this.username = username;
         this.password = password;
+        this.role = role;
     }
 
     public Integer getId() {
@@ -33,7 +38,6 @@ public class User {
         this.id = id;
     }
 
-    // Getters and setters
     public String getUsername() {
         return username;
     }
@@ -50,4 +54,14 @@ public class User {
         this.password = password;
     }
 
+    public String getRole() {
+        if (role == null || role.isBlank()) {
+            return "PLAYER";
+        }
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
 }
