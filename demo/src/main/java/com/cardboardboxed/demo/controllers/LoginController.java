@@ -124,4 +124,19 @@ public class LoginController {
 
         return "dashboard";
     }
+
+    @GetMapping("/profile")
+    public String showProfile(Model model, HttpServletRequest request) {
+        User user = getLoggedInUser(request);
+
+        if (user == null) {
+            return "redirect:/login?error=Please+log+in+to+access+your+profile";
+        }
+
+        model.addAttribute("username", user.getUsername());
+        model.addAttribute("role", user.getRole());
+
+        return "profile";
+    }
+    
 }

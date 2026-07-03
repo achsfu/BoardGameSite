@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile | BoardGameBoard</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<div class="app-shell">
+    <nav class="top-nav">
+        <a href="/" class="brand">BoardGameBoard</a>
+
+        <div class="nav-links">
+            <a href="/dashboard" class="text-link">Dashboard</a>
+
+            <form action="/logout" method="post">
+                <button type="submit" class="secondary-button">Logout</button>
+            </form>
+        </div>
+    </nav>
+
+    <main class="dashboard">
+        <section class="profile-header-card">
+            <div class="profile-avatar">
+                <span th:text="${#strings.substring(username, 0, 1)}">U</span>
+            </div>
+
+            <div class="profile-main-info">
+                <p class="eyebrow" th:text="${role}">PLAYER</p>
+                <h1 th:text="${username}">Username</h1>
+                <p>Looking for the next great board game.</p>
+            </div>
+        </section>
+
+        <section class="profile-layout">
+            <div class="profile-main-column">
+                <div class="feature-card">
+                    <h2>Top 5 Board Games</h2>
+                    <p class="muted">This section will show the user's personal top five board games.</p>
+
+                    <ol class="profile-list top-five-list">
+                        <li><span class="rank-number">1</span><span>Not added yet</span></li>
+                        <li><span class="rank-number">2</span><span>Not added yet</span></li>
+                        <li><span class="rank-number">3</span><span>Not added yet</span></li>
+                        <li><span class="rank-number">4</span><span>Not added yet</span></li>
+                        <li><span class="rank-number">5</span><span>Not added yet</span></li>
+                    </ol>
+                </div>
+
+                <div class="feature-card">
+                    <h2>Recent Play Sessions and Reviews</h2>
+                    <p class="muted">
+                        Reviews and play sessions will appear here after the review posting
+                        feature is connected to the database.
+                    </p>
+
+                    <div class="activity-placeholder">
+                        <h3>No recent activity yet</h3>
+                        <p>
+                            Once this user logs games or writes reviews, their recent activity
+                            will be displayed here.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="profile-side-column">
+                <div class="feature-card">
+                    <h2>User Information</h2>
+
+                    <p>
+                        <strong>Username:</strong>
+                        <span th:text="${username}">Username</span>
+                    </p>
+
+                    <p>
+                        <strong>Account Type:</strong>
+                        <span th:text="${role}">PLAYER</span>
+                    </p>
+
+                    <p>
+                        <strong>Status:</strong>
+                        Looking for the next great board game.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <h2>Mutual Friends</h2>
+                    <p class="muted">
+                        This section is visible to logged-in users and will show mutual friends
+                        once the friends feature is added.
+                    </p>
+
+                    <ul class="profile-list">
+                        <li>No mutual friends yet</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <h2>Game Lists</h2>
+                    <p class="muted">
+                        Future lists such as Want to Play, Played, Owned, and Favorites will appear here.
+                    </p>
+                </div>
+            </aside>
+        </section>
+    </main>
+</div>
+</body>
+</html>
