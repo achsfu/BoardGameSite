@@ -252,3 +252,50 @@ textarea {
         padding: 20px;
     }
 }
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 18px;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 14px;
+    border-bottom: 1px solid #2d2d3a;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.admin-table th {
+    color: #9f8cff;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.inline-form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.small-button {
+    padding: 9px 14px;
+    font-size: 0.85rem;
+}
+
+.danger-button {
+    display: inline-block;
+    border: none;
+    border-radius: 999px;
+    padding: 12px 18px;
+    font-weight: 800;
+    cursor: pointer;
+    background: #ff4d5a;
+    color: white;
+}
+
+.danger-button:hover {
+    background: #ff2f40;
+}

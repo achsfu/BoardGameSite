@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Panel | BoardGameBoard</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<div class="app-shell">
+    <nav class="top-nav">
+        <a href="/" class="brand">BoardGameBoard</a>
+
+        <div class="nav-links">
+            <a href="/dashboard" class="text-link">Dashboard</a>
+            <form action="/logout" method="post">
+                <button type="submit" class="secondary-button">Logout</button>
+            </form>
+        </div>
+    </nav>
+
+    <main class="dashboard">
+        <section class="hero-card">
+            <p class="eyebrow">ADMIN</p>
+            <h1>User Management</h1>
+            <p>Admins can view users, update account roles, and delete users.</p>
+        </section>
+
+        <section class="feature-card">
+            <h2>Users</h2>
+
+            <table class="admin-table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Current Role</th>
+                    <th>Change Role</th>
+                    <th>Delete</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr th:each="account : ${users}">
+                    <td th:text="${account.id}">1</td>
+                    <td th:text="${account.username}">username</td>
+                    <td th:text="${account.role}">PLAYER</td>
+
+                    <td>
+                        <form th:action="@{/admin/users/{id}/role(id=${account.id})}" method="post" class="inline-form">
+                            <select name="role">
+                                <option value="PLAYER" th:selected="${account.role == 'PLAYER'}">Player</option>
+                                <option value="ORGANIZER" th:selected="${account.role == 'ORGANIZER'}">Organizer</option>
+                                <option value="MODERATOR" th:selected="${account.role == 'MODERATOR'}">Moderator</option>
+                                <option value="ADMIN" th:selected="${account.role == 'ADMIN'}">Admin</option>
+                            </select>
+
+                            <button type="submit" class="primary-button small-button">Update</button>
+                        </form>
+                    </td>
+
+                    <td>
+                        <form th:if="${account.username != currentUsername}"
+                              th:action="@{/admin/users/{id}/delete(id=${account.id})}"
+                              method="post"
+                              onsubmit="return confirm('Delete this user and their reviews?');">
+                            <button type="submit" class="danger-button small-button">Delete</button>
+                        </form>
+
+                        <span th:if="${account.username == currentUsername}" class="muted">
+                            Current user
+                        </span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+</div>
+</body>
+</html>
