@@ -71,35 +71,35 @@
     <div class="modal large-modal">
         <h2>Post a Review</h2>
         <p class="muted">This modal is the start of the review-posting feature for iteration 1.</p>
-
-        <form>
+<!--CHANGES FOR POSTING FUNCTIONALITY BEGIN HERE-->
+        <form action="/reviews" method="post">
             <div class="form-group">
                 <label for="gameTitle">Board Game Title</label>
-                <input type="text" id="gameTitle" placeholder="Example: Catan">
+                <input type="text" id="gameTitle" name="gameTitle" placeholder="Example: Catan" required>
             </div>
 
             <div class="form-group">
                 <label for="rating">Rating</label>
-                <select id="rating">
-                    <option>5 - Loved it</option>
-                    <option>4 - Really liked it</option>
-                    <option>3 - It was okay</option>
-                    <option>2 - Not for me</option>
-                    <option>1 - Did not enjoy it</option>
+                <select id="rating" name="rating">
+                    <option value="5">5 - Loved it</option>
+                    <option value="4">4 - Really liked it</option>
+                    <option value="3">3 - It was okay</option>
+                    <option value="2">2 - Not for me</option>
+                    <option value="1">1 - Did not enjoy it</option>
                 </select>
             </div>
 
             <div class="form-group">
                 <label for="reviewText">Review</label>
-                <textarea id="reviewText" placeholder="Write your thoughts..."></textarea>
+                <textarea id="reviewText" name="reviewText" placeholder="Write your thoughts..." required></textarea>
             </div>
 
             <div class="modal-actions">
                 <button type="button" class="secondary-button" onclick="closeReviewModal()">
                     Cancel
                 </button>
-                <button type="button" class="primary-button" onclick="closeReviewModal()">
-                    Save Draft
+                <button type="submit" class="primary-button">
+                    Post Review
                 </button>
             </div>
         </form>
