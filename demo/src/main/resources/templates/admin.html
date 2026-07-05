@@ -22,59 +22,140 @@
         <section class="hero-card">
             <p class="eyebrow">ADMIN</p>
             <h1>User Management</h1>
-            <p>Admins can view users, update account roles, and delete users.</p>
+            <p>Search users, view accounts by role, and manage account permissions.</p>
         </section>
 
         <section class="feature-card">
-            <h2>Users</h2>
+            <form action="/admin" method="get" class="admin-search-form">
+                <input type="text" name="keyword" placeholder="Search users..." th:value="${keyword}">
+                <button type="submit" class="primary-button">Search</button>
+                <a href="/admin" class="secondary-button">Clear</a>
+            </form>
+        </section>
 
-            <table class="admin-table">
-                <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Username</th>
-                    <th>Current Role</th>
-                    <th>Change Role</th>
-                    <th>Delete</th>
-                </tr>
-                </thead>
+        <section class="role-column">
+            <div class="role-panel">
+                <h2>Admins</h2>
+                <button class="user-row"
+                        th:each="account : ${admins}"
+                        th:data-id="${account.id}"
+                        th:data-username="${account.username}"
+                        th:data-role="${account.role}"
+                        th:data-current="${account.username == currentUsername}"
+                        onclick="openUserModal(this)">
+                    <span th:text="${account.username}">username</span>
+                    <span class="role-pill">Admin</span>
+                </button>
+            </div>
 
-                <tbody>
-                <tr th:each="account : ${users}">
-                    <td th:text="${account.id}">1</td>
-                    <td th:text="${account.username}">username</td>
-                    <td th:text="${account.role}">PLAYER</td>
+            <div class="role-panel">
+                <h2>Moderators</h2>
+                <button class="user-row"
+                        th:each="account : ${moderators}"
+                        th:data-id="${account.id}"
+                        th:data-username="${account.username}"
+                        th:data-role="${account.role}"
+                        th:data-current="${account.username == currentUsername}"
+                        onclick="openUserModal(this)">
+                    <span th:text="${account.username}">username</span>
+                    <span class="role-pill">Moderator</span>
+                </button>
+            </div>
 
-                    <td>
-                        <form th:action="@{/admin/users/{id}/role(id=${account.id})}" method="post" class="inline-form">
-                            <select name="role">
-                                <option value="PLAYER" th:selected="${account.role == 'PLAYER'}">Player</option>
-                                <option value="ORGANIZER" th:selected="${account.role == 'ORGANIZER'}">Organizer</option>
-                                <option value="MODERATOR" th:selected="${account.role == 'MODERATOR'}">Moderator</option>
-                                <option value="ADMIN" th:selected="${account.role == 'ADMIN'}">Admin</option>
-                            </select>
+            <div class="role-panel">
+                <h2>Organizers</h2>
+                <button class="user-row"
+                        th:each="account : ${organizers}"
+                        th:data-id="${account.id}"
+                        th:data-username="${account.username}"
+                        th:data-role="${account.role}"
+                        th:data-current="${account.username == currentUsername}"
+                        onclick="openUserModal(this)">
+                    <span th:text="${account.username}">username</span>
+                    <span class="role-pill">Organizer</span>
+                </button>
+            </div>
 
-                            <button type="submit" class="primary-button small-button">Update</button>
-                        </form>
-                    </td>
-
-                    <td>
-                        <form th:if="${account.username != currentUsername}"
-                              th:action="@{/admin/users/{id}/delete(id=${account.id})}"
-                              method="post"
-                              onsubmit="return confirm('Delete this user and their reviews?');">
-                            <button type="submit" class="danger-button small-button">Delete</button>
-                        </form>
-
-                        <span th:if="${account.username == currentUsername}" class="muted">
-                            Current user
-                        </span>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+            <div class="role-panel">
+                <h2>Players</h2>
+                <button class="user-row"
+                        th:each="account : ${players}"
+                        th:data-id="${account.id}"
+                        th:data-username="${account.username}"
+                        th:data-role="${account.role}"
+                        th:data-current="${account.username == currentUsername}"
+                        onclick="openUserModal(this)">
+                    <span th:text="${account.username}">username</span>
+                    <span class="role-pill">Player</span>
+                </button>
+            </div>
         </section>
     </main>
 </div>
+
+<div id="userModal" class="modal-backdrop" style="display:none;">
+    <div class="modal large-modal">
+        <p class="eyebrow">Manage User</p>
+        <h2 id="modalUsername">Username</h2>
+        <p class="muted">Change this user’s role or delete the account.</p>
+
+        <form id="roleForm" method="post" class="modal-form">
+            <div class="form-group">
+                <label for="modalRole">Account Role</label>
+                <select id="modalRole" name="role">
+                    <option value="PLAYER">Player</option>
+                    <option value="ORGANIZER">Organizer</option>
+                    <option value="MODERATOR">Moderator</option>
+                    <option value="ADMIN">Admin</option>
+                </select>
+            </div>
+
+            <button type="submit" class="primary-button">Update Role</button>
+        </form>
+
+        <form id="deleteForm" method="post" onsubmit="return confirm('Delete this user and their reviews?');">
+            <button type="submit" class="danger-button">Delete User</button>
+        </form>
+
+        <p id="currentUserMessage" class="muted" style="display:none;">
+            This is your current account, so it cannot be deleted here.
+        </p>
+
+        <div class="modal-actions">
+            <button type="button" class="secondary-button" onclick="closeUserModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openUserModal(button) {
+        const id = button.dataset.id;
+        const username = button.dataset.username;
+        const role = button.dataset.role;
+        const isCurrentUser = button.dataset.current === "true";
+
+        document.getElementById("modalUsername").textContent = username;
+        document.getElementById("modalRole").value = role;
+
+        document.getElementById("roleForm").action = "/admin/users/" + id + "/role";
+        document.getElementById("deleteForm").action = "/admin/users/" + id + "/delete";
+
+        document.getElementById("deleteForm").style.display = isCurrentUser ? "none" : "block";
+        document.getElementById("currentUserMessage").style.display = isCurrentUser ? "block" : "none";
+
+        document.getElementById("userModal").style.display = "flex";
+    }
+
+    function closeUserModal() {
+        document.getElementById("userModal").style.display = "none";
+    }
+
+    window.addEventListener("click", function(event) {
+        const modal = document.getElementById("userModal");
+        if (event.target === modal) {
+            closeUserModal();
+        }
+    });
+</script>
 </body>
 </html>

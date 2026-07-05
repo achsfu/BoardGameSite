@@ -299,3 +299,140 @@ textarea {
 .danger-button:hover {
     background: #ff2f40;
 }
+
+.admin-search-form {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.admin-search-form input {
+    max-width: 420px;
+}
+
+.admin-role-section {
+    margin-top: 28px;
+}
+
+.admin-role-section h2 {
+    margin-bottom: 16px;
+}
+
+.admin-user-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.admin-user-card {
+    background: #181824;
+    border: 1px solid #2d2d3a;
+    border-radius: 22px;
+    padding: 22px;
+    box-shadow: 0 14px 35px rgba(0, 0, 0, 0.2);
+}
+
+.admin-user-card h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.admin-user-card p {
+    color: #c6c6d6;
+}
+
+.inline-form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.small-button {
+    padding: 9px 14px;
+    font-size: 0.85rem;
+}
+
+.danger-button {
+    display: inline-block;
+    border: none;
+    border-radius: 999px;
+    padding: 12px 18px;
+    font-weight: 800;
+    cursor: pointer;
+    background: #ff4d5a;
+    color: white;
+}
+
+.danger-button:hover {
+    background: #ff2f40;
+}
+
+@media (max-width: 850px) {
+    .admin-user-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.role-column {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px;
+    margin-top: 28px;
+}
+
+.role-panel {
+    background: #181824;
+    border: 1px solid #2d2d3a;
+    border-radius: 24px;
+    padding: 22px;
+    box-shadow: 0 14px 35px rgba(0, 0, 0, 0.2);
+}
+
+.role-panel h2 {
+    margin-top: 0;
+    margin-bottom: 16px;
+}
+
+.user-row {
+    width: 100%;
+    border: none;
+    border-radius: 16px;
+    background: #11111a;
+    color: white;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    text-align: left;
+    font-size: 1rem;
+    border: 1px solid #2d2d3a;
+}
+
+.user-row:hover {
+    background: #222235;
+    transform: translateY(-1px);
+}
+
+.role-pill {
+    background: #2a2a38;
+    color: #b9a8ff;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 800;
+}
+
+.modal-form {
+    margin-bottom: 18px;
+}
+
+@media (max-width: 850px) {
+    .role-column {
+        grid-template-columns: 1fr;
+    }
+}

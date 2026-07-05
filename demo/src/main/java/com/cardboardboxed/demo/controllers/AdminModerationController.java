@@ -49,15 +49,45 @@ public class AdminModerationController {
                  "MODERATOR".equalsIgnoreCase(user.getRole()));
     }
 
-    @GetMapping("/admin")
-    public String showAdminPage(Model model, HttpServletRequest request) {
+   @GetMapping("/admin")
+    public String showAdminPage(
+            @RequestParam(required = false) String keyword,
+            Model model,
+            HttpServletRequest request
+    ) {
         User currentUser = getLoggedInUser(request);
 
         if (!isAdmin(currentUser)) {
             return "redirect:/dashboard";
         }
 
-        model.addAttribute("users", userRepository.findAll());
+        String searchTerm = keyword == null ? "" : keyword.trim().toLowerCase();
+
+        var users = userRepository.findAll();
+
+        if (!searchTerm.isBlank()) {
+            users = users.stream()
+                    .filter(user -> user.getUsername().toLowerCase().contains(searchTerm))
+                    .toList();
+        }
+
+        model.addAttribute("admins", users.stream()
+                .filter(user -> "ADMIN".equalsIgnoreCase(user.getRole()))
+                .toList());
+
+        model.addAttribute("moderators", users.stream()
+                .filter(user -> "MODERATOR".equalsIgnoreCase(user.getRole()))
+                .toList());
+
+        model.addAttribute("organizers", users.stream()
+                .filter(user -> "ORGANIZER".equalsIgnoreCase(user.getRole()))
+                .toList());
+
+        model.addAttribute("players", users.stream()
+                .filter(user -> "PLAYER".equalsIgnoreCase(user.getRole()))
+                .toList());
+
+        model.addAttribute("keyword", keyword);
         model.addAttribute("currentUsername", currentUser.getUsername());
 
         return "admin";
