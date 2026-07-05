@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Review Moderation | BoardGameBoard</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<div class="app-shell">
+    <nav class="top-nav">
+        <a href="/" class="brand">BoardGameBoard</a>
+
+        <div class="nav-links">
+            <a href="/dashboard" class="text-link">Dashboard</a>
+            <form action="/logout" method="post">
+                <button type="submit" class="secondary-button">Logout</button>
+            </form>
+        </div>
+    </nav>
+
+    <main class="dashboard">
+        <section class="hero-card">
+            <p class="eyebrow">MODERATION</p>
+            <h1>Review Moderation</h1>
+            <p>Admins and moderators can review and remove inappropriate reviews.</p>
+        </section>
+
+        <section class="grid">
+            <div class="feature-card" th:each="review : ${reviews}">
+                <h2 th:text="${review.gameTitle}">Game Title</h2>
+
+                <p>
+                    <strong>Rating:</strong>
+                    <span th:text="${review.rating}">5</span>/5
+                </p>
+
+                <p>
+                    <strong>Posted by:</strong>
+                    <span th:text="${review.user != null ? review.user.username : 'Unknown user'}">username</span>
+                </p>
+
+                <p th:text="${review.reviewText}">
+                    Review text
+                </p>
+
+                <form th:action="@{/moderation/reviews/{id}/delete(id=${review.id})}"
+                      method="post"
+                      onsubmit="return confirm('Delete this review?');">
+                    <button type="submit" class="danger-button">Delete Review</button>
+                </form>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>
