@@ -29,11 +29,15 @@ public class UserService {
             throw new IllegalArgumentException("Username already exists");
         }
 
-        String encodedPassword = passwordEncoder.encode(password);
+        boolean adminExists = userRepository.findAll().stream()
+                .anyMatch(user -> "ADMIN".equalsIgnoreCase(user.getRole()));
 
-        // New users register as normal players by default.
-        // Role changes should be handled later by an admin user-management page.
-        User user = new User(username, encodedPassword, "PLAYER");
+        String role = (!adminExists && username.equalsIgnoreCase("admin"))
+                ? "ADMIN"
+                : "PLAYER";
+
+        String encodedPassword = passwordEncoder.encode(password);
+        User user = new User(username, encodedPassword, role);
 
         return userRepository.save(user);
     }

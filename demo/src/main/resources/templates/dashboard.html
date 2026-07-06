@@ -64,6 +64,18 @@
                 </p>
                 <a href="#" class="text-link">Player tools coming soon</a>
             </div>
+
+            <div class="feature-card" th:if="${role == 'ADMIN'}">
+                <h2>Admin Panel</h2>
+                <p>Manage users, change user roles, and remove accounts when necessary.</p>
+                <a href="/admin" class="text-link">Open Admin Panel</a>
+            </div>
+
+            <div class="feature-card" th:if="${role == 'ADMIN' || role == 'MODERATOR'}">
+                <h2>Review Moderation</h2>
+                <p>Review and delete inappropriate board game reviews.</p>
+                <a href="/moderation/reviews" class="text-link">Moderate Reviews</a>
+            </div>
         </section>
     </main>
 </div>
@@ -71,8 +83,8 @@
 <div id="reviewModal" class="modal-backdrop" style="display:none;">
     <div class="modal large-modal">
         <h2>Post a Review</h2>
-        <p class="muted">This modal is the start of the review-posting feature for iteration 1.</p>
-<!--CHANGES FOR POSTING FUNCTIONALITY BEGIN HERE-->
+        <p class="muted">Write a review for a board game you played recently.</p>
+
         <form action="/reviews" method="post">
             <div class="form-group">
                 <label for="gameTitle">Board Game Title</label>
@@ -110,7 +122,6 @@
 <script>
     function openReviewModal() {
         const modal = document.getElementById('reviewModal');
-        console.log("Opening review modal", modal);
 
         if (modal) {
             modal.style.display = 'flex';
