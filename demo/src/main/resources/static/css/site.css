@@ -238,6 +238,7 @@ textarea {
 }
 
 @media (max-width: 850px) {
+
     .landing-hero,
     .feature-row,
     .grid {
@@ -253,6 +254,37 @@ textarea {
     }
 }
 
+/*--- USER PROFILE GAME LISTS---*/
+
+.game-tag-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.game-tag {
+    background: #7c5cff;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.wishlist-tag {
+    background: #2a2d3d;
+    border: 1px solid #7c5cff;
+    color: #a29bfe;
+}
+
+.profile-lists-section {
+    margin-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
 .admin-table {
     width: 100%;
     border-collapse: collapse;
@@ -435,4 +467,4 @@ textarea {
     .role-column {
         grid-template-columns: 1fr;
     }
-}
+}}

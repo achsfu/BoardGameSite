@@ -20,6 +20,13 @@ public class User {
     // Simple role field for iteration 1 role-based views.
     // Example values: PLAYER, ORGANIZER
     private String role;
+    private String bio; // New field for user bio
+
+    private String profilePictureUrl;
+    private String gameOwned;
+    private String gameWishlist;
+
+    
 
     public User() {
     }
@@ -63,5 +70,37 @@ public class User {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getBio(){
+        return bio;
+    }
+
+    public void setBio(String bio){
+        this.bio = bio;
+    }
+
+    public String getProfilePictureUrl() {
+        return profilePictureUrl;
+    }
+
+    public void setProfilePictureUrl(String profilePictureUrl) {
+        this.profilePictureUrl = profilePictureUrl;
+    }
+
+    public String getGameOwned() {
+        return gameOwned;
+    }
+
+    public void setGameOwned(String gameOwned) {
+        this.gameOwned = gameOwned;
+    }
+
+    public String getGameWishlist() {
+        return gameWishlist;
+    }
+
+    public void setGameWishlist(String gameWishlist) {
+        this.gameWishlist = gameWishlist;
     }
 }
