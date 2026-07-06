@@ -49,6 +49,15 @@ public class LoginController {
         return userRepository.findByUsername(username);
     }
 
+    @GetMapping("/")
+    public String showLandingPage(HttpServletRequest request) {
+        if (getLoggedInUsername(request) != null) {
+            return "redirect:/profile";
+        }
+
+        return "forward:/index.html";
+    }
+
     @GetMapping("/login")
     public String showLoginForm(HttpServletRequest request) {
         if (getLoggedInUsername(request) != null) {
