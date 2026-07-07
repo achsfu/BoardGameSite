@@ -285,6 +285,7 @@ textarea {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
+}
 .admin-table {
     width: 100%;
     border-collapse: collapse;
@@ -467,4 +468,4 @@ textarea {
     .role-column {
         grid-template-columns: 1fr;
     }
-}}
+}
