@@ -88,7 +88,8 @@
         <form action="/reviews" method="post">
             <div class="form-group">
                 <label for="gameTitle">Board Game Title</label>
-                <input type="text" id="gameTitle" name="gameTitle" placeholder="Example: Catan" required>
+                <input type="text" id="gameTitle" name="gameTitle" placeholder="Example: Catan" list="reviewGameSuggestions" required>
+                <datalist id="reviewGameSuggestions"></datalist>
             </div>
 
             <div class="form-group">
@@ -119,6 +120,7 @@
     </div>
 </div>
 
+<script src="/js/game-autocomplete.js"></script>
 <script>
     function openReviewModal() {
         const modal = document.getElementById('reviewModal');
@@ -142,6 +144,10 @@
         if (event.target === modal) {
             closeReviewModal();
         }
+    });
+
+    window.addEventListener('DOMContentLoaded', function () {
+        attachGameAutocomplete('gameTitle', 'reviewGameSuggestions');
     });
 </script>
 </body>

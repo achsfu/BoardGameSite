@@ -2,10 +2,12 @@ package com.cardboardboxed.demo.controllers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import com.cardboardboxed.demo.boardgames.BoardGameAutocompleteRepository;
 import com.cardboardboxed.demo.reviews.Review;
 import com.cardboardboxed.demo.reviews.ReviewRepository;
 import com.cardboardboxed.demo.useracounts.UserRepository;
@@ -22,10 +24,13 @@ public class ProfileController {
 
     private final UserRepository userRepository;
     private final ReviewRepository reviewRepository;
+    private final BoardGameAutocompleteRepository boardGameAutocompleteRepository;
 
-    public ProfileController(UserRepository userRepository, ReviewRepository reviewRepository) {
+    public ProfileController(UserRepository userRepository, ReviewRepository reviewRepository,
+            BoardGameAutocompleteRepository boardGameAutocompleteRepository) {
         this.userRepository = userRepository;
         this.reviewRepository = reviewRepository;
+        this.boardGameAutocompleteRepository = boardGameAutocompleteRepository;
     }
 
     @GetMapping("/profile")
@@ -74,29 +79,43 @@ public class ProfileController {
         User user = userRepository.findByUsername(username);
         user.setBio(bio);
         user.setProfilePictureUrl(profilePictureUrl);
+
         if (ownedGames != null && !ownedGames.isBlank()) {
-        String currentOwned = user.getGameOwned();
-        if (currentOwned != null && !currentOwned.isBlank()) {
-            if (!currentOwned.contains(ownedGames.trim())) {
-                user.setGameOwned(currentOwned + ", " + ownedGames.trim());
+            String resolvedOwned = boardGameAutocompleteRepository
+                    .resolveToExistingName(ownedGames)
+                    .orElse(null);
+            if (resolvedOwned != null && !resolvedOwned.isBlank()) {
+                user.setGameOwned(appendUniqueGame(user.getGameOwned(), resolvedOwned));
             }
-        } else {
-            user.setGameOwned(ownedGames.trim());
-        }
         }
 
         if (wishlistGames != null && !wishlistGames.isBlank()) {
-        String currentWishlist = user.getGameWishlist();
-        if (currentWishlist != null && !currentWishlist.isBlank()) {
-            if (!currentWishlist.contains(wishlistGames.trim())) {
-                user.setGameWishlist(currentWishlist + ", " + wishlistGames.trim());
+            String resolvedWishlist = boardGameAutocompleteRepository
+                    .resolveToExistingName(wishlistGames)
+                    .orElse(null);
+            if (resolvedWishlist != null && !resolvedWishlist.isBlank()) {
+                user.setGameWishlist(appendUniqueGame(user.getGameWishlist(), resolvedWishlist));
             }
-        } else {
-            user.setGameWishlist(wishlistGames.trim());
         }
-    }
+
         userRepository.save(user);
         return "redirect:/profile?success=Bio+updated+successfully";
+    }
+
+    private String appendUniqueGame(String currentValue, String gameName) {
+        if (currentValue == null || currentValue.isBlank()) {
+            return gameName;
+        }
+
+        String normalizedNew = gameName.trim().toLowerCase(Locale.ROOT);
+        String[] games = currentValue.split("\\s*,\\s*");
+        for (String existing : games) {
+            if (existing.trim().toLowerCase(Locale.ROOT).equals(normalizedNew)) {
+                return currentValue;
+            }
+        }
+
+        return currentValue + ", " + gameName;
     }
 
 }

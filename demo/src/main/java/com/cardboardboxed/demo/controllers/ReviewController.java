@@ -1,5 +1,6 @@
 package com.cardboardboxed.demo.controllers;
 
+import com.cardboardboxed.demo.boardgames.BoardGameAutocompleteRepository;
 import com.cardboardboxed.demo.reviews.Review;
 import com.cardboardboxed.demo.reviews.ReviewRepository;
 import com.cardboardboxed.demo.useracounts.User;
@@ -16,11 +17,15 @@ public class ReviewController {
     private final ReviewRepository reviewRepository;
     //repository used to find the user currently logged in
     private final UserRepository userRepository;
+    //repository used to normalize user input to valid board game names
+    private final BoardGameAutocompleteRepository boardGameAutocompleteRepository;
 
     //ocnstructor injection gives this controller access to the needed repositories
-    public ReviewController(ReviewRepository reviewRepository, UserRepository userRepository) {
+    public ReviewController(ReviewRepository reviewRepository, UserRepository userRepository,
+            BoardGameAutocompleteRepository boardGameAutocompleteRepository) {
         this.reviewRepository = reviewRepository;
         this.userRepository = userRepository;
+        this.boardGameAutocompleteRepository = boardGameAutocompleteRepository;
     }
 
     //handle the review form submission from dashboard.html
@@ -40,6 +45,15 @@ public class ReviewController {
         if (user == null) {
             throw new RuntimeException("User not found");
         }
+
+        String resolvedGameTitle = boardGameAutocompleteRepository
+                .resolveToExistingName(review.getGameTitle())
+                .orElse(null);
+        if (resolvedGameTitle == null || resolvedGameTitle.isBlank()) {
+            return "redirect:/dashboard?error=Please+choose+a+valid+board+game";
+        }
+
+        review.setGameTitle(resolvedGameTitle);
         review.setUser(user);
         reviewRepository.save(review);
         //send user back to dashboard after review posted - user page will be implemented in the future, where reviews appear
