@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${(query.isBlank() ? 'Game Search' : 'Search results for ' + query) + ' | BoardGameBoard'}">Game Search | BoardGameBoard</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<div class="app-shell">
+    <nav class="top-nav">
+        <a href="/" class="brand">BoardGameBoard</a>
+
+        <div class="nav-links">
+            <a href="/dashboard" class="secondary-button">Dashboard</a>
+            <a href="/profile" class="secondary-button">Profile</a>
+        </div>
+    </nav>
+
+    <main class="dashboard game-detail-layout">
+        <section class="hero-card">
+            <p class="eyebrow">GAME SEARCH</p>
+            <h1 th:text="${query.isBlank() ? 'Search board games' : 'Results for ' + query}">Search board games</h1>
+            <p th:text="${query.isBlank() ? 'Type a board game name to find similar titles.' : 'We could not find an exact match, so here are similar games.'}">Type a board game name to find similar titles.</p>
+
+            <form class="game-search-form" action="/games/search" method="get">
+                <input type="search"
+                       id="gameSearchBox"
+                       name="q"
+                       th:value="${query}"
+                       placeholder="Search for a board game"
+                       autocomplete="off"
+                       required>
+                <button type="submit" class="primary-button">Search</button>
+            </form>
+        </section>
+
+        <section class="feature-card review-panel">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">SIMILAR GAMES</p>
+                    <h2 th:text="${similarGames.isEmpty() ? 'No similar games found' : 'Games matching your search'}">Games matching your search</h2>
+                </div>
+            </div>
+
+            <p class="muted" th:if="${similarGames.isEmpty()}">Try a different spelling or use a shorter search term.</p>
+
+            <div class="grid" style="padding: 0; margin: 0; max-width: none; grid-template-columns: repeat(3, minmax(0, 1fr));">
+                <div class="feature-card" th:each="game : ${similarGames}">
+                    <p class="eyebrow" th:text="${game.rankPosition != null ? '#' + game.rankPosition : 'UNRANKED'}">#1</p>
+                    <h3 style="margin-top: 0;" th:text="${game.title}">Game Title</h3>
+                    <p class="muted" th:text="${game.description != null ? game.description : 'No description available.'}">Description</p>
+                    <a class="text-link" th:href="@{/games/{title}(title=${game.title})}">Open game page</a>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script src="/js/game-autocomplete.js"></script>
+<script>
+    window.addEventListener('DOMContentLoaded', function () {
+        attachGameAutocomplete('gameSearchBox', 'gameSearchSuggestions');
+    });
+</script>
+</body>
+</html>

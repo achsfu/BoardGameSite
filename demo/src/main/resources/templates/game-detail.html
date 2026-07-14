@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${game.title} + ' | BoardGameBoard'">Game Detail | BoardGameBoard</title>
+    <link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+<div class="app-shell">
+    <nav class="top-nav">
+        <a href="/" class="brand">BoardGameBoard</a>
+
+        <div class="nav-links">
+            <a href="/dashboard" class="secondary-button">Dashboard</a>
+            <a href="/profile" class="secondary-button">Profile</a>
+            <form action="/logout" method="post">
+                <button type="submit" class="secondary-button">Logout</button>
+            </form>
+        </div>
+    </nav>
+
+    <main class="dashboard game-detail-layout">
+        <section class="hero-card">
+            <p class="eyebrow">GAME PROFILE</p>
+            <h1 th:text="${game.title}">Game Title</h1>
+            <p th:text="${game.description != null ? game.description : 'Community reviews and rank details for this board game.'}">
+                Community reviews and rank details for this board game.
+            </p>
+            <div class="hero-actions">
+                <button type="button" class="primary-button" onclick="openGameReviewModal()">Review This Game</button>
+                <a href="/dashboard" class="secondary-button">Back to Dashboard</a>
+            </div>
+        </section>
+
+        <section class="stats-grid">
+            <div class="feature-card stat-card">
+                <p class="eyebrow">RANK</p>
+                <h2 th:text="${game.rankPosition != null ? '#' + game.rankPosition : 'Unranked'}">#1</h2>
+                <p class="muted">Stored in the boardgames_ranks catalog.</p>
+            </div>
+            <div class="feature-card stat-card">
+                <p class="eyebrow">CATALOG SCORE</p>
+                <h2 th:text="${game.communityScore != null ? game.communityScore : 'No score yet'}">8.9</h2>
+                <p class="muted">Score from the game database record.</p>
+            </div>
+            <div class="feature-card stat-card">
+                <p class="eyebrow">USER REVIEWS</p>
+                <h2 th:text="${reviewCount}">0</h2>
+                <p class="muted">
+                    Average:
+                    <span th:text="${averageReviewScore != null ? averageReviewScore : 'No reviews yet'}">No reviews yet</span>
+                </p>
+            </div>
+        </section>
+
+        <section class="feature-card review-panel">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">RECENT REVIEWS</p>
+                    <h2>What players are saying</h2>
+                </div>
+            </div>
+
+            <p class="muted" th:if="${recentReviews.isEmpty()}">No reviews have been posted for this game yet.</p>
+
+            <div th:each="review : ${recentReviews}" class="mock-card game-review-card">
+                <div class="review-card-header">
+                    <div>
+                        <p class="review-author" th:text="${review.user != null ? review.user.username : 'Unknown user'}">username</p>
+                        <p class="muted" th:text="${#temporals.format(review.createdAt, 'MMM d, yyyy HH:mm')}">Jan 1, 2026</p>
+                    </div>
+                    <span class="eyebrow" th:text="${review.rating} + ' / 5'">5 / 5</span>
+                </div>
+
+                <p th:text="${review.reviewText}">Review text</p>
+            </div>
+        </section>
+    </main>
+</div>
+
+<div id="gameReviewModal" class="modal-backdrop" style="display:none;">
+    <div class="modal large-modal">
+        <h2>Review <span th:text="${game.title}">Game Title</span></h2>
+        <p class="muted">Share your thoughts on this specific game.</p>
+
+        <form action="/reviews" method="post">
+            <div class="form-group">
+                <label>Board Game Title</label>
+                <input type="hidden" name="gameTitle" th:value="${game.title}">
+                <input type="text" th:value="${game.title}" readonly aria-readonly="true">
+            </div>
+
+            <div class="form-group">
+                <label for="gameReviewRating">Rating</label>
+                <select id="gameReviewRating" name="rating">
+                    <option value="5">5 - Loved it</option>
+                    <option value="4">4 - Really liked it</option>
+                    <option value="3">3 - It was okay</option>
+                    <option value="2">2 - Not for me</option>
+                    <option value="1">1 - Did not enjoy it</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="gameReviewText">Review</label>
+                <textarea id="gameReviewText" name="reviewText" placeholder="Write your thoughts..." required></textarea>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="secondary-button" onclick="closeGameReviewModal()">Cancel</button>
+                <button type="submit" class="primary-button">Post Review</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openGameReviewModal() {
+        const modal = document.getElementById('gameReviewModal');
+
+        if (modal) {
+            modal.style.display = 'flex';
+        }
+    }
+
+    function closeGameReviewModal() {
+        const modal = document.getElementById('gameReviewModal');
+
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    window.addEventListener('click', function (event) {
+        const modal = document.getElementById('gameReviewModal');
+
+        if (event.target === modal) {
+            closeGameReviewModal();
+        }
+    });
+</script>
+</body>
+</html>

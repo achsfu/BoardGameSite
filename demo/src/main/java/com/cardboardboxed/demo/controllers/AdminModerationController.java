@@ -158,4 +158,17 @@ public class AdminModerationController {
 
         return "redirect:/moderation/reviews";
     }
+
+    @PostMapping("/moderation/reviews/delete-all")
+    public String deleteAllReviews(HttpServletRequest request) {
+        User currentUser = getLoggedInUser(request);
+
+        if (!isModeratorOrAdmin(currentUser)) {
+            return "redirect:/dashboard";
+        }
+
+        reviewRepository.deleteAllInBatch();
+
+        return "redirect:/moderation/reviews";
+    }
 }

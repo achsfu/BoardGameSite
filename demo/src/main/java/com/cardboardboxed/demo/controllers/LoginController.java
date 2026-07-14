@@ -1,5 +1,6 @@
 package com.cardboardboxed.demo.controllers;
 
+import com.cardboardboxed.demo.boardgames.BoardGameRankRepository;
 import com.cardboardboxed.demo.useracounts.User;
 import com.cardboardboxed.demo.useracounts.UserRepository;
 import com.cardboardboxed.demo.useracounts.UserService;
@@ -28,6 +29,9 @@ public class LoginController {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private BoardGameRankRepository boardGameRankRepository;
 
     private HttpSession getSession(HttpServletRequest request) {
         return request.getSession(false);
@@ -130,6 +134,7 @@ public class LoginController {
 
         model.addAttribute("username", user.getUsername());
         model.addAttribute("role", user.getRole());
+        model.addAttribute("games", boardGameRankRepository.findAllByOrderByRankPositionAsc());
 
         return "dashboard";
     }

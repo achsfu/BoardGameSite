@@ -272,6 +272,28 @@ textarea {
     font-weight: 500;
 }
 
+.game-link-tag {
+    display: inline-flex;
+    align-items: center;
+    transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.game-link-tag:hover {
+    transform: translateY(-1px);
+    background: #8f75ff;
+}
+
+.game-search-form {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    margin-top: 10px;
+}
+
+.game-search-form input {
+    flex: 1;
+}
+
 .wishlist-tag {
     background: #2a2d3d;
     border: 1px solid #7c5cff;
@@ -462,6 +484,67 @@ textarea {
 
 .modal-form {
     margin-bottom: 18px;
+}
+
+.game-detail-layout {
+    display: grid;
+    gap: 22px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 22px;
+}
+
+.stat-card h2 {
+    margin-bottom: 8px;
+    font-size: 2rem;
+}
+
+.review-panel {
+    padding: 30px;
+}
+
+.section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.game-review-card {
+    margin-top: 16px;
+    padding: 22px;
+}
+
+.review-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.review-author {
+    margin: 0;
+    font-weight: 800;
+}
+
+@media (max-width: 850px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .section-heading {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .game-search-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
 }
 
 @media (max-width: 850px) {
