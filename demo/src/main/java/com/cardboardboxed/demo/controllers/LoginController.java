@@ -134,7 +134,7 @@ public class LoginController {
 
         model.addAttribute("username", user.getUsername());
         model.addAttribute("role", user.getRole());
-        model.addAttribute("games", boardGameRankRepository.findAllByOrderByRankPositionAsc());
+        model.addAttribute("games", boardGameRankRepository.findAllByIsExpansionOrderByRankPositionAsc(false));
 
         return "dashboard";
     }

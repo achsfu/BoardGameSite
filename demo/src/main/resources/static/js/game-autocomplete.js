@@ -185,7 +185,10 @@
         }
 
         input.form.dataset.boardgamePageSearch = "true";
-        attachGameAutocomplete(inputId, listId);
+
+        if (listId) {
+            attachGameAutocomplete(inputId, listId);
+        }
 
         const form = input.form;
         if (form.dataset.boardgamePageSearchBound === "true") {
@@ -213,6 +216,15 @@
                 .catch(function () {
                     window.location.href = "/games/search?q=" + encodeURIComponent(query);
                 });
+        });
+
+        input.addEventListener("keydown", function (event) {
+            if (event.key !== "Enter") {
+                return;
+            }
+
+            event.preventDefault();
+            form.requestSubmit();
         });
     }
 

@@ -25,8 +25,13 @@ public class BoardGameRank {
 
     @Column(name = "rank")
     private Integer rankPosition;
+
+    @Column(name = "average")
     private Double communityScore;
     private String description;
+
+    @Column(name = "is_expansion")
+    private Boolean isExpansion;
 
     @OneToMany(mappedBy = "game")
     private List<Review> reviews;
@@ -72,6 +77,14 @@ public class BoardGameRank {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Boolean getIsExpansion() {
+        return isExpansion;
+    }
+
+    public void setIsExpansion(Boolean isExpansion) {
+        this.isExpansion = isExpansion;
     }
 
     public List<Review> getReviews() {

@@ -47,11 +47,35 @@
 
             <div class="grid" style="padding: 0; margin: 0; max-width: none; grid-template-columns: repeat(3, minmax(0, 1fr));">
                 <div class="feature-card" th:each="game : ${similarGames}">
-                    <p class="eyebrow" th:text="${game.rankPosition != null ? '#' + game.rankPosition : 'UNRANKED'}">#1</p>
                     <h3 style="margin-top: 0;" th:text="${game.title}">Game Title</h3>
                     <p class="muted" th:text="${game.description != null ? game.description : 'No description available.'}">Description</p>
                     <a class="text-link" th:href="@{/games/{title}(title=${game.title})}">Open game page</a>
                 </div>
+            </div>
+
+            <div class="search-pagination" th:if="${totalPages > 1}">
+                <a class="secondary-button"
+                   th:classappend="${currentPage == 1} ? ' disabled-pagination' : ''"
+                   th:href="${currentPage == 1} ? '#' : @{/games/search(q=${query}, page=${currentPage - 1})}">
+                    Previous
+                </a>
+
+                <form action="/games/search" method="get" class="page-selector-form">
+                    <input type="hidden" name="q" th:value="${query}">
+                    <label for="resultsPage">Page</label>
+                    <select id="resultsPage" name="page" onchange="this.form.submit()">
+                        <option th:each="pageNumber : ${#numbers.sequence(1, totalPages)}"
+                                th:value="${pageNumber}"
+                                th:text="'Page ' + ${pageNumber}"
+                                th:selected="${pageNumber == currentPage}">Page 1</option>
+                    </select>
+                </form>
+
+                <a class="secondary-button"
+                   th:classappend="${currentPage == totalPages} ? ' disabled-pagination' : ''"
+                   th:href="${currentPage == totalPages} ? '#' : @{/games/search(q=${query}, page=${currentPage + 1})}">
+                    Next
+                </a>
             </div>
         </section>
     </main>
@@ -60,7 +84,7 @@
 <script src="/js/game-autocomplete.js"></script>
 <script>
     window.addEventListener('DOMContentLoaded', function () {
-        attachGameAutocomplete('gameSearchBox', 'gameSearchSuggestions');
+        attachGamePageSearch('gameSearchBox');
     });
 </script>
 </body>

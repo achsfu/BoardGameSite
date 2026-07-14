@@ -237,6 +237,30 @@ textarea {
     gap: 12px;
 }
 
+.search-pagination {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 22px;
+    flex-wrap: wrap;
+}
+
+.page-selector-form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.page-selector-form select {
+    min-width: 140px;
+}
+
+.disabled-pagination {
+    pointer-events: none;
+    opacity: 0.45;
+}
+
 @media (max-width: 850px) {
 
     .landing-hero,
@@ -308,6 +332,7 @@ textarea {
     grid-template-columns: 1fr 1fr;
     gap: 20px;
 }
+
 .admin-table {
     width: 100%;
     border-collapse: collapse;
