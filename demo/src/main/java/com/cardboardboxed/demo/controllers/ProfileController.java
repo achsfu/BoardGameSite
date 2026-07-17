@@ -3,6 +3,9 @@ package com.cardboardboxed.demo.controllers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,7 +44,11 @@ public class ProfileController {
     }
 
     @GetMapping("/profile")
-    public String showProfile(Model model, HttpServletRequest request) {
+    public String showProfile(
+        Model model,
+        HttpServletRequest request,
+        @RequestParam(defaultValue = "added") String sort
+    ){
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("AUTH_USER") == null) {
             return "redirect:/login?error=Please+log+in+to+view+your+profile";
@@ -55,6 +62,32 @@ public class ProfileController {
                 ? user.getProfilePictureUrl()
                 : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150&q=80";
         List<Review> userReviews = reviewRepository.findByUserUsername(username);
+
+        if(!sort.equals("rating") && !sort.equals("reviewed")){
+            sort = "added";
+        }
+
+        Map<String, Review> latestReviewByGame = new HashMap<>();
+
+        for(Review review : userReviews){
+            if(review.getGameTitle() == null){
+                continue;
+            }
+
+            String gameName = review.getGameTitle()
+                    .trim()
+                    .toLowerCase(Locale.ROOT);
+
+            Review savedReview = latestReviewByGame.get(gameName);
+
+            if(savedReview == null
+                    || savedReview.getCreatedAt() == null
+                    || (review.getCreatedAt() != null
+                    && review.getCreatedAt().isAfter(savedReview.getCreatedAt()))){
+                latestReviewByGame.put(gameName, review);
+            }
+        }
+
         List<String> ownedList = (user.getGameOwned() != null && !user.getGameOwned().isBlank())
                 ? new ArrayList<>(List.of(user.getGameOwned().split("\\s*,\\s*")))
                 : new ArrayList<>();
@@ -75,6 +108,48 @@ public class ProfileController {
                         CollectionType.WISHLIST
                 );
 
+        Comparator<CollectionItem> comparator = Comparator.comparing(
+                CollectionItem::getAddedAt,
+                Comparator.nullsLast(Comparator.reverseOrder())
+        );
+
+        if(sort.equals("rating")){
+            comparator = Comparator.comparing(
+                    (CollectionItem item) -> {
+                        String gameName = item.getGameName()
+                                .trim()
+                                .toLowerCase(Locale.ROOT);
+
+                        Review review = latestReviewByGame.get(gameName);
+
+                        return review == null ? null : review.getRating();
+                    },
+                    Comparator.nullsLast(Comparator.reverseOrder())
+            ).thenComparing(
+                    CollectionItem::getAddedAt,
+                    Comparator.nullsLast(Comparator.reverseOrder())
+            );
+        } else if(sort.equals("reviewed")){
+            comparator = Comparator.comparing(
+                    (CollectionItem item) -> {
+                        String gameName = item.getGameName()
+                                .trim()
+                                .toLowerCase(Locale.ROOT);
+
+                        Review review = latestReviewByGame.get(gameName);
+
+                        return review == null ? null : review.getCreatedAt();
+                    },
+                    Comparator.nullsLast(Comparator.reverseOrder())
+            ).thenComparing(
+                    CollectionItem::getAddedAt,
+                    Comparator.nullsLast(Comparator.reverseOrder())
+            );
+        }
+
+        ownedItems.sort(comparator);
+        wishlistItems.sort(comparator);
+
         model.addAttribute("username", username);
         model.addAttribute("role", user.getRole());
         model.addAttribute("bio", bio);
@@ -86,6 +161,7 @@ public class ProfileController {
 
         model.addAttribute("ownedItems", ownedItems);
         model.addAttribute("wishlistItems", wishlistItems);
+        model.addAttribute("sort", sort);
 
         return "profile";
     }

@@ -35,7 +35,25 @@
               border: 2px solid #7c5cff;
             "
           />
+          <form action="/profile" method="get" style="margin-bottom: 12px">
+  <label for="sort">Sort Collection</label>
 
+  <select name="sort" id="sort">
+    <option value="added" th:selected="${sort == 'added'}">
+      Recently Added
+    </option>
+
+    <option value="rating" th:selected="${sort == 'rating'}">
+      Highest Rated
+    </option>
+
+    <option value="reviewed" th:selected="${sort == 'reviewed'}">
+      Recently Reviewed
+    </option>
+  </select>
+
+  <button type="submit" class="secondary-button">Sort</button>
+</form>
           <div class="profile-lists-section">
             <div>
               <h3 style="margin: 0; font-size: 1rem">Games Owned</h3>
