@@ -19,18 +19,25 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.cardboardboxed.demo.collections.CollectionItem;
+import com.cardboardboxed.demo.collections.CollectionItem.CollectionType;
+import com.cardboardboxed.demo.collections.CollectionItemRepository;
+
 @Controller
 public class ProfileController {
 
     private final UserRepository userRepository;
     private final ReviewRepository reviewRepository;
     private final BoardGameAutocompleteRepository boardGameAutocompleteRepository;
+    private final CollectionItemRepository collectionItemRepository;
 
     public ProfileController(UserRepository userRepository, ReviewRepository reviewRepository,
-            BoardGameAutocompleteRepository boardGameAutocompleteRepository) {
+            BoardGameAutocompleteRepository boardGameAutocompleteRepository,
+            CollectionItemRepository collectionItemRepository) {
         this.userRepository = userRepository;
         this.reviewRepository = reviewRepository;
         this.boardGameAutocompleteRepository = boardGameAutocompleteRepository;
+        this.collectionItemRepository = collectionItemRepository;
     }
 
     @GetMapping("/profile")
@@ -55,6 +62,19 @@ public class ProfileController {
         List<String> wishlistList = (user.getGameWishlist() != null && !user.getGameWishlist().isBlank())
                 ? new ArrayList<>(List.of(user.getGameWishlist().split("\\s*,\\s*")))
                 : new ArrayList<>();
+
+        List<CollectionItem> ownedItems = collectionItemRepository
+                .findByUserAndCollectionTypeOrderByAddedAtDesc(
+                        user,
+                        CollectionType.OWNED
+                );
+
+        List<CollectionItem> wishlistItems = collectionItemRepository
+                .findByUserAndCollectionTypeOrderByAddedAtDesc(
+                        user,
+                        CollectionType.WISHLIST
+                );
+
         model.addAttribute("username", username);
         model.addAttribute("role", user.getRole());
         model.addAttribute("bio", bio);
@@ -63,6 +83,9 @@ public class ProfileController {
 
         model.addAttribute("ownedList", ownedList);
         model.addAttribute("wishlistList", wishlistList);
+
+        model.addAttribute("ownedItems", ownedItems);
+        model.addAttribute("wishlistItems", wishlistItems);
 
         return "profile";
     }
