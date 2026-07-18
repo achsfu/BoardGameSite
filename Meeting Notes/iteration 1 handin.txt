@@ -1,0 +1,10 @@
+https://github.com/achsfu/BoardGameSite
+
+https://boardgamesite.onrender.com/
+
+Link to screencast site overview:
+https://www.youtube.com/watch?v=QoVSQsgK5nc
+
+Admin User:
+Username: admin
+password qwerty12345

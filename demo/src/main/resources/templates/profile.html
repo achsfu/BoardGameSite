@@ -101,8 +101,10 @@
                     name="ownedGames"
                     id="ownedGames"
                     placeholder="Enter your game."
+                    list="ownedGameSuggestions"
                     value=""
                   />
+                  <datalist id="ownedGameSuggestions"></datalist>
                 </div>
 
                 <!-- Input for Game Wishlist -->
@@ -113,8 +115,10 @@
                     name="wishlistGames"
                     id="wishlistGames"
                     placeholder="Enter your game."
+                    list="wishlistGameSuggestions"
                     value=""
                   />
+                  <datalist id="wishlistGameSuggestions"></datalist>
                 </div>
 
                 <div class="form-group" style="margin-top: 12px">
@@ -167,5 +171,12 @@
         </section>
       </main>
     </div>
+    <script src="/js/game-autocomplete.js"></script>
+    <script>
+      window.addEventListener('DOMContentLoaded', function () {
+        attachGameAutocomplete('ownedGames', 'ownedGameSuggestions');
+        attachGameAutocomplete('wishlistGames', 'wishlistGameSuggestions');
+      });
+    </script>
   </body>
 </html>
