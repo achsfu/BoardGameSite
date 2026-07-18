@@ -77,7 +77,7 @@
                     margin-bottom: 6px;
                   "
                 >
-                  <span th:text="${item.gameName}">Catan</span>
+                  <a th:href="@{/games/{title}(title=${item.gameName})}"><span th:text="${item.gameName}">Catan</span></a>
 
                   <form
                     action="/collection/move"
