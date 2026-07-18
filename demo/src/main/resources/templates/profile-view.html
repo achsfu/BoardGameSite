@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${username} + ' - Profile'">Profile</title>
+    <link rel="stylesheet" th:href="@{/css/site.css}">
+</head>
+<body>
+
+<main class="profile-page">
+    <div class="profile-header">
+        <img th:src="${avatar}" alt="Profile picture" class="profile-avatar">
+        <h1 th:text="${username}"></h1>
+        <p th:text="${role}"></p>
+        <p th:text="${bio}"></p>
+
+        <div class="follow-stats">
+            <span th:text="${followerCount} + ' followers'"></span>
+            <span th:text="${followingCount} + ' following'"></span>
+        </div>
+
+        <form th:if="${!isFollowing}" th:action="@{'/profile/' + ${username} + '/follow'}" method="post">
+            <button type="submit">Follow</button>
+        </form>
+        <form th:if="${isFollowing}" th:action="@{'/profile/' + ${username} + '/unfollow'}" method="post">
+            <button type="submit">Unfollow</button>
+        </form>
+    </div>
+
+    <section class="owned-games" th:if="${!ownedList.isEmpty()}">
+        <h2>Owned Games</h2>
+        <ul>
+            <li th:each="game : ${ownedList}" th:text="${game}"></li>
+        </ul>
+    </section>
+
+    <section class="wishlist-games" th:if="${!wishlistList.isEmpty()}">
+        <h2>Wishlist</h2>
+        <ul>
+            <li th:each="game : ${wishlistList}" th:text="${game}"></li>
+        </ul>
+    </section>
+
+    <section class="user-reviews">
+    <h2>Reviews</h2>
+    <div th:each="review : ${reviews}" class="review-card">
+        <p th:text="${review.gameTitle}"></p>
+        <p th:text="${review.rating} + ' / 5'"></p>
+        <p th:text="${review.reviewText}"></p>
+    </div>
+    <p th:if="${reviews.isEmpty()}">No reviews yet.</p>
+</section>
+</main>
+
+</body>
+</html>

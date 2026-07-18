@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${listTitle}">Connections</title>
+    <link rel="stylesheet" th:href="@{/css/site.css}">
+</head>
+<body>
+
+<main class="connections-page">
+    <h1 th:text="${listTitle}"></h1>
+    <a th:href="@{/profile}">&larr; Back to your profile</a>
+
+    <p th:if="${connections.isEmpty()}">No one here yet.</p>
+
+    <ul class="connections-list" th:if="${!connections.isEmpty()}">
+        <li th:each="person : ${connections}">
+            <a th:href="@{'/profile/' + ${person.username}}" th:text="${person.username}"></a>
+        </li>
+    </ul>
+</main>
+
+</body>
+</html>

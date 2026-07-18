@@ -41,6 +41,22 @@
                 </button>
             </div>
 
+            <!--PLAYER LOOK UP FUNCTIONALITY-->
+            <div class="feature-card">
+                <h2>Find Players</h2>
+                <p>Search for other players and view/follow their profiles.</p>
+                <label for="playerSearch">Find a player</label>
+                <form class="game-search-form" action="/profile/search" method="get">
+                    <input type="search"
+                    id="playerSearch"
+                    name="q"
+                    placeholder="Type a username."
+                    autocomplete="off"
+                    required>
+                    <button type="submit" class="primary-button">Search</button>
+                </form>
+            </div>
+
             <div class="feature-card">
                 <h2>Game Pages</h2>
                 <p>Search the ranked catalog and jump straight to a game’s detail page.</p>

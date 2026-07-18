@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Search Profiles</title>
+    <link rel="stylesheet" th:href="@{/css/site.css}">
+</head>
+<body>
+
+<main class="search-page">
+    <h1>Find a Player</h1>
+    <a href="/dashboard" class="text-link">&larr; Back to Dashboard</a>
+
+    <form th:action="@{/profile/search}" method="get" class="search-form">
+        <input type="text" name="q" th:value="${query}" placeholder="Search by username..." autofocus>
+        <button type="submit">Search</button>
+    </form>
+
+    <div th:if="${query != null and !query.isBlank() and results.isEmpty()}">
+        <p>No users found matching "<span th:text="${query}"></span>".</p>
+    </div>
+
+    <ul class="profile-results" th:if="${!results.isEmpty()}">
+        <li th:each="user : ${results}">
+            <a th:href="@{'/profile/' + ${user.username}}" th:text="${user.username}"></a>
+            <span th:text="'(' + ${user.role} + ')'"></span>
+        </li>
+    </ul>
+
+    <div class="pagination" th:if="${totalPages > 1}">
+        <a th:each="p : ${#numbers.sequence(1, totalPages)}"
+           th:href="@{/profile/search(q=${query}, page=${p})}"
+           th:text="${p}"
+           th:classappend="${p == currentPage} ? 'active' : ''">
+        </a>
+    </div>
+</main>
+
+</body>
+</html>

@@ -75,6 +75,13 @@
             <p class="eyebrow" th:text="${role}">USER</p>
             <h1 th:text="${username} + '\'s Profile'">User's Profile</h1>
             <p class="muted" th:text="${bio}">No bio added yet!</p>
+
+            <!--VIEW FOLLOWING AND FOLLOWED-->
+            <div class="follow-stats" style="margin-top: 10px";>
+              <a th:href="@{/profile/followers}" th:text="${followerCount} + ' Followers'" class="text-link"></a>
+              <span style="margin: 0 10px;">·</span>
+              <a th:href="@{/profile/following}" th:text="${followingCount} + ' Following'" class="text-link"></a>
+            </div>
           </div>
         </section>
 
