@@ -81,8 +81,12 @@
                 <div th:each="review : ${recentReviews}" class="mock-card game-review-card">
                     <div class="review-card-header">
                         <div>
+                            <a class="review-author text-link"
+                               th:if="${review.user != null}"
+                               th:href="@{'/profile/' + ${review.user.username}}"
+                               th:text="${review.user.username}">username</a>
                             <p class="review-author"
-                                th:text="${review.user != null ? review.user.username : 'Unknown user'}">username</p>
+                               th:if="${review.user == null}">Unknown user</p>
                             <p class="muted" th:text="${#temporals.format(review.createdAt, 'MMM d, yyyy HH:mm')}">Jan
                                 1, 2026</p>
                         </div>
