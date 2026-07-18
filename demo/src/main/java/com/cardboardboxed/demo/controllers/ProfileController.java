@@ -44,16 +44,12 @@ public class ProfileController {
 
     //add parameter for userfollowrepository in the constructor
     public ProfileController(UserRepository userRepository, ReviewRepository reviewRepository,
-            BoardGameAutocompleteRepository boardGameAutocompleteRepository, UserFollowRepository userFollowRepository) {
-        this.userRepository = userRepository;
-        this.reviewRepository = reviewRepository;
-        this.boardGameAutocompleteRepository = boardGameAutocompleteRepository;
-        this.userFollowRepository = userFollowRepository;
-            BoardGameAutocompleteRepository boardGameAutocompleteRepository,
+            BoardGameAutocompleteRepository boardGameAutocompleteRepository, UserFollowRepository userFollowRepository,
             CollectionItemRepository collectionItemRepository) {
         this.userRepository = userRepository;
         this.reviewRepository = reviewRepository;
         this.boardGameAutocompleteRepository = boardGameAutocompleteRepository;
+        this.userFollowRepository = userFollowRepository;
         this.collectionItemRepository = collectionItemRepository;
     }
 
@@ -380,6 +376,5 @@ public String showFollowing(Model model, HttpServletRequest request) {
     model.addAttribute("connections", following);
     model.addAttribute("listTitle", "Following");
     return "connections";
-}
 }
 }
