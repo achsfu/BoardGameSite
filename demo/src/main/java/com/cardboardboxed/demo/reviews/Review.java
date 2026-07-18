@@ -1,6 +1,6 @@
 package com.cardboardboxed.demo.reviews;
+import com.cardboardboxed.demo.boardgames.BoardGameRank;
 import com.cardboardboxed.demo.useracounts.User;
-import jakarta.annotation.Generated;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -13,6 +13,7 @@ public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+    @Column(name = "game_title")
     private String gameTitle;
     private Integer rating;
 
@@ -24,6 +25,10 @@ public class Review {
     //with a single record in another identity
     @ManyToOne
     private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "game_id")
+    private BoardGameRank game;
 
     //simple getter and setter methods
     public Review(){
@@ -37,6 +42,15 @@ public class Review {
     }
     public void setGameTitle(String gameTitle){
         this.gameTitle = gameTitle;
+    }
+    public BoardGameRank getGame(){
+        return game;
+    }
+    public void setGame(BoardGameRank game){
+        this.game = game;
+        if (game != null) {
+            this.gameTitle = game.getTitle();
+        }
     }
     public Integer getRating(){
         return rating;

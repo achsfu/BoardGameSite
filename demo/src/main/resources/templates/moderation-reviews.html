@@ -23,11 +23,17 @@
             <p class="eyebrow">MODERATION</p>
             <h1>Review Moderation</h1>
             <p>Admins and moderators can review and remove inappropriate reviews.</p>
+            <form action="/moderation/reviews/delete-all" method="post" onsubmit="return confirm('Delete all reviews? This cannot be undone.');">
+                <button type="submit" class="danger-button">Delete All Reviews</button>
+            </form>
         </section>
 
         <section class="grid">
             <div class="feature-card" th:each="review : ${reviews}">
-                <h2 th:text="${review.gameTitle}">Game Title</h2>
+                <h2>
+                    <a th:if="${review.gameTitle != null}" th:href="@{/games/{title}(title=${review.gameTitle})}" th:text="${review.gameTitle}">Game Title</a>
+                    <span th:if="${review.gameTitle == null}">Game Title</span>
+                </h2>
 
                 <p>
                     <strong>Rating:</strong>

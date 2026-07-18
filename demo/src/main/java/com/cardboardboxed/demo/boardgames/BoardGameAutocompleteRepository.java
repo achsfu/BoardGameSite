@@ -22,26 +22,28 @@ public class BoardGameAutocompleteRepository {
             return Collections.emptyList();
         }
 
-        int safeLimit = Math.max(1, Math.min(limit, 15));
+        String term = prefix.trim();
+        if (term.length() < 2) {
+            return Collections.emptyList();
+        }
+
+        int safeLimit = Math.max(1, Math.min(limit, 8));
 
         String sql = """
                 SELECT name
-                FROM (
-                    SELECT name, MIN("rank") AS best_rank
-                    FROM boardgames_ranks
-                    WHERE name ILIKE ?
-                    GROUP BY name
-                ) ranked_games
+                FROM boardgames_ranks
+            WHERE name ILIKE ? AND is_expansion = false
                 ORDER BY
                     CASE WHEN name ILIKE ? THEN 0 ELSE 1 END,
-                    best_rank ASC NULLS LAST,
+                    CASE WHEN "rank" = 0 THEN 1 ELSE 0 END,
+                    "rank" ASC NULLS LAST,
                     name ASC
                 LIMIT ?
                 """;
 
         try {
-            String term = prefix.trim();
-            return jdbcTemplate.queryForList(sql, String.class, "%" + term + "%", term + "%", safeLimit);
+            String searchTerm = term + "%";
+            return jdbcTemplate.queryForList(sql, String.class, searchTerm, searchTerm, safeLimit);
         } catch (DataAccessException ex) {
             return Collections.emptyList();
         }
@@ -59,10 +61,13 @@ public class BoardGameAutocompleteRepository {
                 FROM (
                     SELECT name, MIN("rank") AS best_rank
                     FROM boardgames_ranks
-                    WHERE lower(name) = lower(?)
+                    WHERE lower(name) = lower(?) AND is_expansion = false
                     GROUP BY name
                 ) exact_match
-                ORDER BY best_rank ASC NULLS LAST, name ASC
+                ORDER BY
+                    CASE WHEN best_rank = 0 THEN 1 ELSE 0 END,
+                    best_rank ASC NULLS LAST,
+                    name ASC
                 LIMIT 1
                 """;
 
@@ -71,10 +76,14 @@ public class BoardGameAutocompleteRepository {
                 FROM (
                     SELECT name, MIN("rank") AS best_rank
                     FROM boardgames_ranks
-                    WHERE lower(name) >= lower(?)
+                    WHERE lower(name) >= lower(?) AND is_expansion = false
                     GROUP BY name
                 ) next_match
-                ORDER BY lower(name) ASC, best_rank ASC NULLS LAST, name ASC
+                ORDER BY
+                    lower(name) ASC,
+                    CASE WHEN best_rank = 0 THEN 1 ELSE 0 END,
+                    best_rank ASC NULLS LAST,
+                    name ASC
                 LIMIT 1
                 """;
 
@@ -83,10 +92,14 @@ public class BoardGameAutocompleteRepository {
                 FROM (
                     SELECT name, MIN("rank") AS best_rank
                     FROM boardgames_ranks
-                    WHERE lower(name) < lower(?)
+                    WHERE lower(name) < lower(?) AND is_expansion = false
                     GROUP BY name
                 ) previous_match
-                ORDER BY lower(name) DESC, best_rank ASC NULLS LAST, name ASC
+                ORDER BY
+                    lower(name) DESC,
+                    CASE WHEN best_rank = 0 THEN 1 ELSE 0 END,
+                    best_rank ASC NULLS LAST,
+                    name ASC
                 LIMIT 1
                 """;
 

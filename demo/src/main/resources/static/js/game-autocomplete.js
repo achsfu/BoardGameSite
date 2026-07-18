@@ -1,6 +1,8 @@
 (function () {
     const activeRequests = new Map();
+    const suggestionCache = new Map();
     const formSubmitHandlers = new WeakSet();
+    const minimumAutocompleteLength = 2;
 
     function clearSuggestions(listElement) {
         listElement.innerHTML = "";
@@ -16,7 +18,7 @@
         });
     }
 
-    function resolveGameName(term) {
+    function resolveGameLookup(term) {
         return fetch("/api/boardgames/resolve?q=" + encodeURIComponent(term))
             .then(function (response) {
                 if (!response.ok) {
@@ -25,16 +27,19 @@
                 return response.json();
             })
             .then(function (data) {
-                return data && typeof data.resolvedName === "string" ? data.resolvedName : "";
+                return data && typeof data.resolvedName === "string"
+                    ? data
+                    : { resolvedName: "", exactMatch: false };
             })
             .catch(function () {
-                return "";
+                return { resolvedName: "", exactMatch: false };
             });
     }
 
-    function bindResolveOnEnter(input) {
+    function bindResolveOnEnter(input, options) {
+        const settings = options || {};
         const form = input.form;
-        if (!form || formSubmitHandlers.has(form)) {
+        if (!form || form.dataset.boardgamePageSearch === "true" || formSubmitHandlers.has(form)) {
             return;
         }
 
@@ -57,6 +62,9 @@
             event.preventDefault();
             form.dataset.isResolvingSubmit = "true";
 
+            let shouldRedirectToSearch = false;
+            let redirectQuery = "";
+
             Promise.all(
                 gameInputElements.map(function (field) {
                     const term = field.value.trim();
@@ -64,14 +72,26 @@
                         return Promise.resolve();
                     }
 
-                    return resolveGameName(term).then(function (resolvedName) {
-                        if (resolvedName) {
-                            field.value = resolvedName;
+                    return resolveGameLookup(term).then(function (resolvedGame) {
+                        if (resolvedGame.exactMatch && resolvedGame.resolvedName) {
+                            field.value = resolvedGame.resolvedName;
+                            return;
+                        }
+
+                        if (settings.redirectOnNoExactMatch === true) {
+                            shouldRedirectToSearch = true;
+                            redirectQuery = term;
                         }
                     });
                 })
             ).finally(function () {
                 form.dataset.isResolvingSubmit = "false";
+
+                if (shouldRedirectToSearch) {
+                    window.location.href = "/games/search?q=" + encodeURIComponent(redirectQuery);
+                    return;
+                }
+
                 form.dataset.skipResolveSubmit = "true";
                 form.requestSubmit();
             });
@@ -87,7 +107,7 @@
         }
 
         input.dataset.boardgameInput = "true";
-        bindResolveOnEnter(input);
+        bindResolveOnEnter(input, { redirectOnNoExactMatch: inputId === "gameTitle" });
 
         let debounceTimer = null;
 
@@ -99,8 +119,14 @@
             }
 
             debounceTimer = setTimeout(function () {
-                if (term.length < 1) {
+                if (term.length < minimumAutocompleteLength) {
                     clearSuggestions(list);
+                    return;
+                }
+
+                const cacheKey = inputId + "::" + term.toLowerCase();
+                if (suggestionCache.has(cacheKey)) {
+                    fillSuggestions(list, suggestionCache.get(cacheKey));
                     return;
                 }
 
@@ -123,6 +149,7 @@
                     })
                     .then(function (suggestions) {
                         if (Array.isArray(suggestions)) {
+                            suggestionCache.set(cacheKey, suggestions);
                             fillSuggestions(list, suggestions);
                         } else {
                             clearSuggestions(list);
@@ -151,5 +178,56 @@
         });
     }
 
+    function attachGamePageSearch(inputId, listId) {
+        const input = document.getElementById(inputId);
+        if (!input || !input.form) {
+            return;
+        }
+
+        input.form.dataset.boardgamePageSearch = "true";
+
+        if (listId) {
+            attachGameAutocomplete(inputId, listId);
+        }
+
+        const form = input.form;
+        if (form.dataset.boardgamePageSearchBound === "true") {
+            return;
+        }
+
+        form.dataset.boardgamePageSearchBound = "true";
+        form.addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            const query = input.value.trim();
+            if (!query) {
+                return;
+            }
+
+            resolveGameLookup(query)
+                .then(function (resolvedGame) {
+                    if (resolvedGame.exactMatch && resolvedGame.resolvedName) {
+                        window.location.href = "/games/" + encodeURIComponent(resolvedGame.resolvedName);
+                        return;
+                    }
+
+                    window.location.href = "/games/search?q=" + encodeURIComponent(query);
+                })
+                .catch(function () {
+                    window.location.href = "/games/search?q=" + encodeURIComponent(query);
+                });
+        });
+
+        input.addEventListener("keydown", function (event) {
+            if (event.key !== "Enter") {
+                return;
+            }
+
+            event.preventDefault();
+            form.requestSubmit();
+        });
+    }
+
     window.attachGameAutocomplete = attachGameAutocomplete;
+    window.attachGamePageSearch = attachGamePageSearch;
 })();

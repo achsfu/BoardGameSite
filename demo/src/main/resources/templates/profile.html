@@ -155,8 +155,9 @@
                   align-items: baseline;
                 "
               >
-                <h3 style="margin: 0" th:text="${review.gameTitle}">
-                  Game Title
+                <h3 style="margin: 0">
+                  <a th:if="${review.gameTitle != null}" th:href="@{/games/{title}(title=${review.gameTitle})}" th:text="${review.gameTitle}">Game Title</a>
+                  <span th:if="${review.gameTitle == null}">Game Title</span>
                 </h3>
                 <span class="eyebrow" th:text="${review.rating} + ' / 5'"
                   >5 / 5</span

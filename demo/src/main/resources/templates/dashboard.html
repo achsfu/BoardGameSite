@@ -42,6 +42,26 @@
             </div>
 
             <div class="feature-card">
+                <h2>Game Pages</h2>
+                <p>Search the ranked catalog and jump straight to a game’s detail page.</p>
+                <label for="gamePageSearch">Find a game</label>
+                <form class="game-search-form">
+                    <input type="search"
+                           id="gamePageSearch"
+                           name="gamePageSearch"
+                           placeholder="Type a board game title"
+                           list="gamePageSuggestions"
+                           autocomplete="off"
+                           required>
+                    <datalist id="gamePageSuggestions">
+                        <option th:each="game : ${games}" th:value="${game.title}">Catan</option>
+                    </datalist>
+                    <button type="submit" class="primary-button">Open Game</button>
+                </form>
+                <p class="muted" th:if="${games == null or games.isEmpty()}">No games have been loaded into the catalog yet.</p>
+            </div>
+
+            <div class="feature-card">
                 <h2>Top 5 Games</h2>
                 <p>Create a personal top-five board game list for your profile.</p>
                 <a href="#" class="text-link">Coming soon</a>
@@ -147,7 +167,7 @@
     });
 
     window.addEventListener('DOMContentLoaded', function () {
-        attachGameAutocomplete('gameTitle', 'reviewGameSuggestions');
+        attachGamePageSearch('gamePageSearch', 'gamePageSuggestions');
     });
 </script>
 </body>
