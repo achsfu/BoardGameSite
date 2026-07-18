@@ -1,22 +1,26 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Profile | BoardGameBoard</title>
     <link rel="stylesheet" th:href="@{/css/site.css}" href="/css/site.css" />
   </head>
+
   <body>
     <div class="app-shell">
       <nav class="top-nav">
         <a href="/" class="brand">BoardGameBoard</a>
+
         <div class="nav-links">
           <a href="/dashboard" class="secondary-button">Dashboard</a>
+
           <form action="/logout" method="post" style="display: inline">
             <button type="submit" class="secondary-button">Logout</button>
           </form>
         </div>
       </nav>
+
       <main class="dashboard">
         <section class="hero-card">
           <img
@@ -31,46 +35,155 @@
               border: 2px solid #7c5cff;
             "
           />
-          
-          <!-- Display collections-->
+          <form action="/profile" method="get" style="margin-bottom: 12px">
+  <label for="sort">Sort Collection</label>
+
+  <select name="sort" id="sort">
+    <option value="added" th:selected="${sort == 'added'}">
+      Recently Added
+    </option>
+
+    <option value="rating" th:selected="${sort == 'rating'}">
+      Highest Rated
+    </option>
+
+    <option value="reviewed" th:selected="${sort == 'reviewed'}">
+      Recently Reviewed
+    </option>
+  </select>
+
+  <button type="submit" class="secondary-button">Sort</button>
+</form>
           <div class="profile-lists-section">
             <div>
               <h3 style="margin: 0; font-size: 1rem">Games Owned</h3>
+
               <p
                 class="muted"
                 style="margin: 4px 0"
-                th:if="${ownedList.isEmpty()}"
+                th:if="${ownedItems.isEmpty()}"
               >
                 No games added yet.
               </p>
+
               <div class="game-tag-container">
-                <span
-                  th:each="game : ${ownedList}"
-                  th:text="${game}"
+                <div
+                  th:each="item : ${ownedItems}"
                   class="game-tag"
-                  >Catan</span
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    margin-bottom: 6px;
+                  "
                 >
+                  <span th:text="${item.gameName}">Catan</span>
+
+                  <form
+                    action="/collection/move"
+                    method="post"
+                    style="display: inline"
+                  >
+                    <input type="hidden" name="id" th:value="${item.id}" />
+                    <input
+                      type="hidden"
+                      name="collectionType"
+                      value="WISHLIST"
+                    />
+
+                    <button
+                      type="submit"
+                      class="secondary-button"
+                      style="padding: 4px 8px"
+                    >
+                      Move to Wishlist
+                    </button>
+                  </form>
+
+                  <form
+                    action="/collection/remove"
+                    method="post"
+                    style="display: inline"
+                  >
+                    <input type="hidden" name="id" th:value="${item.id}" />
+
+                    <button
+                      type="submit"
+                      class="secondary-button"
+                      style="padding: 4px 8px"
+                    >
+                      Remove
+                    </button>
+                  </form>
+                </div>
               </div>
             </div>
+
             <div>
               <h3 style="margin: 0; font-size: 1rem">Wishlist</h3>
+
               <p
                 class="muted"
                 style="margin: 4px 0"
-                th:if="${wishlistList.isEmpty()}"
+                th:if="${wishlistItems.isEmpty()}"
               >
                 Wishlist is empty.
               </p>
+
               <div class="game-tag-container">
-                <span
-                  th:each="game : ${wishlistList}"
-                  th:text="${game}"
+                <div
+                  th:each="item : ${wishlistItems}"
                   class="game-tag wishlist-tag"
-                  >Carcassonne</span
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    margin-bottom: 6px;
+                  "
                 >
+                  <span th:text="${item.gameName}">Carcassonne</span>
+
+                  <form
+                    action="/collection/move"
+                    method="post"
+                    style="display: inline"
+                  >
+                    <input type="hidden" name="id" th:value="${item.id}" />
+                    <input
+                      type="hidden"
+                      name="collectionType"
+                      value="OWNED"
+                    />
+
+                    <button
+                      type="submit"
+                      class="secondary-button"
+                      style="padding: 4px 8px"
+                    >
+                      Move to Owned
+                    </button>
+                  </form>
+
+                  <form
+                    action="/collection/remove"
+                    method="post"
+                    style="display: inline"
+                  >
+                    <input type="hidden" name="id" th:value="${item.id}" />
+
+                    <button
+                      type="submit"
+                      class="secondary-button"
+                      style="padding: 4px 8px"
+                    >
+                      Remove
+                    </button>
+                  </form>
+                </div>
               </div>
             </div>
           </div>
+
           <div>
             <p class="eyebrow" th:text="${role}">USER</p>
             <h1 th:text="${username} + '\'s Profile'">User's Profile</h1>
@@ -88,64 +201,116 @@
         <section class="grid">
           <div class="feature-card">
             <h2>Update Profile</h2>
-            <p class="muted">Change your profile summary description and game collection fields.</p>
-            
+            <p class="muted">
+              Change your profile description and profile picture.
+            </p>
+
             <form action="/profile/update-bio" method="post">
-                <div class="form-group">
-                    <label for="bio">Bio</label>
-                    <textarea name="bio" 
-                            id="bio" 
-                            placeholder="Tell us about your favourite board games"
-                            required 
-                            th:text="${bio == 'No bio added yet.' ? '' : bio}"></textarea>
-                </div>
+              <div class="form-group">
+                <label for="bio">Bio</label>
 
-                <!-- Input for Games Owned -->
-                <div class="form-group" style="margin-top: 12px">
-                  <label for="ownedGames">Games Owned</label>
-                  <input
-                    type="text"
-                    name="ownedGames"
-                    id="ownedGames"
-                    placeholder="Enter your game."
-                    list="ownedGameSuggestions"
-                    value=""
-                  />
-                  <datalist id="ownedGameSuggestions"></datalist>
-                </div>
+                <textarea
+                  name="bio"
+                  id="bio"
+                  placeholder="Tell us about your favourite board games"
+                  required
+                  th:text="${bio == 'No bio added yet.' ? '' : bio}"
+                ></textarea>
+              </div>
 
-                <!-- Input for Game Wishlist -->
-                <div class="form-group" style="margin-top: 12px">
-                  <label for="wishlistGames">Game Wishlist</label>
-                  <input
-                    type="text"
-                    name="wishlistGames"
-                    id="wishlistGames"
-                    placeholder="Enter your game."
-                    list="wishlistGameSuggestions"
-                    value=""
-                  />
-                  <datalist id="wishlistGameSuggestions"></datalist>
-                </div>
+              <div class="form-group" style="margin-top: 12px">
+                <label for="profilePictureUrl">Profile Picture URL</label>
 
-                <div class="form-group" style="margin-top: 12px">
-                  <label for="profilePictureUrl">Profile Picture URL</label>
-                  <input
-                    type="url"
-                    name="profilePictureUrl"
-                    id="profilePictureUrl"
-                    placeholder="Paste a link"
-                    th:value="${avatar.contains('unsplash.com') ? '' : avatar}"
-                  />
-                </div>
+                <input
+                  type="url"
+                  name="profilePictureUrl"
+                  id="profilePictureUrl"
+                  placeholder="Paste a link"
+                  th:value="${avatar.contains('unsplash.com') ? '' : avatar}"
+                />
+              </div>
 
-                <button type="submit" class="primary-button" style="margin-top: 16px;">Save Changes</button>
+              <button
+                type="submit"
+                class="primary-button"
+                style="margin-top: 16px"
+              >
+                Save Changes
+              </button>
             </form>
-          </div> 
 
-          <!-- User's Review Display -->
+            <h2 style="margin-top: 28px">Add to Collection</h2>
+
+            <form action="/collection/add" method="post">
+              <div class="form-group">
+                <label for="ownedGames">Add Owned Game</label>
+
+                <input
+                  type="text"
+                  name="gameName"
+                  id="ownedGames"
+                  placeholder="Enter your game."
+                  list="ownedGameSuggestions"
+                  required
+                />
+
+                <datalist id="ownedGameSuggestions"></datalist>
+
+                <input
+                  type="hidden"
+                  name="collectionType"
+                  value="OWNED"
+                />
+              </div>
+
+              <button
+                type="submit"
+                class="primary-button"
+                style="margin-top: 12px"
+              >
+                Add to Owned
+              </button>
+            </form>
+
+            <form
+              action="/collection/add"
+              method="post"
+              style="margin-top: 20px"
+            >
+              <div class="form-group">
+                <label for="wishlistGames">Add Wishlist Game</label>
+
+                <input
+                  type="text"
+                  name="gameName"
+                  id="wishlistGames"
+                  placeholder="Enter your game."
+                  list="wishlistGameSuggestions"
+                  required
+                />
+
+                <datalist id="wishlistGameSuggestions"></datalist>
+
+                <input
+                  type="hidden"
+                  name="collectionType"
+                  value="WISHLIST"
+                />
+              </div>
+
+              <button
+                type="submit"
+                class="primary-button"
+                style="margin-top: 12px"
+              >
+                Add to Wishlist
+              </button>
+            </form>
+          </div>
+
           <div class="feature-card" style="grid-column: span 2">
             <h2>Posted Reviews</h2>
+
             <p class="muted" th:if="${reviews.isEmpty()}">
               You haven't shared any reviews yet!
             </p>
@@ -166,11 +331,19 @@
                   <a th:if="${review.gameTitle != null}" th:href="@{/games/{title}(title=${review.gameTitle})}" th:text="${review.gameTitle}">Game Title</a>
                   <span th:if="${review.gameTitle == null}">Game Title</span>
                 </h3>
-                <span class="eyebrow" th:text="${review.rating} + ' / 5'"
-                  >5 / 5</span
+
+                <span
+                  class="eyebrow"
+                  th:text="${review.rating} + ' / 5'"
                 >
+                  5 / 5
+                </span>
               </div>
-              <p style="margin: 10px 0 0" th:text="${review.reviewText}">
+
+              <p
+                style="margin: 10px 0 0"
+                th:text="${review.reviewText}"
+              >
                 Review details
               </p>
             </div>
@@ -178,7 +351,9 @@
         </section>
       </main>
     </div>
+
     <script src="/js/game-autocomplete.js"></script>
+
     <script>
       window.addEventListener('DOMContentLoaded', function () {
         attachGameAutocomplete('ownedGames', 'ownedGameSuggestions');
