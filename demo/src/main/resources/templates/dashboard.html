@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,9 +11,13 @@
     <nav class="top-nav">
         <a href="/" class="brand">BoardGameBoard</a>
 
-        <form action="/logout" method="post">
-            <button type="submit" class="secondary-button">Logout</button>
-        </form>
+        <div class="nav-links">
+            <a href="/feed" class="secondary-button">Social Feed</a>
+
+            <form action="/logout" method="post" style="display: inline;">
+                <button type="submit" class="secondary-button">Logout</button>
+            </form>
+        </div>
     </nav>
 
     <main class="dashboard">
@@ -21,121 +25,229 @@
             <p class="eyebrow" th:text="${role}">PLAYER</p>
             <h1 th:text="'Welcome, ' + ${username} + '!'">Welcome!</h1>
             <p>
-                Track your board games, write reviews, build lists, and plan future game nights with friends.
+                Track your board games, write reviews, build lists, follow other
+                players, and plan future game nights with friends.
             </p>
         </section>
 
-        <!--USER PROFILE-->
         <section class="grid">
+
+            <!-- SOCIAL FEED -->
+            <div class="feature-card">
+                <h2>Social Feed</h2>
+                <p>
+                    See the newest board game reviews posted by the players you follow.
+                </p>
+                <a href="/feed" class="text-link">Open Social Feed</a>
+            </div>
+
+            <!-- USER PROFILE -->
             <div class="feature-card">
                 <h2>Your Profile</h2>
-                <p>View your board game activity, favorite games, and future profile details.</p>
+                <p>
+                    View your board game activity, collection, reviews, and profile details.
+                </p>
                 <a href="/profile" class="text-link">View Profile</a>
             </div>
 
+            <!-- WRITE REVIEW -->
             <div class="feature-card">
                 <h2>Write a Review</h2>
                 <p>Post your thoughts on a game you played recently.</p>
-                <button type="button" class="primary-button" onclick="openReviewModal()">
+
+                <button
+                    type="button"
+                    class="primary-button"
+                    onclick="openReviewModal()"
+                >
                     Post Review
                 </button>
             </div>
 
-            <!--PLAYER LOOK UP FUNCTIONALITY-->
+            <!-- PLAYER LOOKUP -->
             <div class="feature-card">
                 <h2>Find Players</h2>
-                <p>Search for other players and view/follow their profiles.</p>
+                <p>Search for other players and view or follow their profiles.</p>
+
                 <label for="playerSearch">Find a player</label>
-                <form class="game-search-form" action="/profile/search" method="get">
-                    <input type="search"
-                    id="playerSearch"
-                    name="q"
-                    placeholder="Type a username."
-                    autocomplete="off"
-                    required>
-                    <button type="submit" class="primary-button">Search</button>
+
+                <form
+                    class="game-search-form"
+                    action="/profile/search"
+                    method="get"
+                >
+                    <input
+                        type="search"
+                        id="playerSearch"
+                        name="q"
+                        placeholder="Type a username."
+                        autocomplete="off"
+                        required
+                    >
+
+                    <button type="submit" class="primary-button">
+                        Search
+                    </button>
                 </form>
             </div>
 
+            <!-- GAME PAGE SEARCH -->
             <div class="feature-card">
                 <h2>Game Pages</h2>
-                <p>Search the ranked catalog and jump straight to a game’s detail page.</p>
+                <p>
+                    Search the ranked catalog and jump straight to a game’s detail page.
+                </p>
+
                 <label for="gamePageSearch">Find a game</label>
+
                 <form class="game-search-form">
-                    <input type="search"
-                           id="gamePageSearch"
-                           name="gamePageSearch"
-                           placeholder="Type a board game title"
-                           list="gamePageSuggestions"
-                           autocomplete="off"
-                           required>
+                    <input
+                        type="search"
+                        id="gamePageSearch"
+                        name="gamePageSearch"
+                        placeholder="Type a board game title"
+                        list="gamePageSuggestions"
+                        autocomplete="off"
+                        required
+                    >
+
                     <datalist id="gamePageSuggestions">
-                        <option th:each="game : ${games}" th:value="${game.title}">Catan</option>
+                        <option
+                            th:each="game : ${games}"
+                            th:value="${game.title}"
+                        >
+                            Catan
+                        </option>
                     </datalist>
-                    <button type="submit" class="primary-button">Open Game</button>
+
+                    <button type="submit" class="primary-button">
+                        Open Game
+                    </button>
                 </form>
-                <p class="muted" th:if="${games == null or games.isEmpty()}">No games have been loaded into the catalog yet.</p>
+
+                <p
+                    class="muted"
+                    th:if="${games == null or games.isEmpty()}"
+                >
+                    No games have been loaded into the catalog yet.
+                </p>
             </div>
 
+            <!-- TOP FIVE -->
             <div class="feature-card">
                 <h2>Top 5 Games</h2>
                 <p>Create a personal top-five board game list for your profile.</p>
                 <a href="#" class="text-link">Coming soon</a>
             </div>
 
-            <div class="feature-card">
-                <h2>Plan Sessions</h2>
-                <p>Set up a game night, invite people you follow, and track RSVPs.</p>
-                <a href="/sessions" class="text-link">View My Sessions</a>
-            </div>
+            <!-- PLAN SESSIONS -->
+<div class="feature-card">
+    <h2>Plan Sessions</h2>
+    <p>Set up a game night, invite people you follow, and track RSVPs.</p>
+    <a href="/sessions" class="text-link">View My Sessions</a>
+</div>
 
-            <div class="feature-card" th:if="${role == 'ORGANIZER'}">
-                <h2>Organizer View</h2>
+<!-- ORGANIZER -->
+<div class="feature-card" th:if="${role == 'ORGANIZER'}">
+    <h2>Organizer View</h2>
+            
+
                 <p>
-                    As a Game Night Organizer, you will eventually be able to plan sessions,
-                    invite friends, and suggest games for groups.
+                    As a Game Night Organizer, you will eventually be able to
+                    plan sessions, invite friends, and suggest games for groups.
                 </p>
-                <a href="#" class="text-link">Organizer tools coming soon</a>
+
+                <a href="#" class="text-link">
+                    Organizer tools coming soon
+                </a>
             </div>
 
-            <div class="feature-card" th:if="${role == 'PLAYER'}">
+            <!-- PLAYER -->
+            <div
+                class="feature-card"
+                th:if="${role == 'PLAYER'}"
+            >
                 <h2>Player View</h2>
+
                 <p>
                     As a Player, you can focus on logging games, writing reviews,
                     and building your personal board game profile.
                 </p>
-                <a href="#" class="text-link">Player tools coming soon</a>
+
+                <a href="#" class="text-link">
+                    Player tools coming soon
+                </a>
             </div>
 
-            <div class="feature-card" th:if="${role == 'ADMIN'}">
+            <!-- ADMIN -->
+            <div
+                class="feature-card"
+                th:if="${role == 'ADMIN'}"
+            >
                 <h2>Admin Panel</h2>
-                <p>Manage users, change user roles, and remove accounts when necessary.</p>
-                <a href="/admin" class="text-link">Open Admin Panel</a>
+
+                <p>
+                    Manage users, change user roles, and remove accounts when necessary.
+                </p>
+
+                <a href="/admin" class="text-link">
+                    Open Admin Panel
+                </a>
             </div>
 
-            <div class="feature-card" th:if="${role == 'ADMIN' || role == 'MODERATOR'}">
+            <!-- MODERATION -->
+            <div
+                class="feature-card"
+                th:if="${role == 'ADMIN' || role == 'MODERATOR'}"
+            >
                 <h2>Review Moderation</h2>
-                <p>Review and delete inappropriate board game reviews.</p>
-                <a href="/moderation/reviews" class="text-link">Moderate Reviews</a>
+
+                <p>
+                    Review and delete inappropriate board game reviews.
+                </p>
+
+                <a href="/moderation/reviews" class="text-link">
+                    Moderate Reviews
+                </a>
             </div>
+
         </section>
     </main>
 </div>
 
-<div id="reviewModal" class="modal-backdrop" style="display:none;">
+<div
+    id="reviewModal"
+    class="modal-backdrop"
+    style="display: none;"
+>
     <div class="modal large-modal">
         <h2>Post a Review</h2>
-        <p class="muted">Write a review for a board game you played recently.</p>
+
+        <p class="muted">
+            Write a review for a board game you played recently.
+        </p>
 
         <form action="/reviews" method="post">
+
             <div class="form-group">
                 <label for="gameTitle">Board Game Title</label>
-                <input type="text" id="gameTitle" name="gameTitle" placeholder="Example: Catan" list="reviewGameSuggestions" required>
+
+                <input
+                    type="text"
+                    id="gameTitle"
+                    name="gameTitle"
+                    placeholder="Example: Catan"
+                    list="reviewGameSuggestions"
+                    autocomplete="off"
+                    required
+                >
+
                 <datalist id="reviewGameSuggestions"></datalist>
             </div>
 
             <div class="form-group">
                 <label for="rating">Rating</label>
+
                 <select id="rating" name="rating">
                     <option value="5">5 - Loved it</option>
                     <option value="4">4 - Really liked it</option>
@@ -147,49 +259,70 @@
 
             <div class="form-group">
                 <label for="reviewText">Review</label>
-                <textarea id="reviewText" name="reviewText" placeholder="Write your thoughts..." required></textarea>
+
+                <textarea
+                    id="reviewText"
+                    name="reviewText"
+                    placeholder="Write your thoughts..."
+                    required
+                ></textarea>
             </div>
 
             <div class="modal-actions">
-                <button type="button" class="secondary-button" onclick="closeReviewModal()">
+                <button
+                    type="button"
+                    class="secondary-button"
+                    onclick="closeReviewModal()"
+                >
                     Cancel
                 </button>
+
                 <button type="submit" class="primary-button">
                     Post Review
                 </button>
             </div>
+
         </form>
     </div>
 </div>
 
 <script src="/js/game-autocomplete.js"></script>
+
 <script>
     function openReviewModal() {
-        const modal = document.getElementById('reviewModal');
+        const modal = document.getElementById("reviewModal");
 
         if (modal) {
-            modal.style.display = 'flex';
+            modal.style.display = "flex";
         }
     }
 
     function closeReviewModal() {
-        const modal = document.getElementById('reviewModal');
+        const modal = document.getElementById("reviewModal");
 
         if (modal) {
-            modal.style.display = 'none';
+            modal.style.display = "none";
         }
     }
 
-    window.addEventListener('click', function(event) {
-        const modal = document.getElementById('reviewModal');
+    window.addEventListener("click", function (event) {
+        const modal = document.getElementById("reviewModal");
 
         if (event.target === modal) {
             closeReviewModal();
         }
     });
 
-    window.addEventListener('DOMContentLoaded', function () {
-        attachGamePageSearch('gamePageSearch', 'gamePageSuggestions');
+    window.addEventListener("DOMContentLoaded", function () {
+        attachGamePageSearch(
+            "gamePageSearch",
+            "gamePageSuggestions"
+        );
+
+        attachGameAutocomplete(
+            "gameTitle",
+            "reviewGameSuggestions"
+        );
     });
 </script>
 </body>

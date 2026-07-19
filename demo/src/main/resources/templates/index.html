@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>BoardGameBoard</title>
+    <link rel="stylesheet" th:href="@{/css/site.css}" href="/css/site.css">
+</head>
+
+<body class="home-body">
+<div class="home-shell">
+
+    <!-- NAVIGATION -->
+    <nav class="home-nav">
+        <a href="/" class="home-brand">
+            <span>BoardGameBoard</span>
+        </a>
+
+        <div class="home-nav-links">
+            <a href="/dashboard" th:if="${loggedIn}">
+                Dashboard
+            </a>
+
+            <a href="/feed" th:if="${loggedIn}">
+                Feed
+            </a>
+
+            <a href="/profile/search">
+                Members
+            </a>
+
+            <a href="/profile" th:if="${loggedIn}">
+                Profile
+            </a>
+
+            <a href="/login" th:unless="${loggedIn}">
+                Sign in
+            </a>
+
+            <a
+                href="/register"
+                class="home-signup-button"
+                th:unless="${loggedIn}"
+            >
+                Create account
+            </a>
+
+            <form
+                action="/logout"
+                method="post"
+                th:if="${loggedIn}"
+            >
+                <button type="submit" class="home-logout-button">
+                    Log out
+                </button>
+            </form>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <header class="home-hero">
+
+        <div
+            class="hero-poster-wall"
+            th:if="${popularGames != null and !popularGames.isEmpty()}"
+            aria-hidden="true"
+        >
+            <div
+                class="hero-poster"
+                th:each="game : ${popularGames}"
+            >
+                <img
+                    th:src="${game.imageUrl != null and !game.imageUrl.isBlank() ? game.imageUrl : game.thumbnailUrl}"
+                    th:alt="${game.title}"
+                >
+            </div>
+        </div>
+
+        <div
+            class="hero-poster-fallback"
+            th:if="${popularGames == null or popularGames.isEmpty()}"
+            aria-hidden="true"
+        ></div>
+
+        <div class="hero-overlay"></div>
+
+        <div class="home-hero-content">
+            <p class="home-welcome" th:if="${loggedIn}">
+                Welcome back,
+                <strong th:text="${username}">Player</strong>.
+            </p>
+
+            <p class="eyebrow">Track. Review. Discover.</p>
+
+            <h1>Your social home for board games.</h1>
+
+            <p class="home-hero-description">
+                Keep track of the games you play, share reviews,
+                organize your collection, follow other players and
+                discover what to play next.
+            </p>
+
+            <div class="home-hero-actions">
+                <a
+                    href="/register"
+                    class="home-primary-button"
+                    th:unless="${loggedIn}"
+                >
+                    Get started — it’s free
+                </a>
+
+                <a
+                    href="/dashboard"
+                    class="home-primary-button"
+                    th:if="${loggedIn}"
+                >
+                    Open dashboard
+                </a>
+
+                <a href="#popular-games" class="home-text-button">
+                    Browse games
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="home-content">
+
+        <!-- RECENTLY REVIEWED -->
+        <section class="home-section">
+            <div class="home-section-heading">
+                <h2>Recently reviewed</h2>
+
+                <a href="/feed" th:if="${loggedIn}">
+                    Your feed
+                </a>
+            </div>
+
+            <div
+                class="poster-row"
+                th:if="${recentReviews != null and !recentReviews.isEmpty()}"
+            >
+                <article
+                    class="poster-activity-card"
+                    th:each="review : ${recentReviews}"
+                >
+                    <a
+                        class="poster-image-wrap"
+                        th:if="${review.game != null}"
+                        th:href="@{/games/id/{id}(id=${review.game.id})}"
+                    >
+                        <img
+                            th:if="${review.game.imageUrl != null and !review.game.imageUrl.isBlank()}"
+                            th:src="${review.game.imageUrl}"
+                            th:alt="${review.gameTitle}"
+                        >
+
+                        <img
+                            th:if="${(review.game.imageUrl == null or review.game.imageUrl.isBlank())
+                                and review.game.thumbnailUrl != null
+                                and !review.game.thumbnailUrl.isBlank()}"
+                            th:src="${review.game.thumbnailUrl}"
+                            th:alt="${review.gameTitle}"
+                        >
+
+                        <div
+                            class="poster-placeholder"
+                            th:if="${(review.game.imageUrl == null or review.game.imageUrl.isBlank())
+                                and (review.game.thumbnailUrl == null or review.game.thumbnailUrl.isBlank())}"
+                        >
+                            <span th:text="${review.gameTitle}">
+                                Board Game
+                            </span>
+                        </div>
+                    </a>
+
+                    <div
+                        class="poster-image-wrap"
+                        th:unless="${review.game != null}"
+                    >
+                        <div class="poster-placeholder">
+                            <span th:text="${review.gameTitle}">
+                                Board Game
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="poster-user-row">
+                        <span
+                            class="poster-avatar"
+                            th:text="${review.user != null and review.user.username != null
+                                ? #strings.toUpperCase(#strings.substring(review.user.username, 0, 1))
+                                : '?'}"
+                        >
+                            S
+                        </span>
+
+                        <span
+                            th:text="${review.user != null
+                                ? review.user.username
+                                : 'Unknown user'}"
+                        >
+                            Username
+                        </span>
+                    </div>
+
+                    <div class="poster-meta-row">
+                        <span class="poster-stars">
+                            <span th:if="${review.rating >= 1}">★</span>
+                            <span th:if="${review.rating >= 2}">★</span>
+                            <span th:if="${review.rating >= 3}">★</span>
+                            <span th:if="${review.rating >= 4}">★</span>
+                            <span th:if="${review.rating >= 5}">★</span>
+                        </span>
+
+                        <span
+                            th:if="${review.createdAt != null}"
+                            th:text="${#temporals.format(review.createdAt, 'MMM d')}"
+                        >
+                            Jul 18
+                        </span>
+                    </div>
+                </article>
+            </div>
+
+            <div
+                class="home-empty-card"
+                th:if="${recentReviews == null or recentReviews.isEmpty()}"
+            >
+                <p>Community reviews will appear here once users begin posting.</p>
+            </div>
+        </section>
+
+        <!-- POPULAR GAMES -->
+        <section class="home-section" id="popular-games">
+            <div class="home-section-heading">
+                <h2>Popular on BoardGameBoard</h2>
+
+                <a href="/games/search">
+                    Search games
+                </a>
+            </div>
+
+            <div
+                class="poster-row plain-poster-row"
+                th:if="${popularGames != null and !popularGames.isEmpty()}"
+            >
+                <article
+                    class="simple-poster-card"
+                    th:each="game : ${popularGames}"
+                >
+                    <a th:href="@{/games/id/{id}(id=${game.id})}">
+                        <img
+                            th:src="${game.imageUrl != null and !game.imageUrl.isBlank() ? game.imageUrl : game.thumbnailUrl}"
+                            th:alt="${game.title}"
+                        >
+                    </a>
+
+                    <h3 th:text="${game.title}">
+                        Game title
+                    </h3>
+
+                    <p>
+                        <span th:if="${game.communityScore != null}">
+                            <span class="poster-stars">★</span>
+
+                            <span
+                                th:text="${#numbers.formatDecimal(
+                                    game.communityScore,
+                                    1,
+                                    2
+                                )}"
+                            >
+                                8.50
+                            </span>
+                        </span>
+
+                        <span
+                            th:if="${game.rankPosition != null}"
+                            th:text="'Rank #' + ${game.rankPosition}"
+                        >
+                            Rank #1
+                        </span>
+                    </p>
+                </article>
+            </div>
+
+            <div
+                class="home-empty-card"
+                th:if="${popularGames == null or popularGames.isEmpty()}"
+            >
+                <p>
+                    Popular game covers will appear here after game images
+                    are added to the catalog.
+                </p>
+            </div>
+        </section>
+
+        <!-- COLLECTION PROMOTION -->
+        <section class="home-promo-band">
+            <div>
+                <p class="eyebrow">BUILD YOUR COLLECTION</p>
+
+                <h2>Remember every great game night.</h2>
+
+                <p>
+                    Organize games you own, games you have played and
+                    games you want to try next.
+                </p>
+            </div>
+
+            <a
+                href="/profile"
+                class="home-primary-button"
+                th:if="${loggedIn}"
+            >
+                View your collection
+            </a>
+
+            <a
+                href="/register"
+                class="home-primary-button"
+                th:unless="${loggedIn}"
+            >
+                Create your collection
+            </a>
+        </section>
+
+        <!-- HIGHEST RATED -->
+        <section class="home-section">
+            <div class="home-section-heading">
+                <h2>Highest rated games</h2>
+
+                <a href="/games/search">
+                    Search games
+                </a>
+            </div>
+
+            <div
+                class="poster-row plain-poster-row"
+                th:if="${highestRatedGames != null and !highestRatedGames.isEmpty()}"
+            >
+                <article
+                    class="simple-poster-card"
+                    th:each="game : ${highestRatedGames}"
+                >
+                    <a th:href="@{/games/id/{id}(id=${game.id})}">
+                        <img
+                            th:src="${game.imageUrl != null and !game.imageUrl.isBlank() ? game.imageUrl : game.thumbnailUrl}"
+                            th:alt="${game.title}"
+                        >
+                    </a>
+
+                    <h3 th:text="${game.title}">
+                        Game title
+                    </h3>
+
+                    <p>
+                        <span>
+                            <span class="poster-stars">★</span>
+
+                            <span
+                                th:text="${#numbers.formatDecimal(
+                                    game.communityScore,
+                                    1,
+                                    2
+                                )}"
+                            >
+                                8.80
+                            </span>
+                        </span>
+
+                        <span
+                            th:if="${game.rankPosition != null}"
+                            th:text="'Rank #' + ${game.rankPosition}"
+                        >
+                            Rank #1
+                        </span>
+                    </p>
+                </article>
+            </div>
+
+            <div
+                class="home-empty-card"
+                th:if="${highestRatedGames == null or highestRatedGames.isEmpty()}"
+            >
+                <p>
+                    Highest-rated game covers will appear once image data
+                    has been added.
+                </p>
+            </div>
+        </section>
+
+        <!-- COMMUNITY REVIEWS -->
+        <section class="home-section">
+            <div class="home-section-heading">
+                <h2>Recent community reviews</h2>
+
+                <a href="/feed" th:if="${loggedIn}">
+                    Your feed
+                </a>
+            </div>
+
+            <div
+                class="home-review-grid"
+                th:if="${recentReviews != null and !recentReviews.isEmpty()}"
+            >
+                <article
+                    class="home-review-card"
+                    th:each="review : ${recentReviews}"
+                >
+                    <div class="review-game-column">
+                        <a
+                            th:if="${review.game != null}"
+                            th:href="@{/games/id/{id}(id=${review.game.id})}"
+                        >
+                            <img
+                                th:if="${review.game.imageUrl != null and !review.game.imageUrl.isBlank()}"
+                                th:src="${review.game.imageUrl}"
+                                th:alt="${review.gameTitle}"
+                            >
+
+                            <img
+                                th:if="${(review.game.imageUrl == null or review.game.imageUrl.isBlank())
+                                    and review.game.thumbnailUrl != null
+                                    and !review.game.thumbnailUrl.isBlank()}"
+                                th:src="${review.game.thumbnailUrl}"
+                                th:alt="${review.gameTitle}"
+                            >
+
+                            <div
+                                class="review-poster-placeholder"
+                                th:if="${(review.game.imageUrl == null or review.game.imageUrl.isBlank())
+                                    and (review.game.thumbnailUrl == null or review.game.thumbnailUrl.isBlank())}"
+                            >
+                                <span th:text="${review.gameTitle}">
+                                    Game
+                                </span>
+                            </div>
+                        </a>
+
+                        <div
+                            class="review-poster-placeholder"
+                            th:unless="${review.game != null}"
+                        >
+                            <span th:text="${review.gameTitle}">
+                                Game
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="review-content-column">
+                        <div class="review-user-heading">
+                            <span
+                                class="poster-avatar"
+                                th:text="${review.user != null and review.user.username != null
+                                    ? #strings.toUpperCase(#strings.substring(review.user.username, 0, 1))
+                                    : '?'}"
+                            >
+                                S
+                            </span>
+
+                            <strong
+                                th:text="${review.user != null
+                                    ? review.user.username
+                                    : 'Unknown user'}"
+                            >
+                                Username
+                            </strong>
+                        </div>
+
+                        <h3 th:text="${review.gameTitle}">
+                            Board Game
+                        </h3>
+
+                        <div class="review-rating">
+                            <span th:if="${review.rating >= 1}">★</span>
+                            <span th:if="${review.rating >= 2}">★</span>
+                            <span th:if="${review.rating >= 3}">★</span>
+                            <span th:if="${review.rating >= 4}">★</span>
+                            <span th:if="${review.rating >= 5}">★</span>
+                        </div>
+
+                        <p
+                            class="review-excerpt"
+                            th:text="${review.reviewText}"
+                        >
+                            Review text appears here.
+                        </p>
+
+                        <a
+                            th:if="${review.game != null}"
+                            th:href="@{/games/id/{id}(id=${review.game.id})}"
+                            class="review-read-link"
+                        >
+                            View game
+                        </a>
+                    </div>
+                </article>
+            </div>
+
+            <div
+                class="home-empty-card"
+                th:if="${recentReviews == null or recentReviews.isEmpty()}"
+            >
+                <p>No community reviews have been posted yet.</p>
+            </div>
+        </section>
+
+        <!-- COMMUNITY -->
+        <section class="community-callout">
+            <p class="eyebrow">A COMMUNITY FOR PLAYERS</p>
+
+            <h2>Follow players whose taste you trust.</h2>
+
+            <p>
+                Discover other board-game fans, read their reviews and
+                keep up with the games they are playing.
+            </p>
+
+            <div class="home-hero-actions">
+                <a
+                    href="/profile/search"
+                    class="home-primary-button"
+                >
+                    Discover members
+                </a>
+
+                <a
+                    href="/feed"
+                    class="home-text-button"
+                    th:if="${loggedIn}"
+                >
+                    Open your feed
+                </a>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="home-footer">
+        <a href="/" class="home-brand">
+            <span>BoardGameBoard</span>
+        </a>
+
+        <p>
+            Discover, review and organize board games with your community.
+        </p>
+    </footer>
+
+</div>
+</body>
+</html>
