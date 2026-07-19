@@ -12,7 +12,13 @@ import org.springframework.data.repository.query.Param;
 public interface BoardGameRankRepository
         extends JpaRepository<BoardGameRank, Integer> {
 
-    BoardGameRank findByTitleIgnoreCase(String title);
+    /*
+     * Returns the first non-expansion game matching the title.
+     * Using "findFirst" prevents an error if duplicate titles exist.
+     */
+    Optional<BoardGameRank> findFirstByTitleIgnoreCaseAndIsExpansionFalse(
+            String title
+    );
 
     Optional<BoardGameRank> findFirstByTitleIgnoreCase(String title);
 

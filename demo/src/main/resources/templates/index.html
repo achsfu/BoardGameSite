@@ -152,7 +152,7 @@
                     <a
                         class="poster-image-wrap"
                         th:if="${review.game != null}"
-                        th:href="@{/games/{title}(title=${review.game.title})}"
+                        th:href="@{/games/id/{id}(id=${review.game.id})}"
                     >
                         <img
                             th:if="${review.game.imageUrl != null and !review.game.imageUrl.isBlank()}"
@@ -254,7 +254,7 @@
                     class="simple-poster-card"
                     th:each="game : ${popularGames}"
                 >
-                    <a th:href="@{/games/{title}(title=${game.title})}">
+                    <a th:href="@{/games/id/{id}(id=${game.id})}">
                         <img
                             th:src="${game.imageUrl != null and !game.imageUrl.isBlank() ? game.imageUrl : game.thumbnailUrl}"
                             th:alt="${game.title}"
@@ -349,7 +349,7 @@
                     class="simple-poster-card"
                     th:each="game : ${highestRatedGames}"
                 >
-                    <a th:href="@{/games/{title}(title=${game.title})}">
+                    <a th:href="@{/games/id/{id}(id=${game.id})}">
                         <img
                             th:src="${game.imageUrl != null and !game.imageUrl.isBlank() ? game.imageUrl : game.thumbnailUrl}"
                             th:alt="${game.title}"
@@ -417,7 +417,7 @@
                     <div class="review-game-column">
                         <a
                             th:if="${review.game != null}"
-                            th:href="@{/games/{title}(title=${review.game.title})}"
+                            th:href="@{/games/id/{id}(id=${review.game.id})}"
                         >
                             <img
                                 th:if="${review.game.imageUrl != null and !review.game.imageUrl.isBlank()}"
@@ -495,7 +495,7 @@
 
                         <a
                             th:if="${review.game != null}"
-                            th:href="@{/games/{title}(title=${review.game.title})}"
+                            th:href="@{/games/id/{id}(id=${review.game.id})}"
                             class="review-read-link"
                         >
                             View game
