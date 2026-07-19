@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${gameSession.gameName} + ' Session | BoardGameBoard'">Session | BoardGameBoard</title>
+    <link rel="stylesheet" th:href="@{/css/site.css}" href="/css/site.css">
+</head>
+<body>
+<div class="app-shell">
+    <nav class="top-nav">
+        <a href="/" class="brand">BoardGameBoard</a>
+        <div class="nav-links">
+            <a href="/dashboard" class="secondary-button">Dashboard</a>
+            <a href="/sessions" class="secondary-button">My Sessions</a>
+        </div>
+    </nav>
+
+    <main class="dashboard game-detail-layout">
+        <section class="hero-card">
+            <p class="eyebrow">GAME DAY</p>
+            <h1 th:text="${gameSession.gameName}">Game Name</h1>
+            <p th:text="${#temporals.format(gameSession.sessionTime, 'EEEE, MMM d, yyyy ''at'' HH:mm')}">Session time</p>
+            <p class="muted" th:if="${gameSession.location != null and !gameSession.location.isBlank()}"
+               th:text="'Location: ' + ${gameSession.location}">Location</p>
+            <p class="muted" th:if="${gameSession.notes != null and !gameSession.notes.isBlank()}" th:text="${gameSession.notes}">Notes</p>
+            <p class="muted" th:text="'Hosted by ' + ${gameSession.host.username}">Hosted by</p>
+            <p class="muted" th:if="${error != null}" th:text="${error}">Error message</p>
+
+            <div class="hero-actions" th:if="${myAttendance != null and myAttendance.status.name() == 'INVITED'}">
+                <form th:action="@{'/sessions/' + ${gameSession.id} + '/rsvp'}" method="post" style="display:inline;">
+                    <input type="hidden" name="response" value="accept">
+                    <button type="submit" class="primary-button">Accept</button>
+                </form>
+                <form th:action="@{'/sessions/' + ${gameSession.id} + '/rsvp'}" method="post" style="display:inline;">
+                    <input type="hidden" name="response" value="decline">
+                    <button type="submit" class="secondary-button">Decline</button>
+                </form>
+            </div>
+        </section>
+
+        <section class="feature-card review-panel" th:if="${isHost}">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">HOST TOOLS</p>
+                    <h2>Invite More Players</h2>
+                </div>
+            </div>
+
+            <form th:if="${!inviteCandidates.isEmpty()}"
+                  th:action="@{'/sessions/' + ${session.id} + '/invite'}" method="post" class="inline-form">
+                <select name="inviteeId" required style="min-width: 200px;">
+                    <option value="" disabled selected>Choose someone you follow</option>
+                    <option th:each="candidate : ${inviteCandidates}"
+                            th:value="${candidate.id}"
+                            th:text="${candidate.username}">username</option>
+                </select>
+                <button type="submit" class="primary-button small-button">Invite</button>
+            </form>
+
+            <p class="muted" th:if="${inviteCandidates.isEmpty()}">
+                Everyone you follow is already invited — <a class="text-link" href="/profile/search">find more players to follow</a>.
+            </p>
+        </section>
+
+        <section class="feature-card review-panel">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">ATTENDEES</p>
+                    <h2 th:text="${attendees.isEmpty() ? 'No one invited yet' : 'Who''s coming'}">
+                </div>
+            </div>
+
+            <table class="admin-table" th:if="${!attendees.isEmpty()}">
+                <thead>
+                <tr>
+                    <th>Player</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="attendee : ${attendees}">
+                    <td th:text="${attendee.user.username}">username</td>
+                    <td><span class="role-pill" th:text="${attendee.status}">INVITED</span></td>
+                </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+</div>
+</body>
+</html>

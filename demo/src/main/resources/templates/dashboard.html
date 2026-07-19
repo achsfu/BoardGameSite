@@ -140,12 +140,17 @@
                 <a href="#" class="text-link">Coming soon</a>
             </div>
 
-            <!-- ORGANIZER -->
-            <div
-                class="feature-card"
-                th:if="${role == 'ORGANIZER'}"
-            >
-                <h2>Organizer View</h2>
+            <!-- PLAN SESSIONS -->
+<div class="feature-card">
+    <h2>Plan Sessions</h2>
+    <p>Set up a game night, invite people you follow, and track RSVPs.</p>
+    <a href="/sessions" class="text-link">View My Sessions</a>
+</div>
+
+<!-- ORGANIZER -->
+<div class="feature-card" th:if="${role == 'ORGANIZER'}">
+    <h2>Organizer View</h2>
+            
 
                 <p>
                     As a Game Night Organizer, you will eventually be able to

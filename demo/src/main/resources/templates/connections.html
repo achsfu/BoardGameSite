@@ -2,23 +2,58 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title th:text="${listTitle}">Connections</title>
-    <link rel="stylesheet" th:href="@{/css/site.css}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${listTitle} + ' | BoardGameBoard'">Connections | BoardGameBoard</title>
+    <link rel="stylesheet" th:href="@{/css/site.css}" href="/css/site.css">
 </head>
 <body>
 
-<main class="connections-page">
-    <h1 th:text="${listTitle}"></h1>
-    <a th:href="@{/profile}">&larr; Back to your profile</a>
+<div class="app-shell">
+    <nav class="top-nav">
+        <a href="/" class="brand">BoardGameBoard</a>
 
-    <p th:if="${connections.isEmpty()}">No one here yet.</p>
+        <div class="nav-links">
+            <a href="/dashboard" class="secondary-button">Dashboard</a>
+            <a href="/profile" class="secondary-button">Profile</a>
+        </div>
+    </nav>
 
-    <ul class="connections-list" th:if="${!connections.isEmpty()}">
-        <li th:each="person : ${connections}">
-            <a th:href="@{'/profile/' + ${person.username}}" th:text="${person.username}"></a>
-        </li>
-    </ul>
-</main>
+    <main class="dashboard game-detail-layout">
+        <section class="hero-card">
+            <p class="eyebrow">SOCIAL</p>
+            <h1 th:text="${listTitle}">Connections</h1>
+            <p th:text="${listTitle == 'Following'
+                ? (connections.size() == 1
+                    ? 'You are following 1 account'
+                    : 'You are following ' + connections.size() + ' accounts')
+                : (connections.size() == 1
+                    ? 'You have 1 account following you'
+                    : 'You have ' + connections.size() + ' accounts following you')}">Manage your connections.</p>
+
+            <div style="margin-top: 12px;">
+                <a th:href="@{/profile}" class="secondary-button">Back to your profile</a>
+            </div>
+        </section>
+
+        <section class="feature-card review-panel">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">LIST</p>
+                    <h2 th:text="${connections.isEmpty() ? 'No connections found' : listTitle + ' list'}">Connections list</h2>
+                </div>
+            </div>
+
+            <p class="muted" th:if="${connections.isEmpty()}">No one here yet.</p>
+
+            <div class="grid" style="padding: 0; margin: 0; max-width: none; grid-template-columns: repeat(3, minmax(0, 1fr));" th:if="${!connections.isEmpty()}">
+                <div class="feature-card" th:each="person : ${connections}">
+                    <h3 style="margin-top: 0;" th:text="${person.username}">Username</h3>
+                    <a class="text-link" th:href="@{'/profile/' + ${person.username}}">Open profile</a>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
 
 </body>
 </html>
