@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plan a Session | BoardGameBoard</title>
+    <link rel="stylesheet" th:href="@{/css/site.css}" href="/css/site.css">
+</head>
+<body>
+<div class="app-shell">
+    <nav class="top-nav">
+        <a href="/" class="brand">BoardGameBoard</a>
+        <div class="nav-links">
+            <a href="/dashboard" class="secondary-button">Dashboard</a>
+            <a href="/sessions" class="secondary-button">My Sessions</a>
+        </div>
+    </nav>
+
+    <main class="dashboard game-detail-layout">
+        <section class="hero-card">
+            <p class="eyebrow">GAME NIGHT</p>
+            <h1>Plan a Session</h1>
+            <p>Pick a game, set a time, and invite people you follow to join.</p>
+            <p class="muted" th:if="${error != null}" th:text="${error}">Error message</p>
+        </section>
+
+        <section class="feature-card review-panel">
+            <form th:action="@{/sessions}" method="post">
+                <div class="form-group">
+                    <label for="gameName">Board Game</label>
+                    <input type="text" id="gameName" name="gameName"
+                           placeholder="Example: Catan" list="sessionGameSuggestions" required>
+                    <datalist id="sessionGameSuggestions"></datalist>
+                </div>
+
+                <div class="form-group">
+                    <label for="sessionDate">Date</label>
+                    <input type="date" id="sessionDate" name="sessionDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="sessionTimeOfDay">Time</label>
+                    <input type="time" id="sessionTimeOfDay" name="sessionTimeOfDay" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="location">Location</label>
+                    <input type="text" id="location" name="location" placeholder="Example: My place, or a Discord link">
+                </div>
+
+                <div class="form-group">
+                    <label for="notes">Notes</label>
+                    <textarea id="notes" name="notes" placeholder="Anything people should know before joining"></textarea>
+                </div>
+
+                <div class="form-group" th:if="${!followedUsers.isEmpty()}">
+                    <label>Invite People You Follow</label>
+                    <div class="game-tag-container">
+                        <label th:each="person : ${followedUsers}"
+                               style="display:flex; align-items:center; gap:6px; background:#181824; border:1px solid #2d2d3a; border-radius:16px; padding:6px 12px;">
+                            <input type="checkbox" name="inviteeIds" th:value="${person.id}">
+                            <span th:text="${person.username}">username</span>
+                        </label>
+                    </div>
+                </div>
+
+                <p class="muted" th:if="${followedUsers.isEmpty()}">
+                    You're not following anyone yet — <a class="text-link" href="/profile/search">find players to follow</a> first.
+                </p>
+
+                <button type="submit" class="primary-button" style="margin-top: 16px;">Create Session</button>
+            </form>
+        </section>
+    </main>
+</div>
+
+<script src="/js/game-autocomplete.js"></script>
+<script>
+    window.addEventListener('DOMContentLoaded', function () {
+        attachGameAutocomplete('gameName', 'sessionGameSuggestions');
+    });
+</script>
+</body>
+</html>
