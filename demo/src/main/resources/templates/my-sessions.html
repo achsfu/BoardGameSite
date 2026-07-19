@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Sessions | BoardGameBoard</title>
+    <link rel="stylesheet" th:href="@{/css/site.css}" href="/css/site.css">
+</head>
+<body>
+<div class="app-shell">
+    <nav class="top-nav">
+        <a href="/" class="brand">BoardGameBoard</a>
+        <div class="nav-links">
+            <a href="/dashboard" class="secondary-button">Dashboard</a>
+            <a href="/sessions/new" class="nav-button">Plan a Session</a>
+        </div>
+    </nav>
+
+    <main class="dashboard game-detail-layout">
+        <section class="hero-card">
+            <p class="eyebrow">GAME NIGHT</p>
+            <h1>My Sessions</h1>
+            <p>Sessions you're hosting and sessions you've been invited to.</p>
+            <p class="muted" th:if="${error != null}" th:text="${error}">Error message</p>
+        </section>
+
+        <section class="feature-card review-panel">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">HOSTING</p>
+                    <h2 th:text="${hostedSessions.isEmpty() ? 'No sessions hosted yet' : 'Sessions you''re hosting'}">
+                </div>
+            </div>
+
+            <div class="grid" style="padding:0; margin:0; max-width:none; grid-template-columns: repeat(3, minmax(0,1fr));" th:if="${!hostedSessions.isEmpty()}">
+                <div class="feature-card" th:each="s : ${hostedSessions}">
+                    <h3 style="margin-top:0;" th:text="${s.gameName}">Game Name</h3>
+                    <p class="muted" th:text="${#temporals.format(s.sessionTime, 'MMM d, yyyy HH:mm')}">Jan 1, 2026</p>
+                    <a class="text-link" th:href="@{'/sessions/' + ${s.id}}">View details</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="feature-card review-panel">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">INVITED</p>
+                    <h2 th:text="${invitedSessions.isEmpty() ? 'No invites yet' : 'Sessions you''re invited to'}">
+                </div>
+            </div>
+
+            <div class="grid" style="padding:0; margin:0; max-width:none; grid-template-columns: repeat(3, minmax(0,1fr));" th:if="${!invitedSessions.isEmpty()}">
+                <div class="feature-card" th:each="attendance : ${invitedSessions}">
+                    <h3 style="margin-top:0;" th:text="${attendance.session.gameName}">Game Name</h3>
+                    <p class="muted" th:text="${#temporals.format(attendance.session.sessionTime, 'MMM d, yyyy HH:mm')}">Jan 1, 2026</p>
+                    <span class="role-pill" th:text="${attendance.status}">INVITED</span>
+                    <br><br>
+                    <a class="text-link" th:href="@{'/sessions/' + ${attendance.session.id}}">View details</a>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

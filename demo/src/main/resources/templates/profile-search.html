@@ -2,39 +2,87 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Search Profiles</title>
-    <link rel="stylesheet" th:href="@{/css/site.css}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${((query == null or query.isBlank()) ? 'Profile Search' : 'Search results for ' + query) + ' | BoardGameBoard'}">Profile Search | BoardGameBoard</title>
+    <link rel="stylesheet" th:href="@{/css/site.css}" href="/css/site.css">
 </head>
 <body>
 
-<main class="search-page">
-    <h1>Find a Player</h1>
-    <a href="/dashboard" class="text-link">&larr; Back to Dashboard</a>
+<div class="app-shell">
+    <nav class="top-nav">
+        <a href="/" class="brand">BoardGameBoard</a>
 
-    <form th:action="@{/profile/search}" method="get" class="search-form">
-        <input type="text" name="q" th:value="${query}" placeholder="Search by username..." autofocus>
-        <button type="submit">Search</button>
-    </form>
+        <div class="nav-links">
+            <a href="/dashboard" class="secondary-button">Dashboard</a>
+            <a href="/profile" class="secondary-button">Profile</a>
+        </div>
+    </nav>
 
-    <div th:if="${query != null and !query.isBlank() and results.isEmpty()}">
-        <p>No users found matching "<span th:text="${query}"></span>".</p>
-    </div>
+    <main class="dashboard game-detail-layout">
+        <section class="hero-card">
+            <p class="eyebrow">PROFILE SEARCH</p>
+            <h1 th:text="${(query == null or query.isBlank()) ? 'Find a player' : 'Results for ' + query}">Find a player</h1>
+            <p th:text="${(query == null or query.isBlank()) ? 'Search by username to discover other board game players.' : 'Browse matching users and open their public profiles.'}">Search by username to discover other board game players.</p>
 
-    <ul class="profile-results" th:if="${!results.isEmpty()}">
-        <li th:each="user : ${results}">
-            <a th:href="@{'/profile/' + ${user.username}}" th:text="${user.username}"></a>
-            <span th:text="'(' + ${user.role} + ')'"></span>
-        </li>
-    </ul>
+            <form class="game-search-form" th:action="@{/profile/search}" method="get">
+                <input type="search"
+                       name="q"
+                       th:value="${query}"
+                       placeholder="Search by username"
+                       autocomplete="off"
+                       required
+                       autofocus>
+                <button type="submit" class="primary-button">Search</button>
+            </form>
+        </section>
 
-    <div class="pagination" th:if="${totalPages > 1}">
-        <a th:each="p : ${#numbers.sequence(1, totalPages)}"
-           th:href="@{/profile/search(q=${query}, page=${p})}"
-           th:text="${p}"
-           th:classappend="${p == currentPage} ? 'active' : ''">
-        </a>
-    </div>
-</main>
+        <section class="feature-card review-panel">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">PLAYERS</p>
+                    <h2 th:text="${results.isEmpty() ? 'No players found' : 'Players matching your search'}">Players matching your search</h2>
+                </div>
+            </div>
+
+            <p class="muted" th:if="${query != null and !query.isBlank() and results.isEmpty()}">
+                No users found matching "<span th:text="${query}">query</span>".
+            </p>
+
+            <div class="grid" style="padding: 0; margin: 0; max-width: none; grid-template-columns: repeat(3, minmax(0, 1fr));" th:if="${!results.isEmpty()}">
+                <div class="feature-card" th:each="user : ${results}">
+                    <h3 style="margin-top: 0;" th:text="${user.username}">Username</h3>
+                    <p class="muted" th:text="${'Role: ' + user.role}">Role</p>
+                    <a class="text-link" th:href="@{'/profile/' + ${user.username}}">Open profile</a>
+                </div>
+            </div>
+
+            <div class="search-pagination" th:if="${totalPages > 1}">
+                <a class="secondary-button"
+                   th:classappend="${currentPage == 1} ? ' disabled-pagination' : ''"
+                   th:href="${currentPage == 1} ? '#' : @{/profile/search(q=${query}, page=${currentPage - 1})}">
+                    Previous
+                </a>
+
+                <form th:action="@{/profile/search}" method="get" class="page-selector-form">
+                    <input type="hidden" name="q" th:value="${query}">
+                    <label for="resultsPage">Page</label>
+                    <select id="resultsPage" name="page" onchange="this.form.submit()">
+                        <option th:each="pageNumber : ${#numbers.sequence(1, totalPages)}"
+                                th:value="${pageNumber}"
+                                th:text="'Page ' + ${pageNumber}"
+                                th:selected="${pageNumber == currentPage}">Page 1</option>
+                    </select>
+                </form>
+
+                <a class="secondary-button"
+                   th:classappend="${currentPage == totalPages} ? ' disabled-pagination' : ''"
+                   th:href="${currentPage == totalPages} ? '#' : @{/profile/search(q=${query}, page=${currentPage + 1})}">
+                    Next
+                </a>
+            </div>
+        </section>
+    </main>
+</div>
 
 </body>
 </html>

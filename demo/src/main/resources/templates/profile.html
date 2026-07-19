@@ -54,6 +54,13 @@
 
   <button type="submit" class="secondary-button">Sort</button>
 </form>
+
+          <div class="profile-edit-toggle-row">
+            <button id="editCollectionToggle" type="button" class="secondary-button" aria-pressed="false">
+              Edit Collection
+            </button>
+          </div>
+
           <div class="profile-lists-section">
             <div>
               <h3 style="margin: 0; font-size: 1rem">Games Owned</h3>
@@ -77,12 +84,14 @@
                     margin-bottom: 6px;
                   "
                 >
-                  <span th:text="${item.gameName}">Catan</span>
+                  <a th:href="@{/games/{title}(title=${item.gameName})}"><span th:text="${item.gameName}">Catan</span></a>
 
                   <form
                     action="/collection/move"
                     method="post"
+                    class="collection-edit-only inline-collection-edit"
                     style="display: inline"
+                    hidden
                   >
                     <input type="hidden" name="id" th:value="${item.id}" />
                     <input
@@ -103,7 +112,9 @@
                   <form
                     action="/collection/remove"
                     method="post"
+                    class="collection-edit-only inline-collection-edit"
                     style="display: inline"
+                    hidden
                   >
                     <input type="hidden" name="id" th:value="${item.id}" />
 
@@ -141,12 +152,14 @@
                     margin-bottom: 6px;
                   "
                 >
-                  <span th:text="${item.gameName}">Carcassonne</span>
+                  <a th:href="@{/games/{title}(title=${item.gameName})}"><span th:text="${item.gameName}">Carcassonne</span></a>
 
                   <form
                     action="/collection/move"
                     method="post"
+                    class="collection-edit-only inline-collection-edit"
                     style="display: inline"
+                    hidden
                   >
                     <input type="hidden" name="id" th:value="${item.id}" />
                     <input
@@ -167,7 +180,9 @@
                   <form
                     action="/collection/remove"
                     method="post"
+                    class="collection-edit-only inline-collection-edit"
                     style="display: inline"
+                    hidden
                   >
                     <input type="hidden" name="id" th:value="${item.id}" />
 
@@ -187,25 +202,9 @@
           <div>
             <p class="eyebrow" th:text="${role}">USER</p>
             <h1 th:text="${username} + '\'s Profile'">User's Profile</h1>
-            <p class="muted" th:text="${bio}">No bio added yet!</p>
+            <p class="muted profile-view-only" th:text="${bio}">No bio added yet!</p>
 
-            <!--VIEW FOLLOWING AND FOLLOWED-->
-            <div class="follow-stats" style="margin-top: 10px";>
-              <a th:href="@{/profile/followers}" th:text="${followerCount} + ' Followers'" class="text-link"></a>
-              <span style="margin: 0 10px;">·</span>
-              <a th:href="@{/profile/following}" th:text="${followingCount} + ' Following'" class="text-link"></a>
-            </div>
-          </div>
-        </section>
-
-        <section class="grid">
-          <div class="feature-card">
-            <h2>Update Profile</h2>
-            <p class="muted">
-              Change your profile description and profile picture.
-            </p>
-
-            <form action="/profile/update-bio" method="post">
+            <form action="/profile/update-bio" method="post" class="profile-edit-only profile-edit-inline-form" hidden>
               <div class="form-group">
                 <label for="bio">Bio</label>
 
@@ -235,80 +234,97 @@
                 class="primary-button"
                 style="margin-top: 16px"
               >
-                Save Changes
+                Save Profile Changes
               </button>
             </form>
 
-            <h2 style="margin-top: 28px">Add to Collection</h2>
+            <div class="profile-edit-toggle-row">
+              <button id="editProfileToggle" type="button" class="secondary-button" aria-pressed="false">
+                Edit Profile
+              </button>
+            </div>
 
-            <form action="/collection/add" method="post">
-              <div class="form-group">
-                <label for="ownedGames">Add Owned Game</label>
+            <!--VIEW FOLLOWING AND FOLLOWED-->
+            <div class="follow-stats" style="margin-top: 10px";>
+              <a th:href="@{/profile/followers}" th:text="${followerCount} + ' Followers'" class="text-link"></a>
+              <span style="margin: 0 10px;">·</span>
+              <a th:href="@{/profile/following}" th:text="${followingCount} + ' Following'" class="text-link"></a>
+            </div>
 
-                <input
-                  type="text"
-                  name="gameName"
-                  id="ownedGames"
-                  placeholder="Enter your game."
-                  list="ownedGameSuggestions"
-                  required
-                />
+            <div class="collection-edit-only collection-add-section" hidden>
+              <h2 style="margin-top: 28px">Add to Collection</h2>
 
-                <datalist id="ownedGameSuggestions"></datalist>
+              <form action="/collection/add" method="post">
+                <div class="form-group">
+                  <label for="ownedGames">Add Owned Game</label>
 
-                <input
-                  type="hidden"
-                  name="collectionType"
-                  value="OWNED"
-                />
-              </div>
+                  <input
+                    type="text"
+                    name="gameName"
+                    id="ownedGames"
+                    placeholder="Enter your game."
+                    list="ownedGameSuggestions"
+                    required
+                  />
 
-              <button
-                type="submit"
-                class="primary-button"
-                style="margin-top: 12px"
+                  <datalist id="ownedGameSuggestions"></datalist>
+
+                  <input
+                    type="hidden"
+                    name="collectionType"
+                    value="OWNED"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  class="primary-button"
+                  style="margin-top: 12px"
+                >
+                  Add to Owned
+                </button>
+              </form>
+
+              <form
+                action="/collection/add"
+                method="post"
+                style="margin-top: 20px"
               >
-                Add to Owned
-              </button>
-            </form>
+                <div class="form-group">
+                  <label for="wishlistGames">Add Wishlist Game</label>
 
-            <form
-              action="/collection/add"
-              method="post"
-              style="margin-top: 20px"
-            >
-              <div class="form-group">
-                <label for="wishlistGames">Add Wishlist Game</label>
+                  <input
+                    type="text"
+                    name="gameName"
+                    id="wishlistGames"
+                    placeholder="Enter your game."
+                    list="wishlistGameSuggestions"
+                    required
+                  />
 
-                <input
-                  type="text"
-                  name="gameName"
-                  id="wishlistGames"
-                  placeholder="Enter your game."
-                  list="wishlistGameSuggestions"
-                  required
-                />
+                  <datalist id="wishlistGameSuggestions"></datalist>
 
-                <datalist id="wishlistGameSuggestions"></datalist>
+                  <input
+                    type="hidden"
+                    name="collectionType"
+                    value="WISHLIST"
+                  />
+                </div>
 
-                <input
-                  type="hidden"
-                  name="collectionType"
-                  value="WISHLIST"
-                />
-              </div>
-
-              <button
-                type="submit"
-                class="primary-button"
-                style="margin-top: 12px"
-              >
-                Add to Wishlist
-              </button>
-            </form>
+                <button
+                  type="submit"
+                  class="primary-button"
+                  style="margin-top: 12px"
+                >
+                  Add to Wishlist
+                </button>
+              </form>
+            </div>
           </div>
+        </section>
 
-          <div class="feature-card" style="grid-column: span 2">
+        <section class="grid profile-main-grid">
+          <div class="feature-card profile-reviews-card">
             <h2>Posted Reviews</h2>
 
             <p class="muted" th:if="${reviews.isEmpty()}">
@@ -346,6 +362,18 @@
               >
                 Review details
               </p>
+
+              <form
+                class="profile-edit-only"
+                th:action="@{/reviews/{id}/delete(id=${review.id})}"
+                method="post"
+                onsubmit="return confirm('Delete this review?');"
+                hidden
+              >
+                <button type="submit" class="danger-button small-button" style="margin-top: 10px">
+                  Delete Review
+                </button>
+              </form>
             </div>
           </div>
         </section>
@@ -356,6 +384,64 @@
 
     <script>
       window.addEventListener('DOMContentLoaded', function () {
+        var pageBody = document.body;
+        var editCollectionButton = document.getElementById('editCollectionToggle');
+        var editToggleButton = document.getElementById('editProfileToggle');
+        var collectionEditElements = document.querySelectorAll('.collection-edit-only');
+        var profileEditElements = document.querySelectorAll('.profile-edit-only');
+        var isCollectionEditing = false;
+        var isProfileEditing = false;
+
+        function applyCollectionEditingState() {
+          collectionEditElements.forEach(function (element) {
+            element.hidden = !isCollectionEditing;
+          });
+
+          if (pageBody) {
+            pageBody.classList.toggle('is-collection-editing', isCollectionEditing);
+          }
+
+          if (editCollectionButton) {
+            editCollectionButton.textContent = isCollectionEditing ? 'Done Collection Editing' : 'Edit Collection';
+            editCollectionButton.setAttribute('aria-pressed', String(isCollectionEditing));
+            editCollectionButton.classList.toggle('primary-button', isCollectionEditing);
+            editCollectionButton.classList.toggle('secondary-button', !isCollectionEditing);
+          }
+        }
+
+        function applyProfileEditingState() {
+          profileEditElements.forEach(function (element) {
+            element.hidden = !isProfileEditing;
+          });
+
+          if (pageBody) {
+            pageBody.classList.toggle('is-profile-editing', isProfileEditing);
+          }
+
+          if (editToggleButton) {
+            editToggleButton.textContent = isProfileEditing ? 'Done Profile Editing' : 'Edit Profile';
+            editToggleButton.setAttribute('aria-pressed', String(isProfileEditing));
+            editToggleButton.classList.toggle('primary-button', isProfileEditing);
+            editToggleButton.classList.toggle('secondary-button', !isProfileEditing);
+          }
+        }
+
+        if (editCollectionButton) {
+          editCollectionButton.addEventListener('click', function () {
+            isCollectionEditing = !isCollectionEditing;
+            applyCollectionEditingState();
+          });
+        }
+
+        if (editToggleButton) {
+          editToggleButton.addEventListener('click', function () {
+            isProfileEditing = !isProfileEditing;
+            applyProfileEditingState();
+          });
+        }
+
+        applyCollectionEditingState();
+        applyProfileEditingState();
         attachGameAutocomplete('ownedGames', 'ownedGameSuggestions');
         attachGameAutocomplete('wishlistGames', 'wishlistGameSuggestions');
       });
