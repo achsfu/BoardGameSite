@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+
+    <title>Social Feed | BoardGameBoard</title>
+
+    <link
+      rel="stylesheet"
+      th:href="@{/css/site.css}"
+      href="/css/site.css"
+    />
+  </head>
+
+  <body>
+    <div class="app-shell">
+
+      <nav class="top-nav">
+        <a href="/" class="brand">BoardGameBoard</a>
+
+        <div class="nav-links">
+          <a href="/dashboard" class="secondary-button">
+            Dashboard
+          </a>
+
+          <a href="/profile" class="secondary-button">
+            My Profile
+          </a>
+
+          <form
+            action="/logout"
+            method="post"
+            style="display: inline"
+          >
+            <button type="submit" class="secondary-button">
+              Logout
+            </button>
+          </form>
+        </div>
+      </nav>
+
+      <main class="dashboard feed-page">
+
+        <section class="hero-card feed-header">
+          <div>
+            <p class="eyebrow">SOCIAL FEED</p>
+
+            <h1>
+              Welcome back,
+              <span th:text="${username}">Username</span>
+            </h1>
+
+            <p class="muted">
+              See the latest board-game reviews shared by
+              people you follow.
+            </p>
+          </div>
+
+          <div class="feed-following-count">
+            <strong th:text="${followingCount}">0</strong>
+
+            <span class="muted">
+              people followed
+            </span>
+          </div>
+        </section>
+
+        <!-- The user does not follow anyone. -->
+        <section
+          class="feature-card feed-empty-state"
+          th:if="${followingCount == 0}"
+        >
+          <h2>Your feed is waiting for you</h2>
+
+          <p class="muted">
+            You are not following anyone yet. Find other users
+            and follow them to start building your social feed.
+          </p>
+        </section>
+
+        <!-- The user follows people, but they have no reviews. -->
+        <section
+          class="feature-card feed-empty-state"
+          th:if="${followingCount > 0 and feedReviews.isEmpty()}"
+        >
+          <h2>No recent activity</h2>
+
+          <p class="muted">
+            The people you follow have not posted any reviews yet.
+          </p>
+        </section>
+
+        <!-- Review feed -->
+        <section
+          class="feed-list"
+          th:if="${!feedReviews.isEmpty()}"
+        >
+          <article
+            class="feature-card feed-review-card"
+            th:each="review : ${feedReviews}"
+          >
+            <div class="feed-review-header">
+              <div>
+                <p class="feed-review-action">
+                  <strong
+                    th:text="${review.user.username}"
+                  >
+                    Username
+                  </strong>
+
+                  reviewed
+
+                  <strong
+                    th:text="${review.gameTitle}"
+                  >
+                    Board Game
+                  </strong>
+                </p>
+
+                <p
+                  class="muted feed-review-date"
+                  th:if="${review.createdAt != null}"
+                  th:text="${#temporals.format(
+                    review.createdAt,
+                    'MMM d, yyyy h:mm a'
+                  )}"
+                >
+                  Jul 18, 2026 4:00 PM
+                </p>
+              </div>
+
+              <div class="feed-rating">
+                <span th:text="${review.rating}">5</span>
+                <span>/ 5</span>
+              </div>
+            </div>
+
+            <p
+              class="feed-review-text"
+              th:text="${review.reviewText}"
+            >
+              This is the review text.
+            </p>
+          </article>
+        </section>
+
+      </main>
+    </div>
+  </body>
+</html>

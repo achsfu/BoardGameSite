@@ -577,3 +577,111 @@ textarea {
         grid-template-columns: 1fr;
     }
 }
+
+/* =========================
+   Social Feed
+   ========================= */
+
+.feed-page {
+  width: min(900px, calc(100% - 32px));
+  margin: 0 auto;
+  padding-bottom: 48px;
+}
+
+.feed-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.feed-header h1 {
+  margin-bottom: 8px;
+}
+
+.feed-following-count {
+  min-width: 145px;
+  padding: 18px;
+  text-align: center;
+  border: 1px solid rgba(124, 92, 255, 0.3);
+  border-radius: 16px;
+}
+
+.feed-following-count strong {
+  display: block;
+  font-size: 2rem;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.feed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.feed-review-card {
+  width: 100%;
+}
+
+.feed-review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.feed-review-action {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.feed-review-date {
+  margin: 6px 0 0;
+  font-size: 0.85rem;
+}
+
+.feed-rating {
+  min-width: 70px;
+  padding: 8px 12px;
+  text-align: center;
+  font-weight: 700;
+  border: 1px solid rgba(124, 92, 255, 0.4);
+  border-radius: 999px;
+}
+
+.feed-review-text {
+  margin: 18px 0 0;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.feed-empty-state {
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.feed-empty-state h2 {
+  margin-top: 0;
+}
+
+@media (max-width: 700px) {
+  .feed-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .feed-following-count {
+    width: 100%;
+  }
+
+  .feed-review-header {
+    flex-direction: column;
+  }
+
+  .feed-rating {
+    align-self: flex-start;
+  }
+}
