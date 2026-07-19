@@ -10,6 +10,7 @@ import com.cardboardboxed.demo.useracounts.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -76,6 +77,33 @@ public class ReviewController {
         reviewRepository.save(review);
 
         return "redirect:" + safeRedirectTarget;
+    }
+
+    @PostMapping("/reviews/{id}/delete")
+    public String deleteOwnReview(@PathVariable Integer id, HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+
+        if (session == null) {
+            return "redirect:/login?error=Please+log+in+to+manage+reviews";
+        }
+
+        String username = (String) session.getAttribute("AUTH_USER");
+        if (username == null) {
+            return "redirect:/login?error=Please+log+in+to+manage+reviews";
+        }
+
+        Review review = reviewRepository.findById(id).orElse(null);
+        if (review == null || review.getUser() == null) {
+            return "redirect:/profile?error=Review+not+found";
+        }
+
+        String reviewOwner = review.getUser().getUsername();
+        if (!username.equalsIgnoreCase(reviewOwner)) {
+            return "redirect:/profile?error=You+can+only+delete+your+own+reviews";
+        }
+
+        reviewRepository.delete(review);
+        return "redirect:/profile?success=Review+deleted";
     }
 
     private String resolveSafeRedirectTarget(String redirectTo) {
