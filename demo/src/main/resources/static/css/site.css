@@ -368,6 +368,49 @@ textarea {
     gap: 20px;
 }
 
+.collection-edit-only,
+.profile-edit-only {
+    display: none !important;
+}
+
+body.is-collection-editing .collection-edit-only,
+body.is-profile-editing .profile-edit-only {
+    display: block !important;
+}
+
+body.is-collection-editing .collection-edit-only.inline-collection-edit {
+    display: inline !important;
+}
+
+body.is-profile-editing .profile-view-only {
+    display: none !important;
+}
+
+.profile-edit-toggle-row {
+    float: right;
+    display: inline-flex;
+    margin: 0;
+    padding: 0;
+}
+
+.profile-edit-toggle-row button {
+    margin: 0;
+}
+
+.profile-edit-inline-form {
+    margin-top: 12px;
+}
+
+.collection-add-section {
+    margin-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 16px;
+}
+
+.profile-main-grid .profile-reviews-card {
+    grid-column: span 3;
+}
+
 .admin-table {
     width: 100%;
     border-collapse: collapse;
