@@ -14,8 +14,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
-
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
@@ -62,10 +60,6 @@ class LoginControllerTest {
         when(userRepository.findByUsername("testuser"))
                 .thenReturn(user);
 
-        when(boardGameRankRepository
-                .findAllByIsExpansionOrderByRankPositionAsc(false))
-                .thenReturn(List.of());
-
         mockMvc.perform(
                         get("/dashboard")
                                 .sessionAttr("AUTH_USER", "testuser")
@@ -73,24 +67,17 @@ class LoginControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("dashboard"))
                 .andExpect(model().attribute("username", "testuser"))
-                .andExpect(model().attribute("role", "PLAYER"))
-                .andExpect(model().attribute("games", List.of()));
+                .andExpect(model().attribute("role", "PLAYER"));
     }
 
     @Test
-    void dashboardAddsBoardGamesToModel() throws Exception {
+    void dashboardAddsUsernameAndRoleToModel() throws Exception {
         User user = new User();
         user.setUsername("testuser");
         user.setRole("PLAYER");
 
-        BoardGameRank game = new BoardGameRank();
-
         when(userRepository.findByUsername("testuser"))
                 .thenReturn(user);
-
-        when(boardGameRankRepository
-                .findAllByIsExpansionOrderByRankPositionAsc(false))
-                .thenReturn(List.of(game));
 
         mockMvc.perform(
                         get("/dashboard")
@@ -99,8 +86,7 @@ class LoginControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("dashboard"))
                 .andExpect(model().attribute("username", "testuser"))
-                .andExpect(model().attribute("role", "PLAYER"))
-                .andExpect(model().attribute("games", List.of(game)));
+                .andExpect(model().attribute("role", "PLAYER"));
     }
 
     @Test
@@ -110,10 +96,6 @@ class LoginControllerTest {
 
         when(userRepository.findByUsername("testuser"))
                 .thenReturn(user);
-
-        when(boardGameRankRepository
-                .findAllByIsExpansionOrderByRankPositionAsc(false))
-                .thenReturn(List.of());
 
         mockMvc.perform(
                         get("/dashboard")

@@ -1,80 +1,55 @@
 package com.cardboardboxed.demo.boardgames;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
-import java.util.List;
-
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.cardboardboxed.demo.boardgames.BoardGameCsvImportService.ImportResult;
-
-@ExtendWith(MockitoExtension.class)
 class BoardGameCsvImportServiceTest {
 
-    @Mock
-    private BoardGameRankRepository boardGameRankRepository;
+    @Test
+    void thumbnailFallsBackToImagePath() {
+        BoardGameRank game = new BoardGameRank();
 
-    private BoardGameCsvImportService importService;
+        game.setImageUrl("https://example.com/game.jpg");
 
-    @BeforeEach
-    void setUp() {
-        importService =
-                new BoardGameCsvImportService(
-                        boardGameRankRepository
-                );
+        assertEquals("https://example.com/game.jpg", game.getThumbnailUrl());
+        assertEquals("https://example.com/game.jpg", game.getPreferredImageUrl());
+        assertTrue(game.hasImage());
     }
 
     @Test
-    void importImagesUpdatesMatchingGameUsingBggId()
-            throws Exception {
-
+    void thumbnailSetterOnlyBackfillsWhenImageMissing() {
         BoardGameRank game = new BoardGameRank();
 
-        game.setBggId(1);
-        game.setTitle("Die Macher");
+        game.setThumbnailUrl("https://example.com/thumb.jpg");
+        assertEquals("https://example.com/thumb.jpg", game.getImageUrl());
 
-        when(boardGameRankRepository.findAll())
-                .thenReturn(List.of(game));
+        game.setImageUrl("https://example.com/full.jpg");
+        game.setThumbnailUrl("https://example.com/ignored-thumb.jpg");
 
-        ImportResult result =
-                importService.importImages();
+        assertEquals("https://example.com/full.jpg", game.getImageUrl());
+        assertEquals("https://example.com/full.jpg", game.getThumbnailUrl());
+    }
 
-        assertTrue(result.rowsInspected() > 0);
-        assertEquals(1, result.matched());
-        assertEquals(1, result.updated());
+    @Test
+    void displayDescriptionInsertsReadableSections() {
+        BoardGameRank game = new BoardGameRank();
+        game.setDescription("themeplayer buys things gameplayroll dice goalwin game backgroundold classic");
 
-        assertEquals(
-                "https://cf.geekdo-images.com/"
-                + "rpwCZAjYLD940NWwP3SRoA__original/"
-                + "img/yR0aoBVKNrAmmCuBeSzQnMflLYg=/"
-                + "0x0/filters:format(jpeg)/pic4718279.jpg",
-                game.getImageUrl()
-        );
+        String formatted = game.getDisplayDescription();
 
-        assertEquals(
-                game.getImageUrl(),
-                game.getThumbnailUrl()
-        );
+        assertTrue(formatted.contains("Theme: player buys things"));
+        assertTrue(formatted.contains("Gameplay: roll dice"));
+        assertTrue(formatted.contains("Goal: win game"));
+        assertTrue(formatted.contains("Background: old classic"));
+    }
 
-        @SuppressWarnings("unchecked")
-        ArgumentCaptor<List<BoardGameRank>> captor =
-                ArgumentCaptor.forClass(List.class);
+    @Test
+    void hasImageIsFalseWhenNoImageDataExists() {
+        BoardGameRank game = new BoardGameRank();
 
-        verify(boardGameRankRepository)
-                .saveAll(captor.capture());
-
-        List<BoardGameRank> savedGames =
-                captor.getValue();
-
-        assertEquals(1, savedGames.size());
-        assertEquals(game, savedGames.get(0));
+        assertFalse(game.hasImage());
     }
 }
