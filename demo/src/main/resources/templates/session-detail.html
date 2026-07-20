@@ -6,13 +6,31 @@
     <title th:text="${gameSession.gameName} + ' Session | BoardGameBoard'">Session | BoardGameBoard</title>
     <link rel="stylesheet" th:href="@{/css/site.css}" href="/css/site.css">
 </head>
-<body>
-<div class="app-shell">
-    <nav class="top-nav">
-        <a href="/" class="brand">BoardGameBoard</a>
-        <div class="nav-links">
-            <a href="/dashboard" class="secondary-button">Dashboard</a>
-            <a href="/sessions" class="secondary-button">My Sessions</a>
+<body class="dashboard-body">
+<div class="dashboard-shell">
+    <nav class="dashboard-nav">
+        <a href="/" class="dashboard-brand">BoardGameBoard</a>
+        <div class="dashboard-nav-links">
+            <a href="/dashboard" th:if="${session.AUTH_USER != null}">Dashboard</a>
+
+            <form class="dashboard-nav-search" action="/profile/search" method="get" th:if="${session.AUTH_USER != null}">
+                <button type="button" class="dashboard-nav-search-toggle">Users</button>
+                <input id="navUserSearch" name="q" type="search" placeholder="Search users" required>
+                <button type="submit">Search</button>
+            </form>
+
+            <form class="dashboard-nav-search" action="/games/search" method="get" th:if="${session.AUTH_USER != null}">
+                <button type="button" class="dashboard-nav-search-toggle">Games</button>
+                <input id="navGameSearch" name="q" type="search" placeholder="Search games" required>
+                <button type="submit">Search</button>
+            </form>
+
+            <form action="/logout" method="post" th:if="${session.AUTH_USER != null}">
+                <button type="submit" class="dashboard-logout-button">Logout</button>
+            </form>
+
+            <a href="/login" th:if="${session.AUTH_USER == null}">Sign in</a>
+            <a href="/register" th:if="${session.AUTH_USER == null}">Register</a>
         </div>
     </nav>
 
@@ -88,5 +106,6 @@
         </section>
     </main>
 </div>
+<script src="/js/nav-dropdown.js"></script>
 </body>
 </html>
