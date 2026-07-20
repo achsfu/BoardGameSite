@@ -113,11 +113,13 @@ public class LoginController {
 
     @GetMapping("/login")
     public String showLoginForm(HttpServletRequest request) {
-        if (getLoggedInUsername(request) != null) {
-            return "redirect:/dashboard";
+        String query = request.getQueryString();
+
+        if (query != null && !query.isBlank()) {
+            return "redirect:/?" + query;
         }
 
-        return "login";
+        return "redirect:/";
     }
 
     @PostMapping("/login")
@@ -145,7 +147,7 @@ public class LoginController {
             return "redirect:/dashboard";
         }
 
-        return "redirect:/login?error=Invalid+username+or+password";
+        return "redirect:/?error=Invalid+username+or+password";
     }
 
     @GetMapping("/register")
@@ -182,7 +184,7 @@ public class LoginController {
                     );
         }
 
-        return "redirect:/login"
+        return "redirect:/"
                 + "?success=Registration+successful%21+Please+log+in.";
     }
 
@@ -194,7 +196,7 @@ public class LoginController {
         User user = getLoggedInUser(request);
 
         if (user == null) {
-            return "redirect:/login"
+            return "redirect:/"
                     + "?error=Please+log+in+to+access+the+dashboard";
         }
 
