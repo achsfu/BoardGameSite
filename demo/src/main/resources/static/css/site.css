@@ -1043,14 +1043,14 @@ body.is-profile-editing .profile-view-only {
 .home-nav {
     position: relative;
     z-index: 20;
-    min-height: 70px;
+    min-height: 72px;
     padding:
         0
-        max(24px, calc((100% - 1180px) / 2));
+        max(28px, calc((100% - 1180px) / 2));
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 28px;
+    gap: 30px;
     background: rgba(11, 8, 16, 0.96);
     border-bottom: 1px solid rgba(190, 174, 216, 0.1);
 }
@@ -1059,9 +1059,9 @@ body.is-profile-editing .profile-view-only {
     display: inline-flex;
     align-items: center;
     gap: 12px;
-    color: #ffffff;
+    color: #f8f6fc;
     text-decoration: none;
-    font-size: 1.45rem;
+    font-size: 1.55rem;
     font-weight: 800;
     letter-spacing: -0.045em;
 }
@@ -1098,7 +1098,7 @@ body.is-profile-editing .profile-view-only {
 .home-nav-links {
     display: flex;
     align-items: center;
-    gap: 22px;
+    gap: 24px;
 }
 
 .home-login-module {
@@ -1107,13 +1107,17 @@ body.is-profile-editing .profile-view-only {
 
 .home-nav-links a,
 .home-logout-button {
+    min-height: 34px;
+    display: inline-flex;
+    align-items: center;
     color: #a9a0b4;
     background: none;
     border: 0;
     font: inherit;
-    font-size: 0.75rem;
+    font-size: 0.78rem;
     font-weight: 800;
-    letter-spacing: 0.09em;
+    letter-spacing: 0.11em;
+    line-height: 1;
     text-decoration: none;
     text-transform: uppercase;
     cursor: pointer;
@@ -1128,16 +1132,21 @@ body.is-profile-editing .profile-view-only {
 }
 
 .home-login-toggle {
-    color: #9fb4c8;
+    min-height: 34px;
+    display: inline-flex;
+    align-items: center;
+    color: #a9a0b4;
     background: none;
     border: 0;
     font: inherit;
-    font-size: 0.82rem;
-    font-weight: 700;
+    font-size: 0.78rem;
+    font-weight: 800;
     letter-spacing: 0.11em;
+    line-height: 1;
     text-transform: uppercase;
     cursor: pointer;
     padding: 0;
+    transition: color 160ms ease;
 }
 
 .home-login-toggle:hover {
@@ -1670,7 +1679,8 @@ body.is-profile-editing .profile-view-only {
     }
 
     .home-nav-links a,
-    .home-logout-button {
+    .home-logout-button,
+    .home-login-toggle {
         font-size: 0.72rem;
     }
 

@@ -30,8 +30,12 @@
                 Feed
             </a>
 
-            <a href="/profile/search">
+            <a href="/profile/search" th:if="${loggedIn}">
                 Members
+            </a>
+
+            <a href="/register" th:unless="${loggedIn}">
+                Register
             </a>
 
             <a href="/profile" th:if="${loggedIn}">
@@ -64,7 +68,7 @@
                     </form>
 
                     <a href="/register" class="home-signup-button home-login-register-link">
-                        Create account
+                        Register
                     </a>
                 </div>
             </div>

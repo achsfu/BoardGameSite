@@ -66,7 +66,7 @@
             </div>
 
             <form th:if="${!inviteCandidates.isEmpty()}"
-                  th:action="@{'/sessions/' + ${session.id} + '/invite'}" method="post" class="inline-form">
+                th:action="@{'/sessions/' + ${gameSession.id} + '/invite'}" method="post" class="inline-form">
                 <select name="inviteeId" required style="min-width: 200px;">
                     <option value="" disabled selected>Choose someone you follow</option>
                     <option th:each="candidate : ${inviteCandidates}"
