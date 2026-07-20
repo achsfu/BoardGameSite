@@ -1,226 +1,570 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
     <title>Dashboard | BoardGameBoard</title>
+
     <link rel="stylesheet" href="/css/site.css">
 </head>
-<body>
-<div class="app-shell">
-    <nav class="top-nav">
-        <a href="/" class="brand">BoardGameBoard</a>
 
-        <div class="nav-links">
-            <a href="/feed" class="secondary-button">Social Feed</a>
+<body class="dashboard-body">
 
-            <form action="/logout" method="post" style="display: inline;">
-                <button type="submit" class="secondary-button">Logout</button>
+<div class="dashboard-shell">
+
+    <!-- NAVIGATION -->
+    <nav class="dashboard-nav">
+
+        <a href="/" class="dashboard-brand">
+            BoardGameBoard
+        </a>
+
+        <div class="dashboard-nav-links">
+
+            <a href="/feed">Feed</a>
+
+            <a href="/profile">Profile</a>
+
+            <a href="/sessions">Sessions</a>
+
+            <form action="/logout" method="post">
+                <button
+                    type="submit"
+                    class="dashboard-logout-button"
+                >
+                    Logout
+                </button>
             </form>
+
         </div>
+
     </nav>
 
-    <main class="dashboard">
-        <section class="hero-card">
-            <p class="eyebrow" th:text="${role}">PLAYER</p>
-            <h1 th:text="'Welcome, ' + ${username} + '!'">Welcome!</h1>
-            <p>
-                Track your board games, write reviews, build lists, follow other
-                players, and plan future game nights with friends.
-            </p>
-        </section>
+    <main class="dashboard-page">
 
-        <section class="grid">
+        <!-- PROFILE HEADER -->
+        <header class="dashboard-profile-header">
 
-            <!-- SOCIAL FEED -->
-            <div class="feature-card">
-                <h2>Social Feed</h2>
-                <p>
-                    See the newest board game reviews posted by the players you follow.
-                </p>
-                <a href="/feed" class="text-link">Open Social Feed</a>
-            </div>
+            <div class="dashboard-avatar">
 
-            <!-- USER PROFILE -->
-            <div class="feature-card">
-                <h2>Your Profile</h2>
-                <p>
-                    View your board game activity, collection, reviews, and profile details.
-                </p>
-                <a href="/profile" class="text-link">View Profile</a>
-            </div>
-
-            <!-- WRITE REVIEW -->
-            <div class="feature-card">
-                <h2>Write a Review</h2>
-                <p>Post your thoughts on a game you played recently.</p>
-
-                <button
-                    type="button"
-                    class="primary-button"
-                    onclick="openReviewModal()"
+                <span
+                    th:text="${username != null and !username.isEmpty()
+                        ? #strings.toUpperCase(
+                            #strings.substring(username, 0, 1)
+                        )
+                        : 'U'}"
                 >
-                    Post Review
-                </button>
+                    U
+                </span>
+
             </div>
 
-            <!-- PLAYER LOOKUP -->
-            <div class="feature-card">
-                <h2>Find Players</h2>
-                <p>Search for other players and view or follow their profiles.</p>
+            <div class="dashboard-profile-copy">
 
-                <label for="playerSearch">Find a player</label>
+                <div class="dashboard-profile-title-row">
 
-                <form
-                    class="game-search-form"
-                    action="/profile/search"
-                    method="get"
-                >
-                    <input
-                        type="search"
-                        id="playerSearch"
-                        name="q"
-                        placeholder="Type a username."
-                        autocomplete="off"
-                        required
+                    <h1 th:text="${username}">
+                        username
+                    </h1>
+
+                    <span
+                        class="dashboard-role-badge"
+                        th:text="${role}"
                     >
+                        PLAYER
+                    </span>
 
-                    <button type="submit" class="primary-button">
-                        Search
-                    </button>
-                </form>
-            </div>
+                </div>
 
-            <!-- GAME PAGE SEARCH -->
-            <div class="feature-card">
-                <h2>Game Pages</h2>
                 <p>
-                    Search the ranked catalog and jump straight to a game’s detail page.
+                    Track games, share reviews and discover what other
+                    players are enjoying.
                 </p>
 
-                <label for="gamePageSearch">Find a game</label>
+                <div class="dashboard-profile-links">
 
-                <form class="game-search-form">
-                    <input
-                        type="search"
-                        id="gamePageSearch"
-                        name="gamePageSearch"
-                        placeholder="Type a board game title"
-                        list="gamePageSuggestions"
-                        autocomplete="off"
-                        required
-                    >
+                    <a href="/profile">
+                        View profile
+                    </a>
 
-                    <datalist id="gamePageSuggestions">
-                        <option
-                            th:each="game : ${games}"
-                            th:value="${game.title}"
+                    <a href="/feed">
+                        Open social feed
+                    </a>
+
+                </div>
+
+            </div>
+
+        </header>
+
+        <!-- DASHBOARD TABS -->
+        <nav
+            class="dashboard-tabs"
+            aria-label="Dashboard navigation"
+        >
+
+            <a href="/" class="active">
+                Overview
+            </a>
+
+            <a href="/feed">
+                Activity
+            </a>
+
+            <a href="/profile">
+                Collection
+            </a>
+
+            <a href="/profile">
+                Reviews
+            </a>
+
+            <a href="/sessions">
+                Sessions
+            </a>
+
+        </nav>
+
+        <!-- MAIN LAYOUT -->
+        <div class="dashboard-layout">
+
+            <!-- LEFT COLUMN -->
+            <div class="dashboard-main-column">
+
+                <!-- RECENT ACTIVITY -->
+                <section class="dashboard-section">
+
+                    <div class="dashboard-section-heading">
+
+                        <h2>Recent activity</h2>
+
+                        <a href="/feed">
+                            View all
+                        </a>
+
+                    </div>
+
+                    <div class="dashboard-activity-list">
+
+                        <a
+                            href="/feed"
+                            class="dashboard-activity-row"
                         >
-                            Catan
-                        </option>
-                    </datalist>
 
-                    <button type="submit" class="primary-button">
-                        Open Game
-                    </button>
-                </form>
+                            <div class="dashboard-activity-icon">
+                                ★
+                            </div>
 
-                <p
-                    class="muted"
-                    th:if="${games == null or games.isEmpty()}"
+                            <div class="dashboard-activity-content">
+
+                                <strong>
+                                    See reviews from players you follow
+                                </strong>
+
+                                <p>
+                                    Your social feed collects the newest board
+                                    game reviews and ratings from your network.
+                                </p>
+
+                            </div>
+
+                            <span class="dashboard-row-arrow">
+                                →
+                            </span>
+
+                        </a>
+
+                        <a
+                            href="/profile"
+                            class="dashboard-activity-row"
+                        >
+
+                            <div class="dashboard-activity-icon">
+                                ◉
+                            </div>
+
+                            <div class="dashboard-activity-content">
+
+                                <strong>
+                                    Continue building your profile
+                                </strong>
+
+                                <p>
+                                    Add games to your collection, wishlist and
+                                    personal favourites.
+                                </p>
+
+                            </div>
+
+                            <span class="dashboard-row-arrow">
+                                →
+                            </span>
+
+                        </a>
+
+                        <a
+                            href="/sessions"
+                            class="dashboard-activity-row"
+                        >
+
+                            <div class="dashboard-activity-icon">
+                                ◷
+                            </div>
+
+                            <div class="dashboard-activity-content">
+
+                                <strong>
+                                    Plan your next game night
+                                </strong>
+
+                                <p>
+                                    Create a session, invite players and keep
+                                    track of responses.
+                                </p>
+
+                            </div>
+
+                            <span class="dashboard-row-arrow">
+                                →
+                            </span>
+
+                        </a>
+
+                    </div>
+
+                </section>
+
+                <!-- DISCOVER A GAME -->
+                <section class="dashboard-section">
+
+                    <div class="dashboard-section-heading">
+                        <h2>Discover a game</h2>
+                    </div>
+
+                    <div class="dashboard-search-panel">
+
+                        <div>
+
+                            <h3>
+                                Search the ranked catalog
+                            </h3>
+
+                            <p>
+                                Find a game and open its details, ranking and
+                                reviews.
+                            </p>
+
+                        </div>
+
+                        <form class="dashboard-inline-search">
+
+                            <input
+                                type="search"
+                                id="gamePageSearch"
+                                name="gamePageSearch"
+                                placeholder="Search board games"
+                                list="gamePageSuggestions"
+                                autocomplete="off"
+                                required
+                            >
+
+                            <datalist id="gamePageSuggestions">
+
+                                <option
+                                    th:each="game : ${games}"
+                                    th:value="${game.title}"
+                                >
+                                    Catan
+                                </option>
+
+                            </datalist>
+
+                            <button type="submit">
+                                Open game
+                            </button>
+
+                        </form>
+
+                        <p
+                            class="dashboard-empty-message"
+                            th:if="${games == null or games.isEmpty()}"
+                        >
+                            No games have been loaded into the catalog yet.
+                        </p>
+
+                    </div>
+
+                </section>
+
+                <!-- BOARD GAME TOOLS -->
+                <section class="dashboard-section">
+
+                    <div class="dashboard-section-heading">
+                        <h2>Your board game tools</h2>
+                    </div>
+
+                    <div class="dashboard-action-grid">
+
+                        <button
+                            type="button"
+                            class="dashboard-action-item"
+                            onclick="openReviewModal()"
+                        >
+
+                            <span class="dashboard-action-symbol">
+                                ✎
+                            </span>
+
+                            <span>
+
+                                <strong>
+                                    Write a review
+                                </strong>
+
+                                <small>
+                                    Rate a game you played
+                                </small>
+
+                            </span>
+
+                        </button>
+
+                        <a
+                            href="/profile"
+                            class="dashboard-action-item"
+                        >
+
+                            <span class="dashboard-action-symbol">
+                                □
+                            </span>
+
+                            <span>
+
+                                <strong>
+                                    Your profile
+                                </strong>
+
+                                <small>
+                                    Collection, reviews and lists
+                                </small>
+
+                            </span>
+
+                        </a>
+
+                        <a
+                            href="/feed"
+                            class="dashboard-action-item"
+                        >
+
+                            <span class="dashboard-action-symbol">
+                                ◎
+                            </span>
+
+                            <span>
+
+                                <strong>
+                                    Social feed
+                                </strong>
+
+                                <small>
+                                    Recent community reviews
+                                </small>
+
+                            </span>
+
+                        </a>
+
+                        <a
+                            href="/sessions"
+                            class="dashboard-action-item"
+                        >
+
+                            <span class="dashboard-action-symbol">
+                                ◷
+                            </span>
+
+                            <span>
+
+                                <strong>
+                                    Plan sessions
+                                </strong>
+
+                                <small>
+                                    Organize future game nights
+                                </small>
+
+                            </span>
+
+                        </a>
+
+                    </div>
+
+                </section>
+
+            </div>
+
+            <!-- SIDEBAR -->
+            <aside class="dashboard-sidebar">
+
+                <!-- QUICK ACTIONS -->
+                <section class="dashboard-sidebar-section">
+
+                    <div class="dashboard-section-heading">
+                        <h2>Quick actions</h2>
+                    </div>
+
+                    <div class="dashboard-sidebar-links">
+
+                        <button
+                            type="button"
+                            onclick="openReviewModal()"
+                        >
+                            <span>Write a review</span>
+                            <span>→</span>
+                        </button>
+
+                        <a href="/feed">
+                            <span>Open social feed</span>
+                            <span>→</span>
+                        </a>
+
+                        <a href="/profile">
+                            <span>View profile</span>
+                            <span>→</span>
+                        </a>
+
+                        <a href="/sessions">
+                            <span>View sessions</span>
+                            <span>→</span>
+                        </a>
+
+                    </div>
+
+                </section>
+
+                <!-- FIND PLAYERS -->
+                <section class="dashboard-sidebar-section">
+
+                    <div class="dashboard-section-heading">
+                        <h2>Find players</h2>
+                    </div>
+
+                    <p class="dashboard-sidebar-description">
+                        Search for another player and open their public profile.
+                    </p>
+
+                    <form
+                        class="dashboard-sidebar-search"
+                        action="/profile/search"
+                        method="get"
+                    >
+
+                        <input
+                            type="search"
+                            id="playerSearch"
+                            name="q"
+                            placeholder="Username"
+                            autocomplete="off"
+                            required
+                        >
+
+                        <button type="submit">
+                            Search
+                        </button>
+
+                    </form>
+
+                </section>
+
+                <!-- ROLE TOOLS -->
+                <section
+                    class="dashboard-sidebar-section"
+                    th:if="${role == 'ADMIN'
+                        || role == 'MODERATOR'
+                        || role == 'ORGANIZER'}"
                 >
-                    No games have been loaded into the catalog yet.
-                </p>
-            </div>
 
-            <!-- TOP FIVE -->
-            <div class="feature-card">
-                <h2>Top 5 Games</h2>
-                <p>Create a personal top-five board game list for your profile.</p>
-                <a href="#" class="text-link">Coming soon</a>
-            </div>
+                    <div class="dashboard-section-heading">
+                        <h2>Role tools</h2>
+                    </div>
 
-            <!-- PLAN SESSIONS -->
-<div class="feature-card">
-    <h2>Plan Sessions</h2>
-    <p>Set up a game night, invite people you follow, and track RSVPs.</p>
-    <a href="/sessions" class="text-link">View My Sessions</a>
-</div>
+                    <div class="dashboard-sidebar-links">
 
-<!-- ORGANIZER -->
-<div class="feature-card" th:if="${role == 'ORGANIZER'}">
-    <h2>Organizer View</h2>
+                        <a
+                            href="/admin"
+                            th:if="${role == 'ADMIN'}"
+                        >
+                            <span>Admin panel</span>
+                            <span>→</span>
+                        </a>
 
+                        <a
+                            href="/moderation/reviews"
+                            th:if="${role == 'ADMIN'
+                                || role == 'MODERATOR'}"
+                        >
+                            <span>Review moderation</span>
+                            <span>→</span>
+                        </a>
 
-    <p>
-        As a Game Night Organizer, you will eventually be able to
-        plan sessions, invite friends, and suggest games for groups.
-    </p>
+                        <a
+                            href="/sessions"
+                            th:if="${role == 'ORGANIZER'}"
+                        >
+                            <span>Organizer sessions</span>
+                            <span>→</span>
+                        </a>
 
-    <a href="#" class="text-link">
-        Organizer tools coming soon
-    </a>
-</div>
+                    </div>
 
-            <!-- PLAYER -->
-            <div
-                class="feature-card"
-                th:if="${role == 'PLAYER'}"
-            >
-                <h2>Player View</h2>
+                </section>
 
-                <p>
-                    As a Player, you can focus on logging games, writing reviews,
-                    and building your personal board game profile.
-                </p>
+                <!-- COMING SOON -->
+                <section class="dashboard-sidebar-section">
 
-                <a href="#" class="text-link">
-                    Player tools coming soon
-                </a>
-            </div>
+                    <div class="dashboard-section-heading">
+                        <h2>Coming soon</h2>
+                    </div>
 
-            <!-- ADMIN -->
-            <div
-                class="feature-card"
-                th:if="${role == 'ADMIN'}"
-            >
-                <h2>Admin Panel</h2>
+                    <div class="dashboard-coming-soon">
 
-                <p>
-                    Manage users, change user roles, and remove accounts when necessary.
-                </p>
+                        <strong>
+                            Top 5 games
+                        </strong>
 
-                <a href="/admin" class="text-link">
-                    Open Admin Panel
-                </a>
-            </div>
+                        <p>
+                            Build a ranked list of your five favourite board
+                            games.
+                        </p>
 
-            <!-- MODERATION -->
-            <div
-                class="feature-card"
-                th:if="${role == 'ADMIN' || role == 'MODERATOR'}"
-            >
-                <h2>Review Moderation</h2>
+                    </div>
 
-                <p>
-                    Review and delete inappropriate board game reviews.
-                </p>
+                </section>
 
-                <a href="/moderation/reviews" class="text-link">
-                    Moderate Reviews
-                </a>
-            </div>
+            </aside>
 
-        </section>
+        </div>
+
     </main>
+
 </div>
 
+<!-- REVIEW MODAL -->
 <div
     id="reviewModal"
     class="modal-backdrop"
     style="display: none;"
 >
+
     <div class="modal large-modal">
+
         <h2>Post a Review</h2>
 
         <p class="muted">
@@ -230,7 +574,10 @@
         <form action="/reviews" method="post">
 
             <div class="form-group">
-                <label for="gameTitle">Board Game Title</label>
+
+                <label for="gameTitle">
+                    Board Game Title
+                </label>
 
                 <input
                     type="text"
@@ -243,22 +590,46 @@
                 >
 
                 <datalist id="reviewGameSuggestions"></datalist>
+
             </div>
 
             <div class="form-group">
-                <label for="rating">Rating</label>
+
+                <label for="rating">
+                    Rating
+                </label>
 
                 <select id="rating" name="rating">
-                    <option value="5">5 - Loved it</option>
-                    <option value="4">4 - Really liked it</option>
-                    <option value="3">3 - It was okay</option>
-                    <option value="2">2 - Not for me</option>
-                    <option value="1">1 - Did not enjoy it</option>
+
+                    <option value="5">
+                        5 - Loved it
+                    </option>
+
+                    <option value="4">
+                        4 - Really liked it
+                    </option>
+
+                    <option value="3">
+                        3 - It was okay
+                    </option>
+
+                    <option value="2">
+                        2 - Not for me
+                    </option>
+
+                    <option value="1">
+                        1 - Did not enjoy it
+                    </option>
+
                 </select>
+
             </div>
 
             <div class="form-group">
-                <label for="reviewText">Review</label>
+
+                <label for="reviewText">
+                    Review
+                </label>
 
                 <textarea
                     id="reviewText"
@@ -266,9 +637,11 @@
                     placeholder="Write your thoughts..."
                     required
                 ></textarea>
+
             </div>
 
             <div class="modal-actions">
+
                 <button
                     type="button"
                     class="secondary-button"
@@ -277,13 +650,19 @@
                     Cancel
                 </button>
 
-                <button type="submit" class="primary-button">
+                <button
+                    type="submit"
+                    class="primary-button"
+                >
                     Post Review
                 </button>
+
             </div>
 
         </form>
+
     </div>
+
 </div>
 
 <script src="/js/game-autocomplete.js"></script>
@@ -325,5 +704,6 @@
         );
     });
 </script>
+
 </body>
 </html>
