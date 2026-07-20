@@ -193,7 +193,13 @@ public class LoginController {
         }
 
         model.addAttribute("username", user.getUsername());
-        model.addAttribute("role", user.getRole());
+        String role = user.getRole();
+        model.addAttribute(
+            "role",
+            role == null || role.isBlank()
+                ? "PLAYER"
+                : role
+        );
 
         return "dashboard";
     }

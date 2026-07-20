@@ -153,7 +153,7 @@ public class BoardGameRank {
      * has already been stored for this game.
      */
     public boolean hasImage() {
-        return isNotBlank(imageUrl) || isNotBlank(thumbnailUrl);
+        return isNotBlank(imageUrl) || isNotBlank(getThumbnailUrl());
     }
 
     /*
@@ -165,7 +165,7 @@ public class BoardGameRank {
             return imageUrl;
         }
 
-        return thumbnailUrl;
+        return getThumbnailUrl();
     }
 
     private boolean isNotBlank(String value) {
