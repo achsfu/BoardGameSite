@@ -3,88 +3,489 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${username} + ' - Profile'">Profile</title>
-    <link rel="stylesheet" th:href="@{/css/site.css}" href="/css/site.css">
+    <title th:text="${username} + ' - Profile | BoardGameBoard'">
+        Player Profile | BoardGameBoard
+    </title>
+    <link rel="stylesheet" href="/css/site.css">
 </head>
-<body>
 
-<div class="app-shell">
-    <nav class="top-nav">
-        <a href="/" class="brand">BoardGameBoard</a>
+<body class="dashboard-body profile-page-body">
+<div class="dashboard-shell">
 
-        <div class="nav-links">
-            <a href="/dashboard" class="secondary-button">Dashboard</a>
-            <a href="/profile" class="secondary-button">My Profile</a>
+    <nav class="dashboard-nav">
+        <a href="/" class="dashboard-brand">BoardGameBoard</a>
+
+        <div class="dashboard-nav-links">
+            <a href="/">Dashboard</a>
+            <a href="/feed">Feed</a>
+            <a href="/profile" class="active">Profile</a>
+            <a href="/sessions">Sessions</a>
+
+            <form action="/logout" method="post">
+                <button type="submit" class="dashboard-logout-button">
+                    Logout
+                </button>
+            </form>
         </div>
     </nav>
 
-    <main class="dashboard">
-        <section class="hero-card">
-            <img
-                    th:src="${avatar}"
-                    alt="Profile picture"
-                    style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid #7c5cff;"
-            >
+    <main class="dashboard-page profile-page profile-page-redesign">
 
-            <p class="eyebrow" th:text="${role}">USER</p>
-            <h1 th:text="${username}">Username</h1>
-            <p class="muted" th:text="${bio}">No bio added yet.</p>
+        <div class="profile-alert profile-alert-success"
+             th:if="${param.success != null}">
+            <span>✓</span>
+            <p th:text="${param.success[0]}">Action completed successfully.</p>
+        </div>
 
-            <div class="follow-stats" style="margin-top: 10px;">
-                <span class="text-link" th:text="${followerCount} + ' Followers'"></span>
-                <span style="margin: 0 10px;">.</span>
-                <span class="text-link" th:text="${followingCount} + ' Following'"></span>
+        <div class="profile-alert profile-alert-error"
+             th:if="${param.error != null}">
+            <span>!</span>
+            <p th:text="${param.error[0]}">Something went wrong.</p>
+        </div>
+
+        <header class="profile-compact-hero">
+            <div class="profile-compact-identity">
+                <div class="profile-compact-avatar-wrap">
+                    <img class="profile-compact-avatar"
+                         th:src="${avatar}"
+                         th:alt="${username} + ' profile picture'"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';">
+
+                    <div class="profile-compact-avatar-fallback"
+                         style="display:none;">
+                        <span th:text="${username != null and !username.isEmpty()
+                            ? #strings.toUpperCase(#strings.substring(username, 0, 1))
+                            : 'U'}">U</span>
+                    </div>
+                </div>
+
+                <div class="profile-compact-copy">
+                    <div class="profile-compact-title-row">
+                        <div>
+                            <p class="profile-section-eyebrow">Player profile</p>
+                            <h1 th:text="${username}">username</h1>
+                        </div>
+
+                        <span class="dashboard-role-badge"
+                              th:text="${role}">
+                            PLAYER
+                        </span>
+                    </div>
+
+                    <p class="profile-compact-bio"
+                       th:text="${bio}">
+                        No bio added yet.
+                    </p>
+
+                    <div class="profile-compact-meta">
+                        <div>
+                            <strong th:text="${followerCount}">0</strong>
+                            <span>Followers</span>
+                        </div>
+
+                        <div>
+                            <strong th:text="${followingCount}">0</strong>
+                            <span>Following</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div style="margin-top: 14px; display: flex; gap: 12px;">
-                <form th:if="${!isFollowing}" th:action="@{'/profile/' + ${username} + '/follow'}" method="post">
-                    <button type="submit" class="primary-button">Follow</button>
+            <div class="profile-compact-actions">
+                <form th:if="${!isFollowing}"
+                      th:action="@{/profile/{username}/follow(username=${username})}"
+                      method="post">
+                    <button type="submit" class="primary-button">
+                        Follow
+                    </button>
                 </form>
 
-                <form th:if="${isFollowing}" th:action="@{'/profile/' + ${username} + '/unfollow'}" method="post">
-                    <button type="submit" class="secondary-button">Unfollow</button>
+                <form th:if="${isFollowing}"
+                      th:action="@{/profile/{username}/unfollow(username=${username})}"
+                      method="post">
+                    <button type="submit" class="secondary-button">
+                        Unfollow
+                    </button>
                 </form>
+
+                <a href="/profile/search"
+                   class="secondary-button profile-button-link">
+                    Find players
+                </a>
             </div>
+        </header>
 
-            <div class="profile-lists-section">
-                <div>
-                    <h3 style="margin: 0; font-size: 1rem">Games Owned</h3>
-                    <p class="muted" style="margin: 4px 0" th:if="${ownedList.isEmpty()}">No games added yet.</p>
+        <section class="profile-stat-strip">
+            <article>
+                <span>Reviews</span>
+                <strong th:text="${reviewCount}">0</strong>
+            </article>
 
-                    <div class="game-tag-container">
-                        <span th:each="game : ${ownedList}" class="game-tag" th:text="${game}">Owned game</span>
-                    </div>
-                </div>
+            <article>
+                <span>Owned</span>
+                <strong th:text="${ownedCount}">0</strong>
+            </article>
 
-                <div>
-                    <h3 style="margin: 0; font-size: 1rem">Wishlist</h3>
-                    <p class="muted" style="margin: 4px 0" th:if="${wishlistList.isEmpty()}">Wishlist is empty.</p>
+            <article>
+                <span>Wishlist</span>
+                <strong th:text="${wishlistCount}">0</strong>
+            </article>
 
-                    <div class="game-tag-container">
-                        <span th:each="game : ${wishlistList}" class="game-tag wishlist-tag" th:text="${game}">Wishlist game</span>
-                    </div>
-                </div>
-            </div>
+            <article>
+                <span>Average rating</span>
+                <strong th:text="${reviewCount > 0
+                    ? #numbers.formatDecimal(averageRating, 1, 1)
+                    : '—'}">—</strong>
+            </article>
         </section>
 
-        <section class="grid">
-            <div class="feature-card" style="grid-column: span 3;">
-                <h2>Posted Reviews</h2>
+        <div class="profile-content-shell">
+            <section class="profile-content-main">
+                <nav class="profile-real-tabs"
+                     aria-label="Profile sections">
+                    <button type="button"
+                            class="active"
+                            data-profile-tab="owned">
+                        Owned games
+                    </button>
 
-                <p class="muted" th:if="${reviews.isEmpty()}">No reviews yet.</p>
+                    <button type="button"
+                            data-profile-tab="wishlist">
+                        Wishlist
+                    </button>
 
-                <div th:each="review : ${reviews}" class="mock-card" style="margin-bottom: 16px; padding: 18px;">
-                    <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                        <h3 style="margin: 0" th:text="${review.gameTitle}">Game Title</h3>
-                        <span class="eyebrow" th:text="${review.rating} + ' / 5'">5 / 5</span>
+                    <button type="button"
+                            data-profile-tab="reviews">
+                        Reviews
+                    </button>
+                </nav>
+
+                <section class="profile-tab-panel active"
+                         data-profile-panel="owned">
+                    <div class="profile-panel-heading">
+                        <div>
+                            <p class="profile-section-eyebrow">Personal library</p>
+                            <h2>Owned games</h2>
+                        </div>
+                        <span th:text="${ownedCount} + ' games'">0 games</span>
                     </div>
 
-                    <p style="margin: 10px 0 0" th:text="${review.reviewText}">Review details</p>
-                </div>
-            </div>
-        </section>
+                    <div class="profile-poster-grid"
+                         th:if="${ownedGames != null and !ownedGames.isEmpty()}">
+                        <article class="profile-poster-card"
+                                 th:each="item : ${ownedGames}">
+                            <a th:if="${item.gameId != null}"
+                               th:href="@{/games/id/{id}(id=${item.gameId})}"
+                               class="profile-poster-media">
+                                <img th:if="${item.imageUrl != null}"
+                                     th:src="${item.imageUrl}"
+                                     th:alt="'Cover for ' + ${item.gameName}">
+
+                                <div th:unless="${item.imageUrl != null}"
+                                     class="profile-poster-placeholder">
+                                    <span>□</span>
+                                </div>
+                            </a>
+
+                            <div th:unless="${item.gameId != null}"
+                                 class="profile-poster-media">
+                                <img th:if="${item.imageUrl != null}"
+                                     th:src="${item.imageUrl}"
+                                     th:alt="'Cover for ' + ${item.gameName}">
+
+                                <div th:unless="${item.imageUrl != null}"
+                                     class="profile-poster-placeholder">
+                                    <span>□</span>
+                                </div>
+                            </div>
+
+                            <div class="profile-poster-info">
+                                <a th:if="${item.gameId != null}"
+                                   th:href="@{/games/id/{id}(id=${item.gameId})}"
+                                   th:text="${item.gameName}">
+                                    Board game
+                                </a>
+
+                                <span th:unless="${item.gameId != null}"
+                                      th:text="${item.gameName}">
+                                    Board game
+                                </span>
+
+                                <div class="profile-poster-badges">
+                                    <span th:if="${item.communityScore != null}"
+                                          th:text="'BGG ' + ${#numbers.formatDecimal(item.communityScore, 1, 1)}">
+                                        BGG 7.5
+                                    </span>
+
+                                    <span th:if="${item.rankPosition != null and item.rankPosition > 0}"
+                                          th:text="'#' + ${item.rankPosition}">
+                                        #1
+                                    </span>
+
+                                    <span th:if="${item.userRating != null}"
+                                          th:text="${item.userRating} + '/5'">
+                                        5/5
+                                    </span>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+
+                    <div class="profile-clean-empty"
+                         th:if="${ownedGames == null or ownedGames.isEmpty()}">
+                        <span>□</span>
+                        <h3>No owned games listed</h3>
+                        <p>This player has not added any owned games yet.</p>
+                    </div>
+                </section>
+
+                <section class="profile-tab-panel"
+                         data-profile-panel="wishlist">
+                    <div class="profile-panel-heading">
+                        <div>
+                            <p class="profile-section-eyebrow">Future plays</p>
+                            <h2>Wishlist</h2>
+                        </div>
+                        <span th:text="${wishlistCount} + ' games'">0 games</span>
+                    </div>
+
+                    <div class="profile-poster-grid"
+                         th:if="${wishlistGames != null and !wishlistGames.isEmpty()}">
+                        <article class="profile-poster-card"
+                                 th:each="item : ${wishlistGames}">
+                            <a th:if="${item.gameId != null}"
+                               th:href="@{/games/id/{id}(id=${item.gameId})}"
+                               class="profile-poster-media">
+                                <img th:if="${item.imageUrl != null}"
+                                     th:src="${item.imageUrl}"
+                                     th:alt="'Cover for ' + ${item.gameName}">
+
+                                <div th:unless="${item.imageUrl != null}"
+                                     class="profile-poster-placeholder">
+                                    <span>♡</span>
+                                </div>
+                            </a>
+
+                            <div th:unless="${item.gameId != null}"
+                                 class="profile-poster-media">
+                                <img th:if="${item.imageUrl != null}"
+                                     th:src="${item.imageUrl}"
+                                     th:alt="'Cover for ' + ${item.gameName}">
+
+                                <div th:unless="${item.imageUrl != null}"
+                                     class="profile-poster-placeholder">
+                                    <span>♡</span>
+                                </div>
+                            </div>
+
+                            <div class="profile-poster-info">
+                                <a th:if="${item.gameId != null}"
+                                   th:href="@{/games/id/{id}(id=${item.gameId})}"
+                                   th:text="${item.gameName}">
+                                    Board game
+                                </a>
+
+                                <span th:unless="${item.gameId != null}"
+                                      th:text="${item.gameName}">
+                                    Board game
+                                </span>
+
+                                <div class="profile-poster-badges">
+                                    <span th:if="${item.communityScore != null}"
+                                          th:text="'BGG ' + ${#numbers.formatDecimal(item.communityScore, 1, 1)}">
+                                        BGG 7.5
+                                    </span>
+
+                                    <span th:if="${item.rankPosition != null and item.rankPosition > 0}"
+                                          th:text="'#' + ${item.rankPosition}">
+                                        #1
+                                    </span>
+
+                                    <span th:if="${item.userRating != null}"
+                                          th:text="${item.userRating} + '/5'">
+                                        5/5
+                                    </span>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+
+                    <div class="profile-clean-empty"
+                         th:if="${wishlistGames == null or wishlistGames.isEmpty()}">
+                        <span>♡</span>
+                        <h3>No wishlist games</h3>
+                        <p>This player has not saved any games for later.</p>
+                    </div>
+                </section>
+
+                <section class="profile-tab-panel"
+                         data-profile-panel="reviews">
+                    <div class="profile-panel-heading">
+                        <div>
+                            <p class="profile-section-eyebrow">Player activity</p>
+                            <h2>Reviews</h2>
+                        </div>
+                        <span th:text="${reviewCount} + ' reviews'">0 reviews</span>
+                    </div>
+
+                    <div class="profile-review-stack"
+                         th:if="${reviews != null and !reviews.isEmpty()}">
+                        <article class="profile-review-clean"
+                                 th:each="review : ${reviews}">
+                            <div class="profile-review-clean-header">
+                                <div>
+                                    <p>Review</p>
+                                    <h3 th:text="${review.gameTitle}">
+                                        Board game
+                                    </h3>
+                                </div>
+
+                                <div class="profile-review-rating">
+                                    <span th:each="number : ${#numbers.sequence(1, 5)}"
+                                          th:classappend="${number <= review.rating} ? ' filled' : ''">
+                                        ★
+                                    </span>
+                                </div>
+                            </div>
+
+                            <p class="profile-review-clean-text"
+                               th:text="${review.reviewText}">
+                                Review text.
+                            </p>
+
+                            <time th:if="${review.createdAt != null}"
+                                  th:text="${#temporals.format(review.createdAt, 'MMM d, yyyy')}">
+                                Jan 1, 2026
+                            </time>
+                        </article>
+                    </div>
+
+                    <div class="profile-clean-empty"
+                         th:if="${reviews == null or reviews.isEmpty()}">
+                        <span>★</span>
+                        <h3>No reviews yet</h3>
+                        <p>This player has not published any reviews yet.</p>
+                    </div>
+                </section>
+            </section>
+
+            <aside class="profile-sticky-sidebar">
+                <section>
+                    <p class="profile-section-eyebrow">Collection</p>
+                    <h2>Sort games</h2>
+
+                    <form th:action="@{/profile/{username}(username=${username})}"
+                          method="get"
+                          class="profile-sort-form">
+                        <label for="sort">Sort by</label>
+                        <select id="sort"
+                                name="sort"
+                                onchange="this.form.submit()">
+                            <option value="added"
+                                    th:selected="${sort == 'added'}">
+                                Recently added
+                            </option>
+                            <option value="rating"
+                                    th:selected="${sort == 'rating'}">
+                                Highest rating
+                            </option>
+                            <option value="reviewed"
+                                    th:selected="${sort == 'reviewed'}">
+                                Recently reviewed
+                            </option>
+                        </select>
+                    </form>
+                </section>
+
+                <section>
+                    <p class="profile-section-eyebrow">Player actions</p>
+                    <h2>Connect</h2>
+
+                    <div class="dashboard-sidebar-links">
+                        <form th:if="${!isFollowing}"
+                              th:action="@{/profile/{username}/follow(username=${username})}"
+                              method="post">
+                            <button type="submit">
+                                <span>Follow player</span>
+                                <span>+</span>
+                            </button>
+                        </form>
+
+                        <form th:if="${isFollowing}"
+                              th:action="@{/profile/{username}/unfollow(username=${username})}"
+                              method="post">
+                            <button type="submit">
+                                <span>Unfollow player</span>
+                                <span>−</span>
+                            </button>
+                        </form>
+
+                        <a href="/profile/search">
+                            <span>Find another player</span>
+                            <span>→</span>
+                        </a>
+
+                        <a href="/feed">
+                            <span>Open social feed</span>
+                            <span>→</span>
+                        </a>
+                    </div>
+                </section>
+
+                <section>
+                    <p class="profile-section-eyebrow">Summary</p>
+                    <h2>Profile overview</h2>
+
+                    <dl class="profile-mini-summary">
+                        <div>
+                            <dt>Owned</dt>
+                            <dd th:text="${ownedCount}">0</dd>
+                        </div>
+                        <div>
+                            <dt>Wishlist</dt>
+                            <dd th:text="${wishlistCount}">0</dd>
+                        </div>
+                        <div>
+                            <dt>Reviews</dt>
+                            <dd th:text="${reviewCount}">0</dd>
+                        </div>
+                        <div>
+                            <dt>Followers</dt>
+                            <dd th:text="${followerCount}">0</dd>
+                        </div>
+                        <div>
+                            <dt>Following</dt>
+                            <dd th:text="${followingCount}">0</dd>
+                        </div>
+                    </dl>
+                </section>
+            </aside>
+        </div>
     </main>
 </div>
 
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const tabButtons = document.querySelectorAll("[data-profile-tab]");
+        const tabPanels = document.querySelectorAll("[data-profile-panel]");
+
+        tabButtons.forEach(function (button) {
+            button.addEventListener("click", function () {
+                const selectedTab = button.dataset.profileTab;
+
+                tabButtons.forEach(function (candidate) {
+                    candidate.classList.toggle("active", candidate === button);
+                });
+
+                tabPanels.forEach(function (panel) {
+                    panel.classList.toggle(
+                        "active",
+                        panel.dataset.profilePanel === selectedTab
+                    );
+                });
+            });
+        });
+    });
+</script>
 </body>
 </html>
