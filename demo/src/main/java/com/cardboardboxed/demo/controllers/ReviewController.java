@@ -83,7 +83,7 @@ public class ReviewController {
         }
 
         BoardGameRank boardGame = boardGameRankRepository
-                .findFirstByTitleIgnoreCaseAndIsExpansionFalse(resolvedGameTitle)
+            .findFirstByTitleIgnoreCaseOrderByRankPositionAsc(resolvedGameTitle)
                 .orElse(null);
 
         if (boardGame == null) {

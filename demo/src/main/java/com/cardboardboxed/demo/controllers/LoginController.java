@@ -91,11 +91,6 @@ public class LoginController {
                         PageRequest.of(0, 6)
                 );
 
-        List<BoardGameRank> reviewedGames =
-                boardGameRankRepository.findReviewedGames(
-                        PageRequest.of(0, 6)
-                );
-
         List<Review> recentReviews =
                 reviewRepository.findRecentHomepageReviews(
                         PageRequest.of(0, 6)
@@ -105,7 +100,6 @@ public class LoginController {
         model.addAttribute("username", username);
         model.addAttribute("popularGames", popularGames);
         model.addAttribute("highestRatedGames", highestRatedGames);
-        model.addAttribute("reviewedGames", reviewedGames);
         model.addAttribute("recentReviews", recentReviews);
 
         return "index";
@@ -200,12 +194,6 @@ public class LoginController {
 
         model.addAttribute("username", user.getUsername());
         model.addAttribute("role", user.getRole());
-
-        model.addAttribute(
-                "games",
-                boardGameRankRepository
-                        .findAllByIsExpansionOrderByRankPositionAsc(false)
-        );
 
         return "dashboard";
     }

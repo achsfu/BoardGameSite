@@ -30,14 +30,14 @@ public class BoardGameAutocompleteRepository {
         int safeLimit = Math.max(1, Math.min(limit, 8));
 
         String sql = """
-                SELECT name
-                FROM boardgames_ranks
-            WHERE name ILIKE ? AND is_expansion = false
+                SELECT "Name"
+                FROM board_games
+            WHERE "Name" ILIKE ?
                 ORDER BY
-                    CASE WHEN name ILIKE ? THEN 0 ELSE 1 END,
-                    CASE WHEN "rank" = 0 THEN 1 ELSE 0 END,
-                    "rank" ASC NULLS LAST,
-                    name ASC
+                    CASE WHEN "Name" ILIKE ? THEN 0 ELSE 1 END,
+                    CASE WHEN "Rank:boardgame" = 0 THEN 1 ELSE 0 END,
+                    "Rank:boardgame" ASC NULLS LAST,
+                    "Name" ASC
                 LIMIT ?
                 """;
 
@@ -57,49 +57,49 @@ public class BoardGameAutocompleteRepository {
         String term = input.trim();
 
         String exactSql = """
-                SELECT name
+                SELECT "Name"
                 FROM (
-                    SELECT name, MIN("rank") AS best_rank
-                    FROM boardgames_ranks
-                    WHERE lower(name) = lower(?) AND is_expansion = false
-                    GROUP BY name
+                    SELECT "Name", MIN("Rank:boardgame") AS best_rank
+                    FROM board_games
+                    WHERE lower("Name") = lower(?)
+                    GROUP BY "Name"
                 ) exact_match
                 ORDER BY
                     CASE WHEN best_rank = 0 THEN 1 ELSE 0 END,
                     best_rank ASC NULLS LAST,
-                    name ASC
+                    "Name" ASC
                 LIMIT 1
                 """;
 
         String nextAlphabeticalSql = """
-                SELECT name
+                SELECT "Name"
                 FROM (
-                    SELECT name, MIN("rank") AS best_rank
-                    FROM boardgames_ranks
-                    WHERE lower(name) >= lower(?) AND is_expansion = false
-                    GROUP BY name
+                    SELECT "Name", MIN("Rank:boardgame") AS best_rank
+                    FROM board_games
+                    WHERE lower("Name") >= lower(?)
+                    GROUP BY "Name"
                 ) next_match
                 ORDER BY
-                    lower(name) ASC,
+                    lower("Name") ASC,
                     CASE WHEN best_rank = 0 THEN 1 ELSE 0 END,
                     best_rank ASC NULLS LAST,
-                    name ASC
+                    "Name" ASC
                 LIMIT 1
                 """;
 
         String previousAlphabeticalSql = """
-                SELECT name
+                SELECT "Name"
                 FROM (
-                    SELECT name, MIN("rank") AS best_rank
-                    FROM boardgames_ranks
-                    WHERE lower(name) < lower(?) AND is_expansion = false
-                    GROUP BY name
+                    SELECT "Name", MIN("Rank:boardgame") AS best_rank
+                    FROM board_games
+                    WHERE lower("Name") < lower(?)
+                    GROUP BY "Name"
                 ) previous_match
                 ORDER BY
-                    lower(name) DESC,
+                    lower("Name") DESC,
                     CASE WHEN best_rank = 0 THEN 1 ELSE 0 END,
                     best_rank ASC NULLS LAST,
-                    name ASC
+                    "Name" ASC
                 LIMIT 1
                 """;
 

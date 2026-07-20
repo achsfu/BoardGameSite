@@ -27,7 +27,8 @@
                 <p class="eyebrow">GAME PROFILE</p>
                 <h1 th:text="${game.title}">Game Title</h1>
                 <p
-                    th:text="${game.description != null ? game.description : 'Community reviews and rank details for this board game.'}">
+                    class="formatted-description"
+                    th:text="${game.displayDescription != null ? game.displayDescription : 'Community reviews and rank details for this board game.'}">
                     Community reviews and rank details for this board game.
                 </p>
                 <p class="muted" th:if="${successMessage != null}" th:text="${successMessage}">Description updated</p>

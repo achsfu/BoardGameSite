@@ -2,6 +2,9 @@ package com.cardboardboxed.demo.reviews;
 import com.cardboardboxed.demo.boardgames.BoardGameRank;
 import com.cardboardboxed.demo.useracounts.User;
 import jakarta.persistence.*;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
+
 import java.time.LocalDateTime;
 
 
@@ -28,6 +31,7 @@ public class Review {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "game_id")
+    @NotFound(action = NotFoundAction.IGNORE)
     private BoardGameRank game;
 
     //simple getter and setter methods
