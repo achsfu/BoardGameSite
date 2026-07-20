@@ -1,667 +1,450 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${username} + ' - Profile | BoardGameBoard'">
-        Profile | BoardGameBoard
-    </title>
-    <link rel="stylesheet" href="/css/site.css">
-</head>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Profile | BoardGameBoard</title>
+    <link rel="stylesheet" th:href="@{/css/site.css}" href="/css/site.css" />
+  </head>
 
-<body class="dashboard-body profile-page-body">
-<div class="dashboard-shell">
+  <body>
+    <div class="app-shell">
+      <nav class="top-nav">
+        <a href="/" class="brand">BoardGameBoard</a>
 
-    <nav class="dashboard-nav">
-        <a href="/" class="dashboard-brand">BoardGameBoard</a>
+        <div class="nav-links">
+          <a href="/dashboard" class="secondary-button">Dashboard</a>
 
-        <div class="dashboard-nav-links">
-            <a href="/">Dashboard</a>
-            <a href="/feed">Feed</a>
-            <a href="/profile" class="active">Profile</a>
-            <a href="/sessions">Sessions</a>
-
-            <form action="/logout" method="post">
-                <button type="submit" class="dashboard-logout-button">
-                    Logout
-                </button>
-            </form>
+          <form action="/logout" method="post" style="display: inline">
+            <button type="submit" class="secondary-button">Logout</button>
+          </form>
         </div>
-    </nav>
+      </nav>
 
-    <main class="dashboard-page profile-page profile-page-redesign">
+      <main class="dashboard">
+        <section class="hero-card">
+          <img
+            th:src="${avatar}"
+            src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150&q=80"
+            alt="Avatar"
+            style="
+              width: 80px;
+              height: 80px;
+              border-radius: 50%;
+              object-fit: cover;
+              border: 2px solid #7c5cff;
+            "
+          />
+          <form action="/profile" method="get" style="margin-bottom: 12px">
+  <label for="sort">Sort Collection</label>
 
-        <div class="profile-alert profile-alert-success"
-             th:if="${param.success != null}">
-            <span>✓</span>
-            <p th:text="${param.success[0]}">Profile updated.</p>
-        </div>
+  <select name="sort" id="sort">
+    <option value="added" th:selected="${sort == 'added'}">
+      Recently Added
+    </option>
 
-        <div class="profile-alert profile-alert-error"
-             th:if="${param.error != null}">
-            <span>!</span>
-            <p th:text="${param.error[0]}">Something went wrong.</p>
-        </div>
+    <option value="rating" th:selected="${sort == 'rating'}">
+      Highest Rated
+    </option>
 
-        <header class="profile-compact-hero">
-            <div class="profile-compact-identity">
-                <div class="profile-compact-avatar-wrap">
-                    <img class="profile-compact-avatar"
-                         th:src="${avatar}"
-                         th:alt="${username} + ' profile picture'"
-                         onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';">
+    <option value="reviewed" th:selected="${sort == 'reviewed'}">
+      Recently Reviewed
+    </option>
+  </select>
 
-                    <div class="profile-compact-avatar-fallback"
-                         style="display:none;">
-                        <span th:text="${username != null and !username.isEmpty()
-                            ? #strings.toUpperCase(#strings.substring(username, 0, 1))
-                            : 'U'}">U</span>
-                    </div>
-                </div>
+  <button type="submit" class="secondary-button">Sort</button>
+</form>
 
-                <div class="profile-compact-copy">
-                    <div class="profile-compact-title-row">
-                        <div>
-                            <p class="profile-section-eyebrow">Player profile</p>
-                            <h1 th:text="${username}">username</h1>
-                        </div>
+          <div class="profile-edit-toggle-row">
+            <button id="editCollectionToggle" type="button" class="secondary-button" aria-pressed="false">
+              Edit Collection
+            </button>
+          </div>
 
-                        <span class="dashboard-role-badge"
-                              th:text="${role}">
-                            PLAYER
-                        </span>
-                    </div>
+          <div class="profile-lists-section">
+            <div>
+              <h3 style="margin: 0; font-size: 1rem">Games Owned</h3>
 
-                    <p class="profile-compact-bio"
-                       th:text="${bio}">
-                        No bio added yet.
-                    </p>
+              <p
+                class="muted"
+                style="margin: 4px 0"
+                th:if="${ownedItems.isEmpty()}"
+              >
+                No games added yet.
+              </p>
 
-                    <div class="profile-compact-meta">
-                        <a href="/profile/followers">
-                            <strong th:text="${followerCount}">0</strong>
-                            <span>Followers</span>
-                        </a>
+              <div class="game-tag-container">
+                <div
+                  th:each="item : ${ownedItems}"
+                  class="game-tag"
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    margin-bottom: 6px;
+                  "
+                >
+                  <a th:href="@{/games/{title}(title=${item.gameName})}"><span th:text="${item.gameName}">Catan</span></a>
 
-                        <a href="/profile/following">
-                            <strong th:text="${followingCount}">0</strong>
-                            <span>Following</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
+                  <form
+                    action="/collection/move"
+                    method="post"
+                    class="collection-edit-only inline-collection-edit"
+                    style="display: inline"
+                    hidden
+                  >
+                    <input type="hidden" name="id" th:value="${item.id}" />
+                    <input
+                      type="hidden"
+                      name="collectionType"
+                      value="WISHLIST"
+                    />
 
-            <div class="profile-compact-actions">
-                <button type="button"
-                        class="primary-button"
-                        onclick="openProfilePanel('profileEditor')">
-                    Edit profile
-                </button>
-
-                <button type="button"
-                        class="secondary-button"
-                        onclick="openProfilePanel('collectionEditor')">
-                    Add game
-                </button>
-            </div>
-        </header>
-
-        <section id="profileEditor"
-                 class="profile-slide-panel"
-                 hidden>
-            <div class="profile-panel-heading">
-                <div>
-                    <p class="profile-section-eyebrow">Account details</p>
-                    <h2>Edit profile</h2>
-                </div>
-
-                <button type="button"
-                        class="profile-panel-close"
-                        onclick="closeProfilePanel('profileEditor')"
-                        aria-label="Close edit profile panel">
-                    ×
-                </button>
-            </div>
-
-            <form class="profile-edit-form"
-                  action="/profile/update-bio"
-                  method="post">
-                <div class="form-group">
-                    <label for="profilePictureUrl">Profile-picture URL</label>
-                    <input type="url"
-                           id="profilePictureUrl"
-                           name="profilePictureUrl"
-                           th:value="${avatar}"
-                           placeholder="https://example.com/profile.jpg">
-                </div>
-
-                <div class="form-group">
-                    <label for="bio">Bio</label>
-                    <textarea id="bio"
-                              name="bio"
-                              maxlength="500"
-                              placeholder="Tell other players about yourself..."
-                              th:text="${bio == 'No bio added yet.' ? '' : bio}"></textarea>
-                </div>
-
-                <div class="profile-form-actions">
-                    <button type="button"
-                            class="secondary-button"
-                            onclick="closeProfilePanel('profileEditor')">
-                        Cancel
+                    <button
+                      type="submit"
+                      class="secondary-button"
+                      style="padding: 4px 8px"
+                    >
+                      Move to Wishlist
                     </button>
+                  </form>
 
-                    <button type="submit"
-                            class="primary-button">
-                        Save profile
+                  <form
+                    action="/collection/remove"
+                    method="post"
+                    class="collection-edit-only inline-collection-edit"
+                    style="display: inline"
+                    hidden
+                  >
+                    <input type="hidden" name="id" th:value="${item.id}" />
+
+                    <button
+                      type="submit"
+                      class="secondary-button"
+                      style="padding: 4px 8px"
+                    >
+                      Remove
                     </button>
+                  </form>
                 </div>
+              </div>
+            </div>
+
+            <div>
+              <h3 style="margin: 0; font-size: 1rem">Wishlist</h3>
+
+              <p
+                class="muted"
+                style="margin: 4px 0"
+                th:if="${wishlistItems.isEmpty()}"
+              >
+                Wishlist is empty.
+              </p>
+
+              <div class="game-tag-container">
+                <div
+                  th:each="item : ${wishlistItems}"
+                  class="game-tag wishlist-tag"
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    margin-bottom: 6px;
+                  "
+                >
+                  <a th:href="@{/games/{title}(title=${item.gameName})}"><span th:text="${item.gameName}">Carcassonne</span></a>
+
+                  <form
+                    action="/collection/move"
+                    method="post"
+                    class="collection-edit-only inline-collection-edit"
+                    style="display: inline"
+                    hidden
+                  >
+                    <input type="hidden" name="id" th:value="${item.id}" />
+                    <input
+                      type="hidden"
+                      name="collectionType"
+                      value="OWNED"
+                    />
+
+                    <button
+                      type="submit"
+                      class="secondary-button"
+                      style="padding: 4px 8px"
+                    >
+                      Move to Owned
+                    </button>
+                  </form>
+
+                  <form
+                    action="/collection/remove"
+                    method="post"
+                    class="collection-edit-only inline-collection-edit"
+                    style="display: inline"
+                    hidden
+                  >
+                    <input type="hidden" name="id" th:value="${item.id}" />
+
+                    <button
+                      type="submit"
+                      class="secondary-button"
+                      style="padding: 4px 8px"
+                    >
+                      Remove
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <p class="eyebrow" th:text="${role}">USER</p>
+            <h1 th:text="${username} + '\'s Profile'">User's Profile</h1>
+            <p class="muted profile-view-only" th:text="${bio}">No bio added yet!</p>
+
+            <form action="/profile/update-bio" method="post" class="profile-edit-only profile-edit-inline-form" hidden>
+              <div class="form-group">
+                <label for="bio">Bio</label>
+
+                <textarea
+                  name="bio"
+                  id="bio"
+                  placeholder="Tell us about your favourite board games"
+                  required
+                  th:text="${bio == 'No bio added yet.' ? '' : bio}"
+                ></textarea>
+              </div>
+
+              <div class="form-group" style="margin-top: 12px">
+                <label for="profilePictureUrl">Profile Picture URL</label>
+
+                <input
+                  type="url"
+                  name="profilePictureUrl"
+                  id="profilePictureUrl"
+                  placeholder="Paste a link"
+                  th:value="${avatar.contains('unsplash.com') ? '' : avatar}"
+                />
+              </div>
+
+              <button
+                type="submit"
+                class="primary-button"
+                style="margin-top: 16px"
+              >
+                Save Profile Changes
+              </button>
             </form>
+
+            <div class="profile-edit-toggle-row">
+              <button id="editProfileToggle" type="button" class="secondary-button" aria-pressed="false">
+                Edit Profile
+              </button>
+            </div>
+
+            <!--VIEW FOLLOWING AND FOLLOWED-->
+            <div class="follow-stats" style="margin-top: 10px";>
+              <a th:href="@{/profile/followers}" th:text="${followerCount} + ' Followers'" class="text-link"></a>
+              <span style="margin: 0 10px;">·</span>
+              <a th:href="@{/profile/following}" th:text="${followingCount} + ' Following'" class="text-link"></a>
+            </div>
+
+            <div class="collection-edit-only collection-add-section" hidden>
+              <h2 style="margin-top: 28px">Add to Collection</h2>
+
+              <form action="/collection/add" method="post">
+                <div class="form-group">
+                  <label for="ownedGames">Add Owned Game</label>
+
+                  <input
+                    type="text"
+                    name="gameName"
+                    id="ownedGames"
+                    placeholder="Enter your game."
+                    list="ownedGameSuggestions"
+                    required
+                  />
+
+                  <datalist id="ownedGameSuggestions"></datalist>
+
+                  <input
+                    type="hidden"
+                    name="collectionType"
+                    value="OWNED"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  class="primary-button"
+                  style="margin-top: 12px"
+                >
+                  Add to Owned
+                </button>
+              </form>
+
+              <form
+                action="/collection/add"
+                method="post"
+                style="margin-top: 20px"
+              >
+                <div class="form-group">
+                  <label for="wishlistGames">Add Wishlist Game</label>
+
+                  <input
+                    type="text"
+                    name="gameName"
+                    id="wishlistGames"
+                    placeholder="Enter your game."
+                    list="wishlistGameSuggestions"
+                    required
+                  />
+
+                  <datalist id="wishlistGameSuggestions"></datalist>
+
+                  <input
+                    type="hidden"
+                    name="collectionType"
+                    value="WISHLIST"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  class="primary-button"
+                  style="margin-top: 12px"
+                >
+                  Add to Wishlist
+                </button>
+              </form>
+            </div>
+          </div>
         </section>
 
-        <section id="collectionEditor"
-                 class="profile-slide-panel"
-                 hidden>
-            <div class="profile-panel-heading">
-                <div>
-                    <p class="profile-section-eyebrow">Library management</p>
-                    <h2>Add a game</h2>
-                </div>
+        <section class="grid profile-main-grid">
+          <div class="feature-card profile-reviews-card">
+            <h2>Posted Reviews</h2>
 
-                <button type="button"
-                        class="profile-panel-close"
-                        onclick="closeProfilePanel('collectionEditor')"
-                        aria-label="Close add game panel">
-                    ×
+            <p class="muted" th:if="${reviews.isEmpty()}">
+              You haven't shared any reviews yet!
+            </p>
+
+            <div
+              th:each="review : ${reviews}"
+              class="mock-card"
+              style="margin-bottom: 16px; padding: 18px"
+            >
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: baseline;
+                "
+              >
+                <h3 style="margin: 0">
+                  <a th:if="${review.gameTitle != null}" th:href="@{/games/{title}(title=${review.gameTitle})}" th:text="${review.gameTitle}">Game Title</a>
+                  <span th:if="${review.gameTitle == null}">Game Title</span>
+                </h3>
+
+                <span
+                  class="eyebrow"
+                  th:text="${review.rating} + ' / 5'"
+                >
+                  5 / 5
+                </span>
+              </div>
+
+              <p
+                style="margin: 10px 0 0"
+                th:text="${review.reviewText}"
+              >
+                Review details
+              </p>
+
+              <form
+                class="profile-edit-only"
+                th:action="@{/reviews/{id}/delete(id=${review.id})}"
+                method="post"
+                onsubmit="return confirm('Delete this review?');"
+                hidden
+              >
+                <button type="submit" class="danger-button small-button" style="margin-top: 10px">
+                  Delete Review
                 </button>
+              </form>
             </div>
-
-            <form class="profile-collection-add-form"
-                  action="/collection/add"
-                  method="post">
-                <div class="form-group">
-                    <label for="collectionGameName">Board game</label>
-                    <input type="text"
-                           id="collectionGameName"
-                           name="gameName"
-                           list="collectionGameSuggestions"
-                           placeholder="Search for a board game"
-                           autocomplete="off"
-                           required>
-                    <datalist id="collectionGameSuggestions"></datalist>
-                </div>
-
-                <div class="form-group">
-                    <label for="collectionType">Add to</label>
-                    <select id="collectionType"
-                            name="collectionType"
-                            required>
-                        <option value="OWNED">Owned games</option>
-                        <option value="WISHLIST">Wishlist</option>
-                    </select>
-                </div>
-
-                <button type="submit"
-                        class="primary-button">
-                    Add game
-                </button>
-            </form>
+          </div>
         </section>
+      </main>
+    </div>
 
-        <section class="profile-stat-strip">
-            <article>
-                <span>Reviews</span>
-                <strong th:text="${reviewCount}">0</strong>
-            </article>
+    <script src="/js/game-autocomplete.js"></script>
 
-            <article>
-                <span>Owned</span>
-                <strong th:text="${ownedCount}">0</strong>
-            </article>
+    <script>
+      window.addEventListener('DOMContentLoaded', function () {
+        var pageBody = document.body;
+        var editCollectionButton = document.getElementById('editCollectionToggle');
+        var editToggleButton = document.getElementById('editProfileToggle');
+        var collectionEditElements = document.querySelectorAll('.collection-edit-only');
+        var profileEditElements = document.querySelectorAll('.profile-edit-only');
+        var isCollectionEditing = false;
+        var isProfileEditing = false;
 
-            <article>
-                <span>Wishlist</span>
-                <strong th:text="${wishlistCount}">0</strong>
-            </article>
+        function applyCollectionEditingState() {
+          collectionEditElements.forEach(function (element) {
+            element.hidden = !isCollectionEditing;
+          });
 
-            <article>
-                <span>Average rating</span>
-                <strong th:text="${reviewCount > 0
-                    ? #numbers.formatDecimal(averageRating, 1, 1)
-                    : '—'}">—</strong>
-            </article>
-        </section>
+          if (pageBody) {
+            pageBody.classList.toggle('is-collection-editing', isCollectionEditing);
+          }
 
-        <div class="profile-content-shell">
-            <section class="profile-content-main">
-                <nav class="profile-real-tabs"
-                     aria-label="Profile sections">
-                    <button type="button"
-                            class="active"
-                            data-profile-tab="owned">
-                        Owned games
-                    </button>
-
-                    <button type="button"
-                            data-profile-tab="wishlist">
-                        Wishlist
-                    </button>
-
-                    <button type="button"
-                            data-profile-tab="reviews">
-                        Reviews
-                    </button>
-                </nav>
-
-                <section class="profile-tab-panel active"
-                         data-profile-panel="owned">
-                    <div class="profile-panel-heading">
-                        <div>
-                            <p class="profile-section-eyebrow">Personal library</p>
-                            <h2>Owned games</h2>
-                        </div>
-                        <span th:text="${ownedCount} + ' games'">0 games</span>
-                    </div>
-
-                    <div class="profile-poster-grid"
-                         th:if="${ownedGames != null and !ownedGames.isEmpty()}">
-                        <article class="profile-poster-card"
-                                 th:each="item : ${ownedGames}">
-                            <a th:if="${item.gameId != null}"
-                               th:href="@{/games/id/{id}(id=${item.gameId})}"
-                               class="profile-poster-media">
-                                <img th:if="${item.imageUrl != null}"
-                                     th:src="${item.imageUrl}"
-                                     th:alt="'Cover for ' + ${item.gameName}">
-
-                                <div th:unless="${item.imageUrl != null}"
-                                     class="profile-poster-placeholder">
-                                    <span>□</span>
-                                </div>
-                            </a>
-
-                            <div th:unless="${item.gameId != null}"
-                                 class="profile-poster-media">
-                                <img th:if="${item.imageUrl != null}"
-                                     th:src="${item.imageUrl}"
-                                     th:alt="'Cover for ' + ${item.gameName}">
-
-                                <div th:unless="${item.imageUrl != null}"
-                                     class="profile-poster-placeholder">
-                                    <span>□</span>
-                                </div>
-                            </div>
-
-                            <div class="profile-poster-info">
-                                <a th:if="${item.gameId != null}"
-                                   th:href="@{/games/id/{id}(id=${item.gameId})}"
-                                   th:text="${item.gameName}">
-                                    Board game
-                                </a>
-
-                                <span th:unless="${item.gameId != null}"
-                                      th:text="${item.gameName}">
-                                    Board game
-                                </span>
-
-                                <div class="profile-poster-badges">
-                                    <span th:if="${item.communityScore != null}"
-                                          th:text="'BGG ' + ${#numbers.formatDecimal(item.communityScore, 1, 1)}">
-                                        BGG 7.5
-                                    </span>
-
-                                    <span th:if="${item.rankPosition != null and item.rankPosition > 0}"
-                                          th:text="'#' + ${item.rankPosition}">
-                                        #1
-                                    </span>
-
-                                    <span th:if="${item.userRating != null}"
-                                          th:text="${item.userRating} + '/5'">
-                                        5/5
-                                    </span>
-                                </div>
-
-                                <div class="profile-card-controls">
-                                    <form action="/collection/move"
-                                          method="post">
-                                        <input type="hidden"
-                                               name="id"
-                                               th:value="${item.collectionItemId}">
-                                        <input type="hidden"
-                                               name="collectionType"
-                                               value="WISHLIST">
-                                        <button type="submit">
-                                            Move to wishlist
-                                        </button>
-                                    </form>
-
-                                    <form action="/collection/remove"
-                                          method="post"
-                                          onsubmit="return confirm('Remove this game from your collection?');">
-                                        <input type="hidden"
-                                               name="id"
-                                               th:value="${item.collectionItemId}">
-                                        <button type="submit"
-                                                class="danger">
-                                            Remove
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        </article>
-                    </div>
-
-                    <div class="profile-clean-empty"
-                         th:if="${ownedGames == null or ownedGames.isEmpty()}">
-                        <span>□</span>
-                        <h3>No owned games yet</h3>
-                        <p>Add games you own to begin building your library.</p>
-                        <button type="button"
-                                class="primary-button"
-                                onclick="openCollectionEditorFor('OWNED')">
-                            Add an owned game
-                        </button>
-                    </div>
-                </section>
-
-                <section class="profile-tab-panel"
-                         data-profile-panel="wishlist">
-                    <div class="profile-panel-heading">
-                        <div>
-                            <p class="profile-section-eyebrow">Future plays</p>
-                            <h2>Wishlist</h2>
-                        </div>
-                        <span th:text="${wishlistCount} + ' games'">0 games</span>
-                    </div>
-
-                    <div class="profile-poster-grid"
-                         th:if="${wishlistGames != null and !wishlistGames.isEmpty()}">
-                        <article class="profile-poster-card"
-                                 th:each="item : ${wishlistGames}">
-                            <a th:if="${item.gameId != null}"
-                               th:href="@{/games/id/{id}(id=${item.gameId})}"
-                               class="profile-poster-media">
-                                <img th:if="${item.imageUrl != null}"
-                                     th:src="${item.imageUrl}"
-                                     th:alt="'Cover for ' + ${item.gameName}">
-
-                                <div th:unless="${item.imageUrl != null}"
-                                     class="profile-poster-placeholder">
-                                    <span>♡</span>
-                                </div>
-                            </a>
-
-                            <div th:unless="${item.gameId != null}"
-                                 class="profile-poster-media">
-                                <img th:if="${item.imageUrl != null}"
-                                     th:src="${item.imageUrl}"
-                                     th:alt="'Cover for ' + ${item.gameName}">
-
-                                <div th:unless="${item.imageUrl != null}"
-                                     class="profile-poster-placeholder">
-                                    <span>♡</span>
-                                </div>
-                            </div>
-
-                            <div class="profile-poster-info">
-                                <a th:if="${item.gameId != null}"
-                                   th:href="@{/games/id/{id}(id=${item.gameId})}"
-                                   th:text="${item.gameName}">
-                                    Board game
-                                </a>
-
-                                <span th:unless="${item.gameId != null}"
-                                      th:text="${item.gameName}">
-                                    Board game
-                                </span>
-
-                                <div class="profile-poster-badges">
-                                    <span th:if="${item.communityScore != null}"
-                                          th:text="'BGG ' + ${#numbers.formatDecimal(item.communityScore, 1, 1)}">
-                                        BGG 7.5
-                                    </span>
-
-                                    <span th:if="${item.rankPosition != null and item.rankPosition > 0}"
-                                          th:text="'#' + ${item.rankPosition}">
-                                        #1
-                                    </span>
-
-                                    <span th:if="${item.userRating != null}"
-                                          th:text="${item.userRating} + '/5'">
-                                        5/5
-                                    </span>
-                                </div>
-
-                                <div class="profile-card-controls">
-                                    <form action="/collection/move"
-                                          method="post">
-                                        <input type="hidden"
-                                               name="id"
-                                               th:value="${item.collectionItemId}">
-                                        <input type="hidden"
-                                               name="collectionType"
-                                               value="OWNED">
-                                        <button type="submit">
-                                            Move to owned
-                                        </button>
-                                    </form>
-
-                                    <form action="/collection/remove"
-                                          method="post"
-                                          onsubmit="return confirm('Remove this game from your wishlist?');">
-                                        <input type="hidden"
-                                               name="id"
-                                               th:value="${item.collectionItemId}">
-                                        <button type="submit"
-                                                class="danger">
-                                            Remove
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        </article>
-                    </div>
-
-                    <div class="profile-clean-empty"
-                         th:if="${wishlistGames == null or wishlistGames.isEmpty()}">
-                        <span>♡</span>
-                        <h3>Your wishlist is empty</h3>
-                        <p>Save games you want to play or buy later.</p>
-                        <button type="button"
-                                class="primary-button"
-                                onclick="openCollectionEditorFor('WISHLIST')">
-                            Add to wishlist
-                        </button>
-                    </div>
-                </section>
-
-                <section class="profile-tab-panel"
-                         data-profile-panel="reviews">
-                    <div class="profile-panel-heading">
-                        <div>
-                            <p class="profile-section-eyebrow">Player activity</p>
-                            <h2>Reviews</h2>
-                        </div>
-                        <span th:text="${reviewCount} + ' reviews'">0 reviews</span>
-                    </div>
-
-                    <div class="profile-review-stack"
-                         th:if="${reviews != null and !reviews.isEmpty()}">
-                        <article class="profile-review-clean"
-                                 th:each="review : ${reviews}">
-                            <div class="profile-review-clean-header">
-                                <div>
-                                    <p>Review</p>
-                                    <h3 th:text="${review.gameTitle}">
-                                        Board game
-                                    </h3>
-                                </div>
-
-                                <div class="profile-review-rating">
-                                    <span th:each="number : ${#numbers.sequence(1, 5)}"
-                                          th:classappend="${number <= review.rating} ? ' filled' : ''">
-                                        ★
-                                    </span>
-                                </div>
-                            </div>
-
-                            <p class="profile-review-clean-text"
-                               th:text="${review.reviewText}">
-                                Review text.
-                            </p>
-
-                            <time th:if="${review.createdAt != null}"
-                                  th:text="${#temporals.format(review.createdAt, 'MMM d, yyyy')}">
-                                Jan 1, 2026
-                            </time>
-                        </article>
-                    </div>
-
-                    <div class="profile-clean-empty"
-                         th:if="${reviews == null or reviews.isEmpty()}">
-                        <span>★</span>
-                        <h3>No reviews yet</h3>
-                        <p>Visit a game page and publish your first review.</p>
-                        <a href="/"
-                           class="primary-button profile-button-link">
-                            Discover games
-                        </a>
-                    </div>
-                </section>
-            </section>
-
-            <aside class="profile-sticky-sidebar">
-                <section>
-                    <p class="profile-section-eyebrow">Collection</p>
-                    <h2>Sort games</h2>
-
-                    <form action="/profile"
-                          method="get"
-                          class="profile-sort-form">
-                        <label for="sort">Sort by</label>
-                        <select id="sort"
-                                name="sort"
-                                onchange="this.form.submit()">
-                            <option value="added"
-                                    th:selected="${sort == 'added'}">
-                                Recently added
-                            </option>
-                            <option value="rating"
-                                    th:selected="${sort == 'rating'}">
-                                Highest rating
-                            </option>
-                            <option value="reviewed"
-                                    th:selected="${sort == 'reviewed'}">
-                                Recently reviewed
-                            </option>
-                        </select>
-                    </form>
-                </section>
-
-                <section>
-                    <p class="profile-section-eyebrow">People</p>
-                    <h2>Find players</h2>
-
-                    <form action="/profile/search"
-                          method="get"
-                          class="profile-sidebar-search">
-                        <input type="search"
-                               name="q"
-                               placeholder="Search username"
-                               required>
-                        <button type="submit">Search</button>
-                    </form>
-                </section>
-
-                <section>
-                    <p class="profile-section-eyebrow">Summary</p>
-                    <h2>Your profile</h2>
-
-                    <dl class="profile-mini-summary">
-                        <div>
-                            <dt>Owned</dt>
-                            <dd th:text="${ownedCount}">0</dd>
-                        </div>
-                        <div>
-                            <dt>Wishlist</dt>
-                            <dd th:text="${wishlistCount}">0</dd>
-                        </div>
-                        <div>
-                            <dt>Reviews</dt>
-                            <dd th:text="${reviewCount}">0</dd>
-                        </div>
-                    </dl>
-                </section>
-            </aside>
-        </div>
-    </main>
-</div>
-
-<script src="/js/game-autocomplete.js"></script>
-
-<script>
-    function openProfilePanel(panelId) {
-        document.querySelectorAll(".profile-slide-panel").forEach(function (panel) {
-            panel.hidden = panel.id !== panelId;
-        });
-
-        const panel = document.getElementById(panelId);
-
-        if (panel) {
-            panel.hidden = false;
-            panel.scrollIntoView({
-                behavior: "smooth",
-                block: "start"
-            });
-        }
-    }
-
-    function closeProfilePanel(panelId) {
-        const panel = document.getElementById(panelId);
-
-        if (panel) {
-            panel.hidden = true;
-        }
-    }
-
-    function openCollectionEditorFor(collectionType) {
-        const typeSelect = document.getElementById("collectionType");
-
-        if (typeSelect) {
-            typeSelect.value = collectionType;
+          if (editCollectionButton) {
+            editCollectionButton.textContent = isCollectionEditing ? 'Done Collection Editing' : 'Edit Collection';
+            editCollectionButton.setAttribute('aria-pressed', String(isCollectionEditing));
+            editCollectionButton.classList.toggle('primary-button', isCollectionEditing);
+            editCollectionButton.classList.toggle('secondary-button', !isCollectionEditing);
+          }
         }
 
-        openProfilePanel("collectionEditor");
-    }
+        function applyProfileEditingState() {
+          profileEditElements.forEach(function (element) {
+            element.hidden = !isProfileEditing;
+          });
 
-    document.addEventListener("DOMContentLoaded", function () {
-        const tabButtons = document.querySelectorAll("[data-profile-tab]");
-        const tabPanels = document.querySelectorAll("[data-profile-panel]");
+          if (pageBody) {
+            pageBody.classList.toggle('is-profile-editing', isProfileEditing);
+          }
 
-        tabButtons.forEach(function (button) {
-            button.addEventListener("click", function () {
-                const selectedTab = button.dataset.profileTab;
-
-                tabButtons.forEach(function (candidate) {
-                    candidate.classList.toggle("active", candidate === button);
-                });
-
-                tabPanels.forEach(function (panel) {
-                    panel.classList.toggle(
-                        "active",
-                        panel.dataset.profilePanel === selectedTab
-                    );
-                });
-            });
-        });
-
-        if (typeof attachGameAutocomplete === "function") {
-            attachGameAutocomplete(
-                "collectionGameName",
-                "collectionGameSuggestions"
-            );
+          if (editToggleButton) {
+            editToggleButton.textContent = isProfileEditing ? 'Done Profile Editing' : 'Edit Profile';
+            editToggleButton.setAttribute('aria-pressed', String(isProfileEditing));
+            editToggleButton.classList.toggle('primary-button', isProfileEditing);
+            editToggleButton.classList.toggle('secondary-button', !isProfileEditing);
+          }
         }
-    });
-</script>
-</body>
+
+        if (editCollectionButton) {
+          editCollectionButton.addEventListener('click', function () {
+            isCollectionEditing = !isCollectionEditing;
+            applyCollectionEditingState();
+          });
+        }
+
+        if (editToggleButton) {
+          editToggleButton.addEventListener('click', function () {
+            isProfileEditing = !isProfileEditing;
+            applyProfileEditingState();
+          });
+        }
+
+        applyCollectionEditingState();
+        applyProfileEditingState();
+        attachGameAutocomplete('ownedGames', 'ownedGameSuggestions');
+        attachGameAutocomplete('wishlistGames', 'wishlistGameSuggestions');
+      });
+    </script>
+  </body>
 </html>
