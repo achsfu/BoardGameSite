@@ -749,8 +749,8 @@ body.is-profile-editing .profile-view-only {
 
 .home-body {
     margin: 0;
-    background: #101417;
-    color: #d8e0e8;
+    background: #0f0d18;
+    color: #ddd9eb;
     font-family:
         Inter,
         -apple-system,
@@ -766,36 +766,52 @@ body.is-profile-editing .profile-view-only {
 .home-shell {
     min-height: 100vh;
     background:
+        radial-gradient(
+            circle at 48% -10%,
+            rgba(111, 78, 168, 0.28),
+            transparent 42%
+        ),
+        radial-gradient(
+            circle at 90% 30%,
+            rgba(74, 52, 120, 0.14),
+            transparent 30%
+        ),
         linear-gradient(
             180deg,
-            #101417 0,
-            #101417 420px,
-            #11171b 100%
+            #191426 0,
+            #12101c 430px,
+            #0f0d18 100%
         );
 }
 
 .home-nav {
     position: relative;
     z-index: 20;
-    min-height: 72px;
-    padding: 0 7%;
+    min-height: 70px;
+    padding:
+        0
+        max(24px, calc((100% - 1180px) / 2));
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    gap: 24px;
-    background: rgba(12, 16, 19, 0.96);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    justify-content: space-between;
+    gap: 28px;
+    background: rgba(11, 8, 16, 0.96);
+    border-bottom: 1px solid rgba(190, 174, 216, 0.1);
 }
 
 .home-brand {
     display: inline-flex;
     align-items: center;
     gap: 12px;
-    color: #f8fafc;
+    color: #ffffff;
     text-decoration: none;
-    font-size: clamp(1.2rem, 2vw, 1.8rem);
+    font-size: 1.45rem;
     font-weight: 800;
-    letter-spacing: -0.04em;
+    letter-spacing: -0.045em;
+}
+
+.home-brand:hover {
+    color: #d7c9ee;
 }
 
 .brand-dots {
@@ -831,21 +847,24 @@ body.is-profile-editing .profile-view-only {
 
 .home-nav-links a,
 .home-logout-button {
-    color: #9fb4c8;
+    color: #a9a0b4;
     background: none;
     border: 0;
     font: inherit;
-    font-size: 0.82rem;
-    font-weight: 700;
-    letter-spacing: 0.11em;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.09em;
     text-decoration: none;
     text-transform: uppercase;
     cursor: pointer;
+    transition:
+        color 160ms ease,
+        opacity 160ms ease;
 }
 
 .home-nav-links a:hover,
 .home-logout-button:hover {
-    color: white;
+    color: #ffffff;
 }
 
 .home-nav-links .home-signup-button {
