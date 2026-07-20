@@ -1,62 +1,429 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
-    <title>Review Moderation | BoardGameBoard</title>
-    <link rel="stylesheet" href="/css/site.css">
-</head>
-<body>
-<div class="app-shell">
-    <nav class="top-nav">
-        <a href="/" class="brand">BoardGameBoard</a>
 
-        <div class="nav-links">
-            <a href="/dashboard" class="text-link">Dashboard</a>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Review Moderation | BoardGameBoard</title>
+
+    <link rel="stylesheet" th:href="@{/css/site.css}">
+</head>
+
+<body class="moderation-body">
+
+<div class="moderation-shell">
+
+    <!-- =========================
+         Navigation
+         ========================= -->
+
+    <nav class="moderation-nav">
+
+        <a href="/" class="moderation-brand">
+            BoardGameBoard
+        </a>
+
+        <div class="moderation-nav-links">
+
+            <a
+                href="/dashboard"
+                class="moderation-nav-link"
+            >
+                Dashboard
+            </a>
+
+            <a
+                th:if="${role == 'ADMIN'}"
+                href="/admin"
+                class="moderation-nav-link"
+            >
+                Admin
+            </a>
+
             <form action="/logout" method="post">
-                <button type="submit" class="secondary-button">Logout</button>
+                <button
+                    type="submit"
+                    class="moderation-logout-button"
+                >
+                    Logout
+                </button>
             </form>
+
         </div>
     </nav>
 
-    <main class="dashboard">
-        <section class="hero-card">
-            <p class="eyebrow">MODERATION</p>
-            <h1>Review Moderation</h1>
-            <p>Admins and moderators can review and remove inappropriate reviews.</p>
-            <form action="/moderation/reviews/delete-all" method="post" onsubmit="return confirm('Delete all reviews? This cannot be undone.');">
-                <button type="submit" class="danger-button">Delete All Reviews</button>
-            </form>
-        </section>
+    <!-- =========================
+         Main content
+         ========================= -->
 
-        <section class="grid">
-            <div class="feature-card" th:each="review : ${reviews}">
-                <h2>
-                    <a th:if="${review.gameTitle != null}" th:href="@{/games/{title}(title=${review.gameTitle})}" th:text="${review.gameTitle}">Game Title</a>
-                    <span th:if="${review.gameTitle == null}">Game Title</span>
-                </h2>
+    <main class="moderation-main">
 
-                <p>
-                    <strong>Rating:</strong>
-                    <span th:text="${review.rating}">5</span>/5
+        <!-- Page heading -->
+
+        <header class="moderation-header">
+
+            <div class="moderation-heading-content">
+
+                <p class="moderation-eyebrow">
+                    Community moderation
                 </p>
 
-                <p>
-                    <strong>Posted by:</strong>
-                    <span th:text="${review.user != null ? review.user.username : 'Unknown user'}">username</span>
+                <h1>Review Moderation</h1>
+
+                <p class="moderation-description">
+                    Review community submissions and remove content that
+                    violates BoardGameBoard guidelines.
                 </p>
 
-                <p th:text="${review.reviewText}">
-                    Review text
-                </p>
-
-                <form th:action="@{/moderation/reviews/{id}/delete(id=${review.id})}"
-                      method="post"
-                      onsubmit="return confirm('Delete this review?');">
-                    <button type="submit" class="danger-button">Delete Review</button>
-                </form>
             </div>
+
+            <div class="moderation-account">
+
+                <span
+                    class="moderation-account-name"
+                    th:text="${username}"
+                >
+                    Username
+                </span>
+
+                <span
+                    class="moderation-role-badge"
+                    th:text="${role}"
+                >
+                    Moderator
+                </span>
+
+            </div>
+
+        </header>
+
+        <!-- =========================
+             Toolbar
+             ========================= -->
+
+        <section class="moderation-toolbar">
+
+            <form
+                action="/moderation/reviews"
+                method="get"
+                class="moderation-filter-form"
+            >
+
+                <div class="moderation-search-group">
+
+                    <label
+                        for="moderation-keyword"
+                        class="moderation-visually-hidden"
+                    >
+                        Search reviews
+                    </label>
+
+                    <input
+                        id="moderation-keyword"
+                        type="search"
+                        name="keyword"
+                        class="moderation-search-input"
+                        placeholder="Search game, reviewer, or review text"
+                        th:value="${keyword}"
+                    >
+
+                </div>
+
+                <div class="moderation-rating-group">
+
+                    <label
+                        for="moderation-rating"
+                        class="moderation-visually-hidden"
+                    >
+                        Filter by rating
+                    </label>
+
+                    <select
+                        id="moderation-rating"
+                        name="rating"
+                        class="moderation-rating-select"
+                    >
+                        <option
+                            value=""
+                            th:selected="${selectedRating == null}"
+                        >
+                            All ratings
+                        </option>
+
+                        <option
+                            value="5"
+                            th:selected="${selectedRating == 5}"
+                        >
+                            5 stars
+                        </option>
+
+                        <option
+                            value="4"
+                            th:selected="${selectedRating == 4}"
+                        >
+                            4 stars
+                        </option>
+
+                        <option
+                            value="3"
+                            th:selected="${selectedRating == 3}"
+                        >
+                            3 stars
+                        </option>
+
+                        <option
+                            value="2"
+                            th:selected="${selectedRating == 2}"
+                        >
+                            2 stars
+                        </option>
+
+                        <option
+                            value="1"
+                            th:selected="${selectedRating == 1}"
+                        >
+                            1 star
+                        </option>
+                    </select>
+
+                </div>
+
+                <button
+                    type="submit"
+                    class="moderation-filter-button"
+                >
+                    Apply Filters
+                </button>
+
+                <a
+                    href="/moderation/reviews"
+                    class="moderation-clear-button"
+                >
+                    Clear
+                </a>
+
+            </form>
+
         </section>
+
+        <!-- =========================
+             Review count and admin action
+             ========================= -->
+
+        <section class="moderation-summary">
+
+            <p class="moderation-result-count">
+
+                <strong th:text="${reviewCount}">
+                    0
+                </strong>
+
+                <span
+                    th:text="${reviewCount == 1 ? 'review found' : 'reviews found'}"
+                >
+                    reviews found
+                </span>
+
+            </p>
+
+            <!-- Only administrators see this control -->
+
+            <form
+                th:if="${role == 'ADMIN' and reviewCount > 0}"
+                action="/moderation/reviews/delete-all"
+                method="post"
+                class="moderation-delete-all-form"
+                onsubmit="return confirm(
+                    'Delete every review? This action cannot be undone.'
+                );"
+            >
+
+                <button
+                    type="submit"
+                    class="moderation-delete-all-button"
+                >
+                    Delete All Reviews
+                </button>
+
+            </form>
+
+        </section>
+
+        <!-- =========================
+             Empty state
+             ========================= -->
+
+        <section
+            class="moderation-empty-state"
+            th:if="${#lists.isEmpty(reviews)}"
+        >
+
+            <div class="moderation-empty-icon">
+                ✓
+            </div>
+
+            <h2>No reviews found</h2>
+
+            <p th:if="${hasActiveFilters}">
+                No reviews match the filters you selected.
+            </p>
+
+            <p th:unless="${hasActiveFilters}">
+                There are currently no reviews requiring moderation.
+            </p>
+
+            <a
+                th:if="${hasActiveFilters}"
+                href="/moderation/reviews"
+                class="moderation-empty-link"
+            >
+                Clear filters
+            </a>
+
+        </section>
+
+        <!-- =========================
+             Reviews list
+             ========================= -->
+
+        <section
+            class="moderation-review-list"
+            th:unless="${#lists.isEmpty(reviews)}"
+        >
+
+            <article
+                class="moderation-review-row"
+                th:each="review : ${reviews}"
+            >
+
+                <!-- Game and review information -->
+
+                <div class="moderation-review-content">
+
+                    <div class="moderation-review-topline">
+
+                        <div class="moderation-game-heading">
+
+                            <a
+                                th:if="${review.gameTitle != null}"
+                                th:href="@{/games/{title}(title=${review.gameTitle})}"
+                                class="moderation-game-title"
+                                th:text="${review.gameTitle}"
+                            >
+                                Game Title
+                            </a>
+
+                            <span
+                                th:if="${review.gameTitle == null}"
+                                class="moderation-game-title"
+                            >
+                                Unknown Game
+                            </span>
+
+                            <span class="moderation-review-id">
+                                Review
+                                <span th:text="${review.id}">
+                                    1
+                                </span>
+                            </span>
+
+                        </div>
+
+                        <div
+                            class="moderation-stars"
+                            th:attr="aria-label=${review.rating + ' out of 5 stars'}"
+                        >
+
+                            <span
+                                th:each="star : ${#numbers.sequence(1, 5)}"
+                                class="moderation-star"
+                                th:classappend="${review.rating != null and star <= review.rating}
+                                    ? ' moderation-star-filled'
+                                    : ''"
+                            >
+                                ★
+                            </span>
+
+                            <span
+                                class="moderation-rating-number"
+                                th:text="${review.rating != null
+                                    ? review.rating + '/5'
+                                    : 'No rating'}"
+                            >
+                                5/5
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <div class="moderation-review-metadata">
+
+                        <span class="moderation-posted-label">
+                            Posted by
+                        </span>
+
+                        <strong
+                            class="moderation-reviewer-name"
+                            th:text="${review.user != null
+                                and review.user.username != null
+                                ? review.user.username
+                                : 'Unknown user'}"
+                        >
+                            Username
+                        </strong>
+
+                    </div>
+
+                    <p
+                        class="moderation-review-text"
+                        th:text="${review.reviewText != null
+                            and !review.reviewText.isBlank()
+                            ? review.reviewText
+                            : 'No written review was provided.'}"
+                    >
+                        Review text
+                    </p>
+
+                </div>
+
+                <!-- Individual moderation action -->
+
+                <div class="moderation-review-actions">
+
+                    <form
+                        th:action="@{/moderation/reviews/{id}/delete(
+                            id=${review.id}
+                        )}"
+                        method="post"
+                        onsubmit="return confirm(
+                            'Delete this review? This action cannot be undone.'
+                        );"
+                    >
+
+                        <button
+                            type="submit"
+                            class="moderation-delete-button"
+                        >
+                            Delete Review
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </article>
+
+        </section>
+
     </main>
+
 </div>
+
 </body>
 </html>
