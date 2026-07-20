@@ -4,65 +4,41 @@ import com.cardboardboxed.demo.reviews.Review;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import java.util.List;
 
 @Entity
-@Table(name = "boardgames_ranks")
+@Table(name = "board_games")
 public class BoardGameRank {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "\"BGGId\"")
     private Integer id;
 
-    /*
-     * BoardGameGeek's unique identifier.
-     *
-     * This is used when requesting game information,
-     * thumbnails and full-sized images from the BGG API.
-     */
-    @Column(name = "bgg_id", unique = true)
-    private Integer bggId;
-
-    @Column(name = "name", unique = true, nullable = false)
+    @Column(name = "\"Name\"", nullable = false)
     private String title;
 
-    @Column(name = "rank")
+    @Column(name = "\"Rank:boardgame\"")
     private Integer rankPosition;
 
-    @Column(name = "average")
+    @Column(name = "\"AvgRating\"")
     private Double communityScore;
 
-    @Column(length = 10000)
+    @Column(name = "\"Description\"", length = 10000)
     private String description;
 
-    /*
-     * Smaller BoardGameGeek image.
-     *
-     * This can be used when loading compact poster cards.
-     */
-    @Column(name = "thumbnail_url", length = 1000)
-    private String thumbnailUrl;
-
-    /*
-     * Full-sized BoardGameGeek image.
-     *
-     * This is the preferred image for game pages and
-     * larger homepage posters.
-     */
-    @Column(name = "image_url", length = 1000)
+    @Column(name = "\"ImagePath\"", length = 1000)
     private String imageUrl;
-
-    @Column(name = "is_expansion")
-    private Boolean isExpansion;
 
     @OneToMany(mappedBy = "game")
     private List<Review> reviews;
+
+    @Transient
+    private Boolean isExpansion;
 
     public BoardGameRank() {
     }
@@ -76,11 +52,11 @@ public class BoardGameRank {
     }
 
     public Integer getBggId() {
-        return bggId;
+        return id;
     }
 
     public void setBggId(Integer bggId) {
-        this.bggId = bggId;
+        this.id = bggId;
     }
 
     public String getTitle() {
@@ -115,12 +91,37 @@ public class BoardGameRank {
         this.description = description;
     }
 
+    public String getDisplayDescription() {
+        if (description == null || description.isBlank()) {
+            return description;
+        }
+
+        String normalized = description
+                .replace("\r\n", "\n")
+                .replace('\r', '\n')
+                .replaceAll("\\s+", " ")
+                .trim();
+
+        normalized = insertSection(normalized, "theme", "Theme");
+        normalized = insertSection(normalized, "gameplay", "Gameplay");
+        normalized = insertSection(normalized, "goal", "Goal");
+        normalized = insertSection(normalized, "cultural impact rules", "Cultural Impact And Rules");
+        normalized = insertSection(normalized, "background", "Background");
+        normalized = insertSection(normalized, "reimplement", "Reimplements");
+        normalized = insertSection(normalized, "expande by", "Expanded By");
+        normalized = insertSection(normalized, "expanded by", "Expanded By");
+
+        return normalized.trim();
+    }
+
     public String getThumbnailUrl() {
-        return thumbnailUrl;
+        return imageUrl;
     }
 
     public void setThumbnailUrl(String thumbnailUrl) {
-        this.thumbnailUrl = thumbnailUrl;
+        if ((imageUrl == null || imageUrl.isBlank()) && thumbnailUrl != null && !thumbnailUrl.isBlank()) {
+            this.imageUrl = thumbnailUrl;
+        }
     }
 
     public String getImageUrl() {
@@ -132,7 +133,7 @@ public class BoardGameRank {
     }
 
     public Boolean getIsExpansion() {
-        return isExpansion;
+        return false;
     }
 
     public void setIsExpansion(Boolean isExpansion) {
@@ -169,5 +170,12 @@ public class BoardGameRank {
 
     private boolean isNotBlank(String value) {
         return value != null && !value.isBlank();
+    }
+
+    private String insertSection(String source, String token, String label) {
+        return source.replaceFirst(
+                "(?i)" + java.util.regex.Pattern.quote(token),
+                java.util.regex.Matcher.quoteReplacement("\n\n" + label + ": ")
+        );
     }
 }

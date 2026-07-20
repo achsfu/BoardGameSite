@@ -113,53 +113,24 @@ public class AdminModerationController {
                 ? ""
                 : keyword.trim();
 
-        List<User> users = userRepository.findAll();
-
-        if (!searchTerm.isBlank()) {
-            users = users.stream()
-                    .filter(user ->
-                            containsIgnoreCase(
-                                    user.getUsername(),
-                                    searchTerm
-                            )
-                    )
-                    .toList();
-        }
-
         model.addAttribute(
                 "admins",
-                users.stream()
-                        .filter(user ->
-                                "ADMIN".equalsIgnoreCase(user.getRole())
-                        )
-                        .toList()
+                loadUsersByRole("ADMIN", searchTerm)
         );
 
         model.addAttribute(
                 "moderators",
-                users.stream()
-                        .filter(user ->
-                                "MODERATOR".equalsIgnoreCase(user.getRole())
-                        )
-                        .toList()
+                loadUsersByRole("MODERATOR", searchTerm)
         );
 
         model.addAttribute(
                 "organizers",
-                users.stream()
-                        .filter(user ->
-                                "ORGANIZER".equalsIgnoreCase(user.getRole())
-                        )
-                        .toList()
+                loadUsersByRole("ORGANIZER", searchTerm)
         );
 
         model.addAttribute(
                 "players",
-                users.stream()
-                        .filter(user ->
-                                "PLAYER".equalsIgnoreCase(user.getRole())
-                        )
-                        .toList()
+                loadUsersByRole("PLAYER", searchTerm)
         );
 
         model.addAttribute("keyword", keyword);
@@ -276,41 +247,10 @@ public class AdminModerationController {
             selectedRating = null;
         }
 
-        List<Review> reviews = reviewRepository.findAll();
-
-        if (!searchTerm.isBlank()) {
-            reviews = reviews.stream()
-                    .filter(review -> {
-                        String reviewerUsername =
-                                review.getUser() == null
-                                        ? null
-                                        : review.getUser().getUsername();
-
-                        return containsIgnoreCase(
-                                    review.getGameTitle(),
-                                    searchTerm
-                                )
-                                || containsIgnoreCase(
-                                    review.getReviewText(),
-                                    searchTerm
-                                )
-                                || containsIgnoreCase(
-                                    reviewerUsername,
-                                    searchTerm
-                                );
-                    })
-                    .toList();
-        }
-
-        if (selectedRating != null) {
-            Integer finalRating = selectedRating;
-
-            reviews = reviews.stream()
-                    .filter(review ->
-                            finalRating.equals(review.getRating())
-                    )
-                    .toList();
-        }
+        List<Review> reviews = reviewRepository.findForModeration(
+                searchTerm,
+                selectedRating
+        );
 
         model.addAttribute("reviews", reviews);
         model.addAttribute("reviewCount", reviews.size());
@@ -334,6 +274,17 @@ public class AdminModerationController {
 
         return "moderation-reviews";
     }
+
+        private List<User> loadUsersByRole(String role, String searchTerm) {
+                if (searchTerm == null || searchTerm.isBlank()) {
+                        return userRepository.findByRoleIgnoreCaseOrderByUsernameAsc(role);
+                }
+
+                return userRepository.findByRoleIgnoreCaseAndUsernameContainingIgnoreCaseOrderByUsernameAsc(
+                                role,
+                                searchTerm
+                );
+        }
 
     /*
      * Moderators and administrators may delete individual reviews.

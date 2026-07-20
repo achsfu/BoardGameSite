@@ -16,16 +16,8 @@ public interface BoardGameRankRepository
      * Returns the first non-expansion game matching the title.
      * Using "findFirst" prevents an error if duplicate titles exist.
      */
-    Optional<BoardGameRank> findFirstByTitleIgnoreCaseAndIsExpansionFalse(
+    Optional<BoardGameRank> findFirstByTitleIgnoreCaseOrderByRankPositionAsc(
             String title
-    );
-
-    Optional<BoardGameRank> findFirstByTitleIgnoreCase(String title);
-
-    Optional<BoardGameRank> findByBggId(Integer bggId);
-
-    List<BoardGameRank> findAllByIsExpansionOrderByRankPositionAsc(
-            Boolean isExpansion
     );
 
     List<BoardGameRank>
@@ -39,8 +31,7 @@ public interface BoardGameRankRepository
     @Query("""
         select game
         from BoardGameRank game
-        where game.isExpansion = false
-          and game.imageUrl is not null
+                                where game.imageUrl is not null
           and game.imageUrl <> ''
         order by
           case when game.rankPosition is null then 1 else 0 end,
@@ -57,8 +48,7 @@ public interface BoardGameRankRepository
     @Query("""
         select game
         from BoardGameRank game
-        where game.isExpansion = false
-          and game.imageUrl is not null
+                                where game.imageUrl is not null
           and game.imageUrl <> ''
           and game.communityScore is not null
         order by game.communityScore desc, game.rankPosition asc
@@ -86,7 +76,6 @@ public interface BoardGameRankRepository
         select game
         from BoardGameRank game
         where lower(game.title) like lower(concat('%', :query, '%'))
-          and game.isExpansion = false
         order by
           case when game.rankPosition = 0 then 1 else 0 end asc,
           game.rankPosition asc nulls last,

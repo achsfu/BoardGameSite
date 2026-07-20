@@ -36,7 +36,8 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
     @Query("""
         select r
         from Review r
-        where r.user in (
+        join fetch r.user u
+        where u in (
             select uf.followed
             from UserFollow uf
             where uf.follower = :follower
@@ -53,10 +54,29 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
     @Query("""
         select r
         from Review r
-        where r.game is not null
+        join fetch r.game g
+        left join fetch r.user
         order by r.createdAt desc
         """)
     List<Review> findRecentHomepageReviews(
             Pageable pageable
+    );
+
+    @Query("""
+        select r
+        from Review r
+        left join r.user u
+        where (
+            :keyword = ''
+            or lower(coalesce(r.gameTitle, '')) like lower(concat('%', :keyword, '%'))
+            or lower(coalesce(r.reviewText, '')) like lower(concat('%', :keyword, '%'))
+            or lower(coalesce(u.username, '')) like lower(concat('%', :keyword, '%'))
+        )
+        and (:rating is null or r.rating = :rating)
+        order by r.createdAt desc
+        """)
+    List<Review> findForModeration(
+            @Param("keyword") String keyword,
+            @Param("rating") Integer rating
     );
 }

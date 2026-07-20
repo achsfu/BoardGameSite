@@ -239,11 +239,6 @@ public class BoardGameController {
                 "totalPages",
                 similarGamesPage.getTotalPages()
         );
-        model.addAttribute(
-                "games",
-                boardGameRankRepository
-                        .findAllByIsExpansionOrderByRankPositionAsc(false)
-        );
 
         return "game-search";
     }
@@ -315,7 +310,7 @@ public class BoardGameController {
         }
 
         return boardGameRankRepository
-                .findFirstByTitleIgnoreCaseAndIsExpansionFalse(
+                .findFirstByTitleIgnoreCaseOrderByRankPositionAsc(
                         title.trim()
                 )
                 .orElse(null);
