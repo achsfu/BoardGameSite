@@ -1,168 +1,776 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${game.title} + ' | BoardGameBoard'">Game Detail | BoardGameBoard</title>
+
+    <title th:text="${game.title} + ' | BoardGameBoard'">
+        Game Detail | BoardGameBoard
+    </title>
+
     <link rel="stylesheet" href="/css/site.css">
 </head>
 
-<body>
-    <div class="app-shell">
-        <nav class="top-nav">
-            <a href="/" class="brand">BoardGameBoard</a>
+<body class="dashboard-body">
 
-            <div class="nav-links">
-                <a href="/dashboard" class="secondary-button">Dashboard</a>
-                <a href="/profile" class="secondary-button">Profile</a>
+    <div class="dashboard-shell">
+
+        <nav class="dashboard-nav">
+            <a href="/" class="dashboard-brand">
+                BoardGameBoard
+            </a>
+
+            <div class="dashboard-nav-links">
+                <a href="/dashboard">Dashboard</a>
+                <a href="/profile">Profile</a>
+
                 <form action="/logout" method="post">
-                    <button type="submit" class="secondary-button">Logout</button>
+                    <button type="submit" class="dashboard-logout-button">
+                        Logout
+                    </button>
                 </form>
             </div>
         </nav>
 
-        <main class="dashboard game-detail-layout">
-            <section class="hero-card">
-                <p class="eyebrow">GAME PROFILE</p>
-                <h1 th:text="${game.title}">Game Title</h1>
-                <p
-                    class="formatted-description"
-                    th:text="${game.displayDescription != null ? game.displayDescription : 'Community reviews and rank details for this board game.'}">
-                    Community reviews and rank details for this board game.
-                </p>
-                <p class="muted" th:if="${successMessage != null}" th:text="${successMessage}">Description updated</p>
-                <p class="muted" th:if="${errorMessage != null}" th:text="${errorMessage}">Only admins and moderators can edit descriptions</p>
-                <div class="hero-actions">
-                    <button type="button" class="primary-button" onclick="openGameReviewModal()">Review This
-                        Game</button>
-                    <a href="/dashboard" class="secondary-button">Back to Dashboard</a>
-                </div>
-                <form th:if="${canEditDescription}" th:action="@{/games/{title}/description(title=${game.title})}" method="post" class="game-search-form" style="margin-top: 1rem;">
-                    <label for="gameDescriptionEditor">Edit Description (Admin/Moderator)</label>
-                    <textarea id="gameDescriptionEditor" name="description" rows="4"
-                        th:text="${game.description != null ? game.description : ''}"
-                        placeholder="Add or update the game description"></textarea>
-                    <button type="submit" class="primary-button">Save Description</button>
-                </form>
-            </section>
+        <main class="game-detail-page">
 
-            <section class="stats-grid">
-                <div class="feature-card stat-card">
-                    <p class="eyebrow">RANK</p>
-                    <h2 th:text="${game.rankPosition != null ? '#' + game.rankPosition : 'Unranked'}">#1</h2>
-                    <p class="muted">The rank according to BoardGameGeek.</p>
+            <div
+                class="game-detail-alert game-detail-success"
+                th:if="${successMessage != null}"
+                th:text="${successMessage}">
+                Description updated.
+            </div>
+
+            <div
+                class="game-detail-alert game-detail-error"
+                th:if="${errorMessage != null}"
+                th:text="${errorMessage}">
+                An error occurred.
+            </div>
+
+            <section class="game-detail-hero">
+
+                <div class="game-detail-poster-column">
+
+                    <div class="game-detail-poster">
+
+                        <img
+                            th:if="${game.hasImage()}"
+                            th:src="${game.preferredImageUrl}"
+                            th:alt="${game.title} + ' cover image'">
+
+                        <div
+                            class="game-detail-poster-placeholder"
+                            th:unless="${game.hasImage()}">
+
+                            <span th:text="${game.title}">
+                                Game title
+                            </span>
+                        </div>
+
+                    </div>
+
+                    <button
+                        type="button"
+                        class="game-detail-review-button"
+                        onclick="openGameReviewModal()">
+
+                        Review This Game
+                    </button>
+
+                    <a href="/dashboard" class="game-detail-back-button">
+                        Back to Dashboard
+                    </a>
+
                 </div>
-                <div class="feature-card stat-card">
-                    <p class="eyebrow">CATALOG SCORE</p>
-                    <h2 th:text="${game.communityScore != null ? game.communityScore : 'No score yet'}">8.9</h2>
-                    <p class="muted">Score from BoardGameGeek.</p>
-                </div>
-                <div class="feature-card stat-card">
-                    <p class="eyebrow">USER REVIEWS</p>
-                    <h2 th:text="${averageReviewScore != null ? averageReviewScore : 'No reviews yet'}">0</h2>
-                    <p class="muted">
-                        Review Count:
-                        <span th:text="${reviewCount}">No reviews
-                            yet</span>
+
+                <div class="game-detail-main-column">
+
+                    <p class="game-detail-eyebrow">
+                        Game Profile
                     </p>
+
+                    <h1 th:text="${game.title}">
+                        Game Title
+                    </h1>
+
+                    <div class="game-detail-rating-line">
+
+                        <span
+                            class="game-detail-catalog-score"
+                            th:if="${game.communityScore != null}">
+
+                            <span class="game-detail-star">★</span>
+
+                            <span
+                                th:text="${#numbers.formatDecimal(
+                                    game.communityScore,
+                                    1,
+                                    2
+                                )}">
+                                8.50
+                            </span>
+                        </span>
+
+                        <span
+                            class="game-detail-catalog-score"
+                            th:unless="${game.communityScore != null}">
+
+                            Not yet rated
+                        </span>
+
+                        <th:block
+                            th:if="${game.yearPublished != null
+                                && game.yearPublished > 0}">
+
+                            <span class="game-detail-separator">•</span>
+
+                            <span th:text="${game.yearPublished}">
+                                2020
+                            </span>
+
+                        </th:block>
+
+                        <th:block
+                            th:if="${game.playerCountDisplay != null}">
+
+                            <span class="game-detail-separator">•</span>
+
+                            <span th:text="${game.playerCountDisplay}">
+                                2–4 players
+                            </span>
+
+                        </th:block>
+
+                        <th:block
+                            th:if="${game.playtimeDisplay != null}">
+
+                            <span class="game-detail-separator">•</span>
+
+                            <span th:text="${game.playtimeDisplay}">
+                                60–90 min
+                            </span>
+
+                        </th:block>
+
+                    </div>
+
+                    <div class="game-detail-description">
+
+                        <h2>About the game</h2>
+
+                        <p
+                            class="formatted-description"
+                            th:text="${game.displayDescription != null
+                                && !game.displayDescription.isBlank()
+                                ? game.displayDescription
+                                : 'Community reviews and ranking details for this board game.'}">
+
+                            Community reviews and ranking details for this board game.
+                        </p>
+
+                    </div>
+
+                    <div
+                        class="game-detail-admin-section"
+                        th:if="${canEditDescription}">
+
+                        <div class="game-detail-section-heading">
+
+                            <div>
+                                <p class="game-detail-eyebrow">
+                                    Administration
+                                </p>
+
+                                <h2>Edit game description</h2>
+                            </div>
+
+                        </div>
+
+                        <form
+                            th:action="@{/games/id/{id}/description(id=${game.id})}"
+                            method="post"
+                            class="game-detail-description-form">
+
+                            <label
+                                for="gameDescriptionEditor"
+                                class="game-detail-visually-hidden">
+
+                                Game description
+                            </label>
+
+                            <textarea
+                                id="gameDescriptionEditor"
+                                name="description"
+                                rows="7"
+                                th:text="${game.description != null
+                                    ? game.description
+                                    : ''}"
+                                placeholder="Add or update the game description"></textarea>
+
+                            <div class="game-detail-admin-actions">
+
+                                <button
+                                    type="submit"
+                                    class="game-detail-silver-button">
+
+                                    Save Description
+                                </button>
+
+                            </div>
+
+                        </form>
+
+                    </div>
+
                 </div>
+
+                <aside class="game-detail-sidebar">
+
+                    <div class="game-detail-sidebar-heading">
+
+                        <p class="game-detail-eyebrow">
+                            Game Details
+                        </p>
+
+                        <h2>At a glance</h2>
+
+                    </div>
+
+                    <div
+                        class="game-detail-stat-row"
+                        th:if="${game.yearPublished != null
+                            && game.yearPublished > 0}">
+
+                        <span class="game-detail-stat-label">
+                            Published
+                        </span>
+
+                        <strong th:text="${game.yearPublished}">
+                            2020
+                        </strong>
+
+                    </div>
+
+                    <div
+                        class="game-detail-stat-row"
+                        th:if="${game.playerCountDisplay != null}">
+
+                        <span class="game-detail-stat-label">
+                            Players
+                        </span>
+
+                        <strong th:text="${game.playerCountDisplay}">
+                            2–4 players
+                        </strong>
+
+                    </div>
+
+                    <div
+                        class="game-detail-stat-row"
+                        th:if="${game.playtimeDisplay != null}">
+
+                        <span class="game-detail-stat-label">
+                            Playtime
+                        </span>
+
+                        <strong th:text="${game.playtimeDisplay}">
+                            60–90 min
+                        </strong>
+
+                    </div>
+
+                    <div
+                        class="game-detail-stat-row"
+                        th:if="${game.recommendedAge != null
+                            && game.recommendedAge > 0}">
+
+                        <span class="game-detail-stat-label">
+                            Recommended Age
+                        </span>
+
+                        <strong th:text="${game.recommendedAge} + '+'">
+                            12+
+                        </strong>
+
+                    </div>
+
+                    <div
+                        class="game-detail-stat-row"
+                        th:if="${game.complexityDisplay != null}">
+
+                        <span class="game-detail-stat-label">
+                            Complexity
+                        </span>
+
+                        <strong th:text="${game.complexityDisplay}">
+                            3.25 / 5
+                        </strong>
+
+                    </div>
+
+                    <div class="game-detail-stat-row">
+
+                        <span class="game-detail-stat-label">
+                            BGG Rank
+                        </span>
+
+                        <strong
+                            th:text="${game.rankPosition != null
+                                && game.rankPosition > 0
+                                ? '#' + game.rankPosition
+                                : 'Unranked'}">
+
+                            #1
+                        </strong>
+
+                    </div>
+
+                    <div class="game-detail-stat-row">
+
+                        <span class="game-detail-stat-label">
+                            BGG Rating
+                        </span>
+
+                        <strong
+                            th:text="${game.communityScore != null
+                                ? #numbers.formatDecimal(
+                                    game.communityScore,
+                                    1,
+                                    2
+                                )
+                                : 'Not rated'}">
+
+                            8.50
+                        </strong>
+
+                    </div>
+
+                    <div class="game-detail-stat-row">
+
+                        <span class="game-detail-stat-label">
+                            User Score
+                        </span>
+
+                        <strong
+                            th:text="${averageReviewScore != null
+                                ? #numbers.formatDecimal(
+                                    averageReviewScore,
+                                    1,
+                                    2
+                                ) + ' / 5'
+                                : 'No reviews'}">
+
+                            4.50 / 5
+                        </strong>
+
+                    </div>
+
+                    <div class="game-detail-stat-row">
+
+                        <span class="game-detail-stat-label">
+                            Site Reviews
+                        </span>
+
+                        <strong th:text="${reviewCount}">
+                            0
+                        </strong>
+
+                    </div>
+
+                </aside>
+
             </section>
 
-            <section class="feature-card review-panel">
-                <div class="section-heading">
+            <section
+                class="game-detail-community-section"
+                th:if="${game.numberOfUserRatings != null
+                    || game.numberOwned != null
+                    || game.numberWished != null}">
+
+                <div class="game-detail-section-heading">
+
                     <div>
-                        <p class="eyebrow">RECENT REVIEWS</p>
+                        <p class="game-detail-eyebrow">
+                            BoardGameGeek Community
+                        </p>
+
+                        <h2>Community activity</h2>
+                    </div>
+
+                </div>
+
+                <div class="game-detail-community-grid">
+
+                    <div
+                        class="game-detail-community-stat"
+                        th:if="${game.numberOfUserRatings != null}">
+
+                        <strong
+                            th:text="${#numbers.formatInteger(
+                                game.numberOfUserRatings,
+                                1,
+                                'COMMA'
+                            )}">
+                            100,000
+                        </strong>
+
+                        <span>Ratings</span>
+
+                    </div>
+
+                    <div
+                        class="game-detail-community-stat"
+                        th:if="${game.numberOwned != null}">
+
+                        <strong
+                            th:text="${#numbers.formatInteger(
+                                game.numberOwned,
+                                1,
+                                'COMMA'
+                            )}">
+                            250,000
+                        </strong>
+
+                        <span>Owners</span>
+
+                    </div>
+
+                    <div
+                        class="game-detail-community-stat"
+                        th:if="${game.numberWished != null}">
+
+                        <strong
+                            th:text="${#numbers.formatInteger(
+                                game.numberWished,
+                                1,
+                                'COMMA'
+                            )}">
+                            50,000
+                        </strong>
+
+                        <span>Wishlisted</span>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+            <section class="game-detail-review-section">
+
+                <div class="game-detail-section-heading">
+
+                    <div>
+                        <p class="game-detail-eyebrow">
+                            Recent Reviews
+                        </p>
+
                         <h2>What players are saying</h2>
                     </div>
+
+                    <button
+                        type="button"
+                        class="game-detail-text-action"
+                        onclick="openGameReviewModal()">
+
+                        Write a Review
+                    </button>
+
                 </div>
 
-                <p class="muted" th:if="${recentReviews.isEmpty()}">No reviews have been posted for this game yet.</p>
+                <div
+                    class="game-detail-empty-state"
+                    th:if="${recentReviews.isEmpty()}">
 
-                <div th:each="review : ${recentReviews}" class="mock-card game-review-card">
-                    <div class="review-card-header">
-                        <div>
-                            <a class="review-author text-link"
-                               th:if="${review.user != null}"
-                               th:href="@{'/profile/' + ${review.user.username}}"
-                               th:text="${review.user.username}">username</a>
-                            <p class="review-author"
-                               th:if="${review.user == null}">Unknown user</p>
-                            <p class="muted" th:text="${#temporals.format(review.createdAt, 'MMM d, yyyy HH:mm')}">Jan
-                                1, 2026</p>
-                        </div>
-                        <span class="eyebrow" th:text="${review.rating} + ' / 5'">5 / 5</span>
+                    <div class="game-detail-empty-icon">
+                        ★
                     </div>
 
-                    <p th:text="${review.reviewText}">Review text</p>
+                    <h3>No reviews yet</h3>
+
+                    <p>
+                        Be the first player to review this game.
+                    </p>
+
+                    <button
+                        type="button"
+                        class="game-detail-silver-button"
+                        onclick="openGameReviewModal()">
+
+                        Write the First Review
+                    </button>
+
                 </div>
+
+                <div
+                    class="game-detail-review-list"
+                    th:unless="${recentReviews.isEmpty()}">
+
+                    <article
+                        class="game-detail-review-row"
+                        th:each="review : ${recentReviews}">
+
+                        <div class="game-detail-review-header">
+
+                            <div class="game-detail-review-user">
+
+                                <div class="game-detail-review-avatar">
+
+                                    <span
+                                        th:if="${review.user != null
+                                            && review.user.username != null
+                                            && !review.user.username.isBlank()}"
+                                        th:text="${#strings.toUpperCase(
+                                            #strings.substring(
+                                                review.user.username,
+                                                0,
+                                                1
+                                            )
+                                        )}">
+
+                                        U
+                                    </span>
+
+                                    <span
+                                        th:unless="${review.user != null
+                                            && review.user.username != null
+                                            && !review.user.username.isBlank()}">
+
+                                        ?
+                                    </span>
+
+                                </div>
+
+                                <div>
+
+                                    <a
+                                        class="game-detail-review-author"
+                                        th:if="${review.user != null}"
+                                        th:href="@{'/profile/' + ${review.user.username}}"
+                                        th:text="${review.user.username}">
+
+                                        username
+                                    </a>
+
+                                    <span
+                                        class="game-detail-review-author"
+                                        th:if="${review.user == null}">
+
+                                        Unknown user
+                                    </span>
+
+                                    <p
+                                        class="game-detail-review-date"
+                                        th:text="${#temporals.format(
+                                            review.createdAt,
+                                            'MMM d, yyyy'
+                                        )}">
+
+                                        Jan 1, 2026
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                            <div class="game-detail-review-rating">
+
+                                <span
+                                    th:each="starNumber : ${#numbers.sequence(1, 5)}"
+                                    th:classappend="${starNumber <= review.rating}
+                                        ? ' game-detail-review-star-filled'
+                                        : ''"
+                                    class="game-detail-review-star">
+
+                                    ★
+                                </span>
+
+                                <span
+                                    class="game-detail-review-rating-number"
+                                    th:text="${review.rating} + ' / 5'">
+
+                                    5 / 5
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        <p
+                            class="game-detail-review-text"
+                            th:text="${review.reviewText}">
+
+                            Review text
+                        </p>
+
+                    </article>
+
+                </div>
+
             </section>
+
         </main>
+
     </div>
 
-    <div id="gameReviewModal" class="modal-backdrop" style="display:none;">
-        <div class="modal large-modal">
-            <h2>Review <span th:text="${game.title}">Game Title</span></h2>
-            <p class="muted">Share your thoughts on this specific game.</p>
+    <div
+        id="gameReviewModal"
+        class="modal-backdrop"
+        style="display: none;">
+
+        <div class="modal large-modal game-detail-modal">
+
+            <p class="game-detail-eyebrow">
+                Community Review
+            </p>
+
+            <h2>
+                Review
+                <span th:text="${game.title}">
+                    Game Title
+                </span>
+            </h2>
+
+            <p class="muted">
+                Share your experience with other players.
+            </p>
 
             <form action="/reviews" method="post">
-                <input type="hidden" name="redirectTo" th:value="@{/games/{title}(title=${game.title})}">
+
+                <input
+                    type="hidden"
+                    name="redirectTo"
+                    th:value="@{/games/id/{id}(id=${game.id})}">
+
                 <div class="form-group">
-                    <label>Board Game Title</label>
-                    <input type="hidden" name="gameTitle" th:value="${game.title}">
-                    <input type="text" th:value="${game.title}" readonly aria-readonly="true">
+
+                    <label for="reviewGameTitle">
+                        Board Game
+                    </label>
+
+                    <input
+                        type="hidden"
+                        name="gameTitle"
+                        th:value="${game.title}">
+
+                    <input
+                        id="reviewGameTitle"
+                        type="text"
+                        th:value="${game.title}"
+                        readonly
+                        aria-readonly="true">
+
                 </div>
 
                 <div class="form-group">
-                    <label for="gameReviewRating">Rating</label>
-                    <select id="gameReviewRating" name="rating">
-                        <option value="5">5 - Loved it</option>
-                        <option value="4">4 - Really liked it</option>
-                        <option value="3">3 - It was okay</option>
-                        <option value="2">2 - Not for me</option>
-                        <option value="1">1 - Did not enjoy it</option>
+
+                    <label for="gameReviewRating">
+                        Rating
+                    </label>
+
+                    <select
+                        id="gameReviewRating"
+                        name="rating"
+                        required>
+
+                        <option value="5">
+                            5 - Loved it
+                        </option>
+
+                        <option value="4">
+                            4 - Really liked it
+                        </option>
+
+                        <option value="3">
+                            3 - It was okay
+                        </option>
+
+                        <option value="2">
+                            2 - Not for me
+                        </option>
+
+                        <option value="1">
+                            1 - Did not enjoy it
+                        </option>
+
                     </select>
+
                 </div>
 
                 <div class="form-group">
-                    <label for="gameReviewText">Review</label>
-                    <textarea id="gameReviewText" name="reviewText" placeholder="Write your thoughts..."
+
+                    <label for="gameReviewText">
+                        Review
+                    </label>
+
+                    <textarea
+                        id="gameReviewText"
+                        name="reviewText"
+                        placeholder="Write your thoughts..."
                         required></textarea>
+
                 </div>
 
                 <div class="modal-actions">
-                    <button type="button" class="secondary-button" onclick="closeGameReviewModal()">Cancel</button>
-                    <button type="submit" class="primary-button">Post Review</button>
+
+                    <button
+                        type="button"
+                        class="secondary-button"
+                        onclick="closeGameReviewModal()">
+
+                        Cancel
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="primary-button">
+
+                        Post Review
+                    </button>
+
                 </div>
+
             </form>
+
         </div>
+
     </div>
 
     <script>
         function openGameReviewModal() {
-            const modal = document.getElementById('gameReviewModal');
+            const modal = document.getElementById("gameReviewModal");
 
             if (modal) {
-                modal.style.display = 'flex';
+                modal.style.display = "flex";
+                document.body.style.overflow = "hidden";
             }
         }
 
         function closeGameReviewModal() {
-            const modal = document.getElementById('gameReviewModal');
+            const modal = document.getElementById("gameReviewModal");
 
             if (modal) {
-                modal.style.display = 'none';
+                modal.style.display = "none";
+                document.body.style.overflow = "";
             }
         }
 
-        window.addEventListener('click', function (event) {
-            const modal = document.getElementById('gameReviewModal');
+        window.addEventListener("click", function (event) {
+            const modal = document.getElementById("gameReviewModal");
 
             if (event.target === modal) {
                 closeGameReviewModal();
             }
         });
-    </script>
-</body>
 
+        window.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") {
+                closeGameReviewModal();
+            }
+        });
+    </script>
+
+</body>
 </html>
