@@ -2,58 +2,75 @@
 <html lang="en" xmlns:th="http://thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Review Moderation | BoardGameBoard</title>
     <link rel="stylesheet" href="/css/site.css">
 </head>
-<body>
-<div class="app-shell">
-    <nav class="top-nav">
-        <a href="/" class="brand">BoardGameBoard</a>
+<body class="dashboard-body">
+<div class="dashboard-shell">
+    <nav class="dashboard-nav">
+        <a href="/" class="dashboard-brand">BoardGameBoard</a>
 
-        <div class="nav-links">
-            <a href="/dashboard" class="text-link">Dashboard</a>
+        <div class="dashboard-nav-links">
+            <a href="/dashboard">Dashboard</a>
             <form action="/logout" method="post">
-                <button type="submit" class="secondary-button">Logout</button>
+                <button type="submit" class="dashboard-logout-button">Logout</button>
             </form>
         </div>
     </nav>
 
-    <main class="dashboard">
-        <section class="hero-card">
-            <p class="eyebrow">MODERATION</p>
-            <h1>Review Moderation</h1>
-            <p>Admins and moderators can review and remove inappropriate reviews.</p>
-            <form action="/moderation/reviews/delete-all" method="post" onsubmit="return confirm('Delete all reviews? This cannot be undone.');">
-                <button type="submit" class="danger-button">Delete All Reviews</button>
-            </form>
-        </section>
+    <main class="dashboard-page">
+        <header class="dashboard-profile-header">
+            <div class="dashboard-avatar"><span>M</span></div>
 
-        <section class="grid">
-            <div class="feature-card" th:each="review : ${reviews}">
-                <h2>
-                    <a th:if="${review.gameTitle != null}" th:href="@{/games/{title}(title=${review.gameTitle})}" th:text="${review.gameTitle}">Game Title</a>
-                    <span th:if="${review.gameTitle == null}">Game Title</span>
-                </h2>
+            <div class="dashboard-profile-copy">
+                <div class="dashboard-profile-title-row">
+                    <h1>Review Moderation</h1>
+                    <span class="dashboard-role-badge">MODERATION</span>
+                </div>
 
-                <p>
-                    <strong>Rating:</strong>
-                    <span th:text="${review.rating}">5</span>/5
-                </p>
+                <p>Admins and moderators can review and remove inappropriate reviews.</p>
 
-                <p>
-                    <strong>Posted by:</strong>
-                    <span th:text="${review.user != null ? review.user.username : 'Unknown user'}">username</span>
-                </p>
-
-                <p th:text="${review.reviewText}">
-                    Review text
-                </p>
-
-                <form th:action="@{/moderation/reviews/{id}/delete(id=${review.id})}"
-                      method="post"
-                      onsubmit="return confirm('Delete this review?');">
-                    <button type="submit" class="danger-button">Delete Review</button>
+                <form action="/moderation/reviews/delete-all" method="post" onsubmit="return confirm('Delete all reviews? This cannot be undone.');">
+                    <button type="submit" class="danger-button">Delete All Reviews</button>
                 </form>
+            </div>
+        </header>
+
+        <section class="dashboard-section">
+            <div class="dashboard-section-heading">
+                <h2>Recent Review Submissions</h2>
+            </div>
+
+            <div class="dashboard-action-grid moderation-review-grid">
+                <article class="dashboard-action-item moderation-review-card" th:each="review : ${reviews}">
+                    <div>
+                        <h3>
+                            <a th:if="${review.gameTitle != null}" th:href="@{/games/{title}(title=${review.gameTitle})}" th:text="${review.gameTitle}">Game Title</a>
+                            <span th:if="${review.gameTitle == null}">Game Title</span>
+                        </h3>
+
+                        <p>
+                            <strong>Rating:</strong>
+                            <span th:text="${review.rating}">5</span>/5
+                        </p>
+
+                        <p>
+                            <strong>Posted by:</strong>
+                            <span th:text="${review.user != null ? review.user.username : 'Unknown user'}">username</span>
+                        </p>
+
+                        <p th:text="${review.reviewText}">
+                            Review text
+                        </p>
+
+                        <form th:action="@{/moderation/reviews/{id}/delete(id=${review.id})}"
+                              method="post"
+                              onsubmit="return confirm('Delete this review?');">
+                            <button type="submit" class="danger-button">Delete Review</button>
+                        </form>
+                    </div>
+                </article>
             </div>
         </section>
     </main>
