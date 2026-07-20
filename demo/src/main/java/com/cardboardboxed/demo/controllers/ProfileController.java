@@ -160,6 +160,14 @@ public class ProfileController {
         ownedItems.sort(comparator);
         wishlistItems.sort(comparator);
 
+        List<User> followers = userFollowRepository.findByFollowed(user).stream()
+            .map(UserFollow::getFollower)
+            .toList();
+
+        List<User> following = userFollowRepository.findByFollower(user).stream()
+            .map(UserFollow::getFollowed)
+            .toList();
+
         model.addAttribute("username", username);
         model.addAttribute("role", user.getRole());
         model.addAttribute("bio", bio);
@@ -172,6 +180,8 @@ public class ProfileController {
         //for followers and following:
         model.addAttribute("followerCount", userFollowRepository.countByFollowed(user));
         model.addAttribute("followingCount", userFollowRepository.countByFollower(user));
+        model.addAttribute("followers", followers);
+        model.addAttribute("following", following);
         model.addAttribute("ownedItems", ownedItems);
         model.addAttribute("wishlistItems", wishlistItems);
         model.addAttribute("sort", sort);

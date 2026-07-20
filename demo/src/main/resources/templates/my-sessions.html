@@ -6,60 +6,103 @@
     <title>My Sessions | BoardGameBoard</title>
     <link rel="stylesheet" th:href="@{/css/site.css}" href="/css/site.css">
 </head>
-<body>
-<div class="app-shell">
-    <nav class="top-nav">
-        <a href="/" class="brand">BoardGameBoard</a>
-        <div class="nav-links">
-            <a href="/dashboard" class="secondary-button">Dashboard</a>
-            <a href="/sessions/new" class="nav-button">Plan a Session</a>
+<body class="dashboard-body">
+<div class="dashboard-shell">
+    <nav class="dashboard-nav">
+        <a href="/" class="dashboard-brand">BoardGameBoard</a>
+
+        <div class="dashboard-nav-links">
+            <a href="/dashboard" th:if="${session.AUTH_USER != null}">Dashboard</a>
+
+            <form class="dashboard-nav-search" action="/profile/search" method="get" th:if="${session.AUTH_USER != null}">
+                <button type="button" class="dashboard-nav-search-toggle">Users</button>
+                <input id="navUserSearch" name="q" type="search" placeholder="Search users" required>
+                <button type="submit">Search</button>
+            </form>
+
+            <form class="dashboard-nav-search" action="/games/search" method="get" th:if="${session.AUTH_USER != null}">
+                <button type="button" class="dashboard-nav-search-toggle">Games</button>
+                <input id="navGameSearch" name="q" type="search" placeholder="Search games" required>
+                <button type="submit">Search</button>
+            </form>
+
+            <form action="/logout" method="post" th:if="${session.AUTH_USER != null}">
+                <button type="submit" class="dashboard-logout-button">Logout</button>
+            </form>
+
+            <a href="/login" th:if="${session.AUTH_USER == null}">Sign in</a>
+            <a href="/register" th:if="${session.AUTH_USER == null}">Register</a>
         </div>
     </nav>
 
-    <main class="dashboard game-detail-layout">
-        <section class="hero-card">
-            <p class="eyebrow">GAME NIGHT</p>
-            <h1>My Sessions</h1>
-            <p>Sessions you're hosting and sessions you've been invited to.</p>
-            <p class="muted" th:if="${error != null}" th:text="${error}">Error message</p>
-        </section>
-
-        <section class="feature-card review-panel">
-            <div class="section-heading">
-                <div>
-                    <p class="eyebrow">HOSTING</p>
-                    <h2 th:text="${hostedSessions.isEmpty() ? 'No sessions hosted yet' : 'Sessions you''re hosting'}">
-                </div>
+    <main class="dashboard-page">
+        <header class="dashboard-profile-header sessions-page-header">
+            <div class="dashboard-avatar">
+                <span>◷</span>
             </div>
 
-            <div class="grid" style="padding:0; margin:0; max-width:none; grid-template-columns: repeat(3, minmax(0,1fr));" th:if="${!hostedSessions.isEmpty()}">
-                <div class="feature-card" th:each="s : ${hostedSessions}">
-                    <h3 style="margin-top:0;" th:text="${s.gameName}">Game Name</h3>
+            <div class="dashboard-profile-copy">
+                <div class="dashboard-profile-title-row">
+                    <h1>My Sessions</h1>
+                    <span class="dashboard-role-badge">Game Night</span>
+                </div>
+
+                <p>Sessions you're hosting and sessions you've been invited to.</p>
+
+                <div class="dashboard-profile-links">
+                    <a href="/sessions/new">Plan a Session</a>
+                    <a th:text="|Hosting: ${hostedSessions.size()}|">Hosting: 0</a>
+                </div>
+            </div>
+        </header>
+
+        <nav class="dashboard-tabs" aria-label="Sessions navigation">
+            <a href="/dashboard">Overview</a>
+            <a href="/feed">Activity</a>
+            <a href="/profile">Profile</a>
+            <a href="/sessions" class="active">Sessions</a>
+        </nav>
+
+        <p class="dashboard-empty-message" th:if="${error != null}" th:text="${error}">Error message</p>
+
+        <section class="dashboard-section">
+            <div class="dashboard-section-heading">
+                <h2>Hosting</h2>
+            </div>
+
+            <p class="dashboard-empty-message" th:if="${hostedSessions.isEmpty()}">
+                No sessions hosted yet.
+            </p>
+
+            <div class="sessions-card-grid" th:if="${!hostedSessions.isEmpty()}">
+                <article class="sessions-card" th:each="s : ${hostedSessions}">
+                    <h3 th:text="${s.gameName}">Game Name</h3>
                     <p class="muted" th:text="${#temporals.format(s.sessionTime, 'MMM d, yyyy HH:mm')}">Jan 1, 2026</p>
                     <a class="text-link" th:href="@{'/sessions/' + ${s.id}}">View details</a>
-                </div>
+                </article>
             </div>
         </section>
 
-        <section class="feature-card review-panel">
-            <div class="section-heading">
-                <div>
-                    <p class="eyebrow">INVITED</p>
-                    <h2 th:text="${invitedSessions.isEmpty() ? 'No invites yet' : 'Sessions you''re invited to'}">
-                </div>
+        <section class="dashboard-section">
+            <div class="dashboard-section-heading">
+                <h2>Invited</h2>
             </div>
 
-            <div class="grid" style="padding:0; margin:0; max-width:none; grid-template-columns: repeat(3, minmax(0,1fr));" th:if="${!invitedSessions.isEmpty()}">
-                <div class="feature-card" th:each="attendance : ${invitedSessions}">
-                    <h3 style="margin-top:0;" th:text="${attendance.session.gameName}">Game Name</h3>
+            <p class="dashboard-empty-message" th:if="${invitedSessions.isEmpty()}">
+                No invites yet.
+            </p>
+
+            <div class="sessions-card-grid" th:if="${!invitedSessions.isEmpty()}">
+                <article class="sessions-card" th:each="attendance : ${invitedSessions}">
+                    <h3 th:text="${attendance.session.gameName}">Game Name</h3>
                     <p class="muted" th:text="${#temporals.format(attendance.session.sessionTime, 'MMM d, yyyy HH:mm')}">Jan 1, 2026</p>
                     <span class="role-pill" th:text="${attendance.status}">INVITED</span>
-                    <br><br>
-                    <a class="text-link" th:href="@{'/sessions/' + ${attendance.session.id}}">View details</a>
-                </div>
+                    <a class="text-link sessions-card-link" th:href="@{'/sessions/' + ${attendance.session.id}}">View details</a>
+                </article>
             </div>
         </section>
     </main>
 </div>
+<script src="/js/nav-dropdown.js"></script>
 </body>
 </html>

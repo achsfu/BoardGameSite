@@ -16,120 +16,123 @@
     />
   </head>
 
-  <body>
-    <div class="app-shell">
+  <body class="dashboard-body">
+    <div class="dashboard-shell">
+      <nav class="dashboard-nav">
+        <a href="/" class="dashboard-brand">BoardGameBoard</a>
 
-      <nav class="top-nav">
-        <a href="/" class="brand">BoardGameBoard</a>
+        <div class="dashboard-nav-links">
+          <a href="/dashboard" th:if="${session.AUTH_USER != null}">Dashboard</a>
 
-        <div class="nav-links">
-          <a href="/dashboard" class="secondary-button">
-            Dashboard
-          </a>
-
-          <a href="/profile" class="secondary-button">
-            My Profile
-          </a>
-
-          <form
-            action="/logout"
-            method="post"
-            style="display: inline"
-          >
-            <button type="submit" class="secondary-button">
-              Logout
-            </button>
+          <form class="dashboard-nav-search" action="/profile/search" method="get" th:if="${session.AUTH_USER != null}">
+            <button type="button" class="dashboard-nav-search-toggle">Users</button>
+            <input id="navUserSearch" name="q" type="search" placeholder="Search users" required>
+            <button type="submit">Search</button>
           </form>
+
+          <form class="dashboard-nav-search" action="/games/search" method="get" th:if="${session.AUTH_USER != null}">
+            <button type="button" class="dashboard-nav-search-toggle">Games</button>
+            <input id="navGameSearch" name="q" type="search" placeholder="Search games" required>
+            <button type="submit">Search</button>
+          </form>
+
+          <form action="/logout" method="post" th:if="${session.AUTH_USER != null}">
+            <button type="submit" class="dashboard-logout-button">Logout</button>
+          </form>
+
+          <a href="/login" th:if="${session.AUTH_USER == null}">Sign in</a>
+          <a href="/register" th:if="${session.AUTH_USER == null}">Register</a>
         </div>
       </nav>
 
-      <main class="dashboard feed-page">
-
-        <section class="hero-card feed-header">
-          <div>
-            <p class="eyebrow">SOCIAL FEED</p>
-
-            <h1>
-              Welcome back,
-              <span th:text="${username}">Username</span>
-            </h1>
-
-            <p class="muted">
-              See the latest board-game reviews shared by
-              people you follow.
-            </p>
-          </div>
-
-          <div class="feed-following-count">
-            <strong th:text="${followingCount}">0</strong>
-
-            <span class="muted">
-              people followed
+      <main class="dashboard-page">
+        <header class="dashboard-profile-header feed-dashboard-header">
+          <div class="dashboard-avatar">
+            <span
+              th:text="${username != null and !username.isEmpty() ? #strings.toUpperCase(#strings.substring(username, 0, 1)) : 'U'}"
+            >
+              U
             </span>
           </div>
+
+          <div class="dashboard-profile-copy">
+            <div class="dashboard-profile-title-row">
+              <h1>Social Feed</h1>
+              <span class="dashboard-role-badge">Activity</span>
+            </div>
+
+            <p>
+              Welcome back, <span th:text="${username}">Username</span>. See the latest board game reviews shared by people you follow.
+            </p>
+
+            <div class="dashboard-profile-links">
+              <a href="/profile/search">Find players</a>
+              <a href="/profile" th:text="|Following: ${followingCount}|">Following: 0</a>
+            </div>
+          </div>
+        </header>
+
+        <nav class="dashboard-tabs" aria-label="Feed navigation">
+          <a href="/dashboard">Overview</a>
+          <a href="/feed" class="active">Activity</a>
+          <a href="/profile">Profile</a>
+          <a href="/sessions">Sessions</a>
+        </nav>
+
+        <section class="dashboard-section" th:if="${followingCount == 0}">
+          <div class="dashboard-section-heading">
+            <h2>Feed</h2>
+          </div>
+
+          <div class="feed-empty-state">
+            <h2>Your feed is waiting for you</h2>
+
+            <p class="muted">
+              You are not following anyone yet. Find other users and follow them to start building your social feed.
+            </p>
+          </div>
         </section>
 
-        <!-- The user does not follow anyone. -->
-        <section
-          class="feature-card feed-empty-state"
-          th:if="${followingCount == 0}"
-        >
-          <h2>Your feed is waiting for you</h2>
+        <section class="dashboard-section" th:if="${followingCount > 0 and feedReviews.isEmpty()}">
+          <div class="dashboard-section-heading">
+            <h2>Feed</h2>
+          </div>
 
-          <p class="muted">
-            You are not following anyone yet. Find other users
-            and follow them to start building your social feed.
-          </p>
+          <div class="feed-empty-state">
+            <h2>No recent activity</h2>
+
+            <p class="muted">
+              The people you follow have not posted any reviews yet.
+            </p>
+          </div>
         </section>
 
-        <!-- The user follows people, but they have no reviews. -->
-        <section
-          class="feature-card feed-empty-state"
-          th:if="${followingCount > 0 and feedReviews.isEmpty()}"
-        >
-          <h2>No recent activity</h2>
+        <section class="dashboard-section" th:if="${!feedReviews.isEmpty()}">
+          <div class="dashboard-section-heading">
+            <h2>Latest Reviews</h2>
+          </div>
 
-          <p class="muted">
-            The people you follow have not posted any reviews yet.
-          </p>
-        </section>
+          <div class="dashboard-activity-list feed-list">
+            <article class="dashboard-activity-row feed-review-row" th:each="review : ${feedReviews}">
+              <div class="dashboard-activity-icon">★</div>
 
-        <!-- Review feed -->
-        <section
-          class="feed-list"
-          th:if="${!feedReviews.isEmpty()}"
-        >
-          <article
-            class="feature-card feed-review-card"
-            th:each="review : ${feedReviews}"
-          >
-            <div class="feed-review-header">
-              <div>
-                <p class="feed-review-action">
-                  <strong
-                    th:text="${review.user.username}"
-                  >
-                    Username
-                  </strong>
-
+              <div class="dashboard-activity-content">
+                <strong>
+                  <span th:text="${review.user.username}">Username</span>
                   reviewed
-
-                  <strong
-                    th:text="${review.gameTitle}"
-                  >
-                    Board Game
-                  </strong>
-                </p>
+                  <span th:text="${review.gameTitle}">Board Game</span>
+                </strong>
 
                 <p
-                  class="muted feed-review-date"
+                  class="feed-review-date"
                   th:if="${review.createdAt != null}"
-                  th:text="${#temporals.format(
-                    review.createdAt,
-                    'MMM d, yyyy h:mm a'
-                  )}"
+                  th:text="${#temporals.format(review.createdAt, 'MMM d, yyyy h:mm a')}"
                 >
                   Jul 18, 2026 4:00 PM
+                </p>
+
+                <p class="feed-review-text" th:text="${review.reviewText}">
+                  This is the review text.
                 </p>
               </div>
 
@@ -137,18 +140,12 @@
                 <span th:text="${review.rating}">5</span>
                 <span>/ 5</span>
               </div>
-            </div>
-
-            <p
-              class="feed-review-text"
-              th:text="${review.reviewText}"
-            >
-              This is the review text.
-            </p>
-          </article>
+            </article>
+          </div>
         </section>
 
       </main>
     </div>
+    <script src="/js/nav-dropdown.js"></script>
   </body>
 </html>
