@@ -34,6 +34,39 @@ public class BoardGameRank {
     @Column(name = "\"ImagePath\"", length = 1000)
     private String imageUrl;
 
+    @Column(name = "\"YearPublished\"")
+    private Integer yearPublished;
+
+    @Column(name = "\"MinPlayers\"")
+    private Integer minPlayers;
+
+    @Column(name = "\"MaxPlayers\"")
+    private Integer maxPlayers;
+
+    @Column(name = "\"MfgPlaytime\"")
+    private Integer manufacturerPlaytime;
+
+    @Column(name = "\"ComMinPlaytime\"")
+    private Integer communityMinPlaytime;
+
+    @Column(name = "\"ComMaxPlaytime\"")
+    private Integer communityMaxPlaytime;
+
+    @Column(name = "\"MfgAgeRec\"")
+    private Integer recommendedAge;
+
+    @Column(name = "\"GameWeight\"")
+    private Double gameWeight;
+
+    @Column(name = "\"NumUserRatings\"")
+    private Integer numberOfUserRatings;
+
+    @Column(name = "\"NumOwned\"")
+    private Integer numberOwned;
+
+    @Column(name = "\"NumWish\"")
+    private Integer numberWished;
+
     @OneToMany(mappedBy = "game")
     private List<Review> reviews;
 
@@ -102,14 +135,53 @@ public class BoardGameRank {
                 .replaceAll("\\s+", " ")
                 .trim();
 
-        normalized = insertSection(normalized, "theme", "Theme");
-        normalized = insertSection(normalized, "gameplay", "Gameplay");
-        normalized = insertSection(normalized, "goal", "Goal");
-        normalized = insertSection(normalized, "cultural impact rules", "Cultural Impact And Rules");
-        normalized = insertSection(normalized, "background", "Background");
-        normalized = insertSection(normalized, "reimplement", "Reimplements");
-        normalized = insertSection(normalized, "expande by", "Expanded By");
-        normalized = insertSection(normalized, "expanded by", "Expanded By");
+        normalized = insertSection(
+                normalized,
+                "theme",
+                "Theme"
+        );
+
+        normalized = insertSection(
+                normalized,
+                "gameplay",
+                "Gameplay"
+        );
+
+        normalized = insertSection(
+                normalized,
+                "goal",
+                "Goal"
+        );
+
+        normalized = insertSection(
+                normalized,
+                "cultural impact rules",
+                "Cultural Impact And Rules"
+        );
+
+        normalized = insertSection(
+                normalized,
+                "background",
+                "Background"
+        );
+
+        normalized = insertSection(
+                normalized,
+                "reimplement",
+                "Reimplements"
+        );
+
+        normalized = insertSection(
+                normalized,
+                "expande by",
+                "Expanded By"
+        );
+
+        normalized = insertSection(
+                normalized,
+                "expanded by",
+                "Expanded By"
+        );
 
         return normalized.trim();
     }
@@ -119,7 +191,10 @@ public class BoardGameRank {
     }
 
     public void setThumbnailUrl(String thumbnailUrl) {
-        if ((imageUrl == null || imageUrl.isBlank()) && thumbnailUrl != null && !thumbnailUrl.isBlank()) {
+        if ((imageUrl == null || imageUrl.isBlank())
+                && thumbnailUrl != null
+                && !thumbnailUrl.isBlank()) {
+
             this.imageUrl = thumbnailUrl;
         }
     }
@@ -130,6 +205,94 @@ public class BoardGameRank {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public Integer getYearPublished() {
+        return yearPublished;
+    }
+
+    public void setYearPublished(Integer yearPublished) {
+        this.yearPublished = yearPublished;
+    }
+
+    public Integer getMinPlayers() {
+        return minPlayers;
+    }
+
+    public void setMinPlayers(Integer minPlayers) {
+        this.minPlayers = minPlayers;
+    }
+
+    public Integer getMaxPlayers() {
+        return maxPlayers;
+    }
+
+    public void setMaxPlayers(Integer maxPlayers) {
+        this.maxPlayers = maxPlayers;
+    }
+
+    public Integer getManufacturerPlaytime() {
+        return manufacturerPlaytime;
+    }
+
+    public void setManufacturerPlaytime(Integer manufacturerPlaytime) {
+        this.manufacturerPlaytime = manufacturerPlaytime;
+    }
+
+    public Integer getCommunityMinPlaytime() {
+        return communityMinPlaytime;
+    }
+
+    public void setCommunityMinPlaytime(Integer communityMinPlaytime) {
+        this.communityMinPlaytime = communityMinPlaytime;
+    }
+
+    public Integer getCommunityMaxPlaytime() {
+        return communityMaxPlaytime;
+    }
+
+    public void setCommunityMaxPlaytime(Integer communityMaxPlaytime) {
+        this.communityMaxPlaytime = communityMaxPlaytime;
+    }
+
+    public Integer getRecommendedAge() {
+        return recommendedAge;
+    }
+
+    public void setRecommendedAge(Integer recommendedAge) {
+        this.recommendedAge = recommendedAge;
+    }
+
+    public Double getGameWeight() {
+        return gameWeight;
+    }
+
+    public void setGameWeight(Double gameWeight) {
+        this.gameWeight = gameWeight;
+    }
+
+    public Integer getNumberOfUserRatings() {
+        return numberOfUserRatings;
+    }
+
+    public void setNumberOfUserRatings(Integer numberOfUserRatings) {
+        this.numberOfUserRatings = numberOfUserRatings;
+    }
+
+    public Integer getNumberOwned() {
+        return numberOwned;
+    }
+
+    public void setNumberOwned(Integer numberOwned) {
+        this.numberOwned = numberOwned;
+    }
+
+    public Integer getNumberWished() {
+        return numberWished;
+    }
+
+    public void setNumberWished(Integer numberWished) {
+        this.numberWished = numberWished;
     }
 
     public Boolean getIsExpansion() {
@@ -148,18 +311,11 @@ public class BoardGameRank {
         this.reviews = reviews;
     }
 
-    /*
-     * Returns true when at least one usable image URL
-     * has already been stored for this game.
-     */
     public boolean hasImage() {
-        return isNotBlank(imageUrl) || isNotBlank(getThumbnailUrl());
+        return isNotBlank(imageUrl)
+                || isNotBlank(getThumbnailUrl());
     }
 
-    /*
-     * Returns the full-sized image when available,
-     * otherwise falls back to the thumbnail.
-     */
     public String getPreferredImageUrl() {
         if (isNotBlank(imageUrl)) {
             return imageUrl;
@@ -168,14 +324,97 @@ public class BoardGameRank {
         return getThumbnailUrl();
     }
 
+    public boolean hasPlayerCount() {
+        return minPlayers != null
+                && minPlayers > 0;
+    }
+
+    public String getPlayerCountDisplay() {
+        if (!hasPlayerCount()) {
+            return null;
+        }
+
+        if (maxPlayers == null
+                || maxPlayers <= 0
+                || minPlayers.equals(maxPlayers)) {
+
+            return minPlayers + " players";
+        }
+
+        return minPlayers
+                + "–"
+                + maxPlayers
+                + " players";
+    }
+
+    public String getPlaytimeDisplay() {
+        boolean hasCommunityMinimum =
+                communityMinPlaytime != null
+                        && communityMinPlaytime > 0;
+
+        boolean hasCommunityMaximum =
+                communityMaxPlaytime != null
+                        && communityMaxPlaytime > 0;
+
+        if (hasCommunityMinimum && hasCommunityMaximum) {
+            if (communityMinPlaytime.equals(
+                    communityMaxPlaytime
+            )) {
+                return communityMinPlaytime + " min";
+            }
+
+            return communityMinPlaytime
+                    + "–"
+                    + communityMaxPlaytime
+                    + " min";
+        }
+
+        if (hasCommunityMinimum) {
+            return communityMinPlaytime + " min";
+        }
+
+        if (hasCommunityMaximum) {
+            return communityMaxPlaytime + " min";
+        }
+
+        if (manufacturerPlaytime != null
+                && manufacturerPlaytime > 0) {
+
+            return manufacturerPlaytime + " min";
+        }
+
+        return null;
+    }
+
+    public String getComplexityDisplay() {
+        if (gameWeight == null || gameWeight <= 0) {
+            return null;
+        }
+
+        return String.format(
+                java.util.Locale.US,
+                "%.2f / 5",
+                gameWeight
+        );
+    }
+
     private boolean isNotBlank(String value) {
         return value != null && !value.isBlank();
     }
 
-    private String insertSection(String source, String token, String label) {
+    private String insertSection(
+            String source,
+            String token,
+            String label
+    ) {
         return source.replaceFirst(
-                "(?i)" + java.util.regex.Pattern.quote(token),
-                java.util.regex.Matcher.quoteReplacement("\n\n" + label + ": ")
+                "(?i)"
+                        + java.util.regex.Pattern.quote(token),
+                java.util.regex.Matcher.quoteReplacement(
+                        "\n\n"
+                                + label
+                                + ": "
+                )
         );
     }
 }
