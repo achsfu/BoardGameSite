@@ -28,7 +28,7 @@ public class SecurityConfig {
             // Allow all requests to pass
             .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
             .logout(logout -> logout.logoutUrl("/logout")
-            .logoutSuccessUrl("/login")
+            .logoutSuccessUrl("/")
             .invalidateHttpSession(true)
             .permitAll());
         

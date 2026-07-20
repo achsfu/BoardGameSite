@@ -38,17 +38,36 @@
                 Profile
             </a>
 
-            <a href="/login" th:unless="${loggedIn}">
-                Sign in
-            </a>
+            <div class="home-login-module" th:unless="${loggedIn}">
+                <button
+                    id="homeLoginToggle"
+                    type="button"
+                    class="home-login-toggle"
+                    aria-expanded="false"
+                    aria-controls="homeLoginDropdown"
+                >
+                    Sign in
+                </button>
 
-            <a
-                href="/register"
-                class="home-signup-button"
-                th:unless="${loggedIn}"
-            >
-                Create account
-            </a>
+                <div id="homeLoginDropdown" class="home-login-dropdown" hidden>
+                    <p id="homeLoginError" class="home-login-message home-login-error" hidden></p>
+                    <p id="homeLoginSuccess" class="home-login-message home-login-success" hidden></p>
+
+                    <form action="/login" method="post" class="home-login-form">
+                        <label for="homeLoginUsername">Username</label>
+                        <input type="text" id="homeLoginUsername" name="username" required>
+
+                        <label for="homeLoginPassword">Password</label>
+                        <input type="password" id="homeLoginPassword" name="password" required>
+
+                        <button type="submit" class="home-signup-button">Login</button>
+                    </form>
+
+                    <a href="/register" class="home-signup-button home-login-register-link">
+                        Create account
+                    </a>
+                </div>
+            </div>
 
             <form
                 action="/logout"
@@ -554,5 +573,55 @@
     </footer>
 
 </div>
+
+<script>
+    window.addEventListener('DOMContentLoaded', function () {
+        const loginToggle = document.getElementById('homeLoginToggle');
+        const loginDropdown = document.getElementById('homeLoginDropdown');
+        const loginError = document.getElementById('homeLoginError');
+        const loginSuccess = document.getElementById('homeLoginSuccess');
+
+        if (!loginToggle || !loginDropdown) {
+            return;
+        }
+
+        function setOpenState(open) {
+            loginDropdown.hidden = !open;
+            loginToggle.setAttribute('aria-expanded', String(open));
+        }
+
+        loginToggle.addEventListener('click', function () {
+            setOpenState(loginDropdown.hidden);
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!loginDropdown.hidden && !loginDropdown.contains(event.target) && event.target !== loginToggle) {
+                setOpenState(false);
+            }
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                setOpenState(false);
+            }
+        });
+
+        const params = new URLSearchParams(window.location.search);
+        const errorMessage = params.get('error');
+        const successMessage = params.get('success');
+
+        if (errorMessage && loginError) {
+            loginError.textContent = errorMessage;
+            loginError.hidden = false;
+            setOpenState(true);
+        }
+
+        if (successMessage && loginSuccess) {
+            loginSuccess.textContent = successMessage;
+            loginSuccess.hidden = false;
+            setOpenState(true);
+        }
+    });
+</script>
 </body>
 </html>

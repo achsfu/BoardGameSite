@@ -845,6 +845,10 @@ body.is-profile-editing .profile-view-only {
     gap: 22px;
 }
 
+.home-login-module {
+    position: relative;
+}
+
 .home-nav-links a,
 .home-logout-button {
     color: #a9a0b4;
@@ -867,7 +871,97 @@ body.is-profile-editing .profile-view-only {
     color: #ffffff;
 }
 
+.home-login-toggle {
+    color: #9fb4c8;
+    background: none;
+    border: 0;
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    cursor: pointer;
+    padding: 0;
+}
+
+.home-login-toggle:hover {
+    color: white;
+}
+
+.home-login-dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 10px);
+    width: min(320px, 90vw);
+    background: #11171b;
+    border: 1px solid #32404a;
+    border-radius: 8px;
+    box-shadow: 0 14px 35px rgba(0, 0, 0, 0.4);
+    padding: 14px;
+    z-index: 30;
+}
+
+.home-login-form {
+    display: grid;
+    gap: 8px;
+}
+
+.home-login-form label {
+    margin: 0;
+    color: #c6d5e1;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.home-login-form input {
+    width: 100%;
+    border-radius: 6px;
+    border: 1px solid #3a4c5a;
+    background: #0f1418;
+    color: #e6edf3;
+    padding: 10px 11px;
+    margin-bottom: 4px;
+}
+
+.home-login-form .home-signup-button,
+.home-login-register-link {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+}
+
+.home-login-register-link {
+    margin-top: 10px;
+    display: inline-flex;
+}
+
+.home-login-message {
+    margin: 0 0 10px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.home-login-error {
+    background: rgba(255, 77, 90, 0.2);
+    border: 1px solid rgba(255, 77, 90, 0.45);
+    color: #ffd1d5;
+}
+
+.home-login-success {
+    background: rgba(0, 176, 32, 0.2);
+    border: 1px solid rgba(0, 176, 32, 0.45);
+    color: #ceffd9;
+}
+
 .home-nav-links .home-signup-button {
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
     padding: 10px 15px;
     border-radius: 4px;
     background: linear-gradient(
