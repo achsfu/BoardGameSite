@@ -29,7 +29,7 @@ public class Review {
     @ManyToOne
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "game_id")
     @NotFound(action = NotFoundAction.IGNORE)
     private BoardGameRank game;
