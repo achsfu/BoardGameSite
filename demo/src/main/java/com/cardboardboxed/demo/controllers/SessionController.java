@@ -12,14 +12,20 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+
+
 @Controller
 public class SessionController {
+
+    @Value("${google.maps.browser.key}")
+    private String mapsBrowserKey;
     private final GameSessionRepository sessionRepository;
     private final GameSessionAttendeeRepository sessionAttendeeRepository;
     private final UserRepository userRepository;
@@ -54,6 +60,7 @@ public class SessionController {
             @RequestParam(required = false) String error,
             HttpServletRequest request, Model model
     ) {
+        model.addAttribute("mapsApiKey", mapsBrowserKey);
         User currentUser = requireCurrentUser(request);
         if (currentUser == null) {
             return "redirect:/login?error=Please+log+in+to+create+a+session";
@@ -118,6 +125,7 @@ public class SessionController {
             @RequestParam(required = false) String error,
             HttpServletRequest request, Model model
     ) {
+        model.addAttribute("mapsApiKey", mapsBrowserKey);
         User currentUser = requireCurrentUser(request);
         if (currentUser == null) {
             return "redirect:/login?error=Please+log+in+to+view+this+session";
