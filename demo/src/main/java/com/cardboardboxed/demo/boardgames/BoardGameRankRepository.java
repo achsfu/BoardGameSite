@@ -85,4 +85,65 @@ public interface BoardGameRankRepository
             @Param("query") String query,
             Pageable pageable
     );
+
+                @Query("""
+                                select game
+                                from BoardGameRank game
+                                where lower(game.title) in :normalizedTitles
+                                order by
+                                        case when game.rankPosition = 0 then 1 else 0 end asc,
+                                        game.rankPosition asc nulls last,
+                                        game.title asc
+                                """)
+                List<BoardGameRank> findByNormalizedTitles(
+                                                @Param("normalizedTitles") List<String> normalizedTitles
+                );
+
+                @Query("""
+                                select min(game.minPlayers)
+                                from BoardGameRank game
+                                where game.minPlayers is not null
+                                        and game.minPlayers > 0
+                                """)
+                Integer findGlobalMinPlayers();
+
+                @Query("""
+                                select max(game.maxPlayers)
+                                from BoardGameRank game
+                                where game.maxPlayers is not null
+                                        and game.maxPlayers > 0
+                                """)
+                Integer findGlobalMaxPlayers();
+
+                @Query("""
+                                select min(game.gameWeight)
+                                from BoardGameRank game
+                                where game.gameWeight is not null
+                                        and game.gameWeight > 0
+                                """)
+                Double findGlobalMinComplexity();
+
+                @Query("""
+                                select max(game.gameWeight)
+                                from BoardGameRank game
+                                where game.gameWeight is not null
+                                        and game.gameWeight > 0
+                                """)
+                Double findGlobalMaxComplexity();
+
+                @Query("""
+                                select min(coalesce(game.communityMaxPlaytime, game.communityMinPlaytime, game.manufacturerPlaytime))
+                                from BoardGameRank game
+                                where coalesce(game.communityMaxPlaytime, game.communityMinPlaytime, game.manufacturerPlaytime) is not null
+                                        and coalesce(game.communityMaxPlaytime, game.communityMinPlaytime, game.manufacturerPlaytime) > 0
+                                """)
+                Integer findGlobalMinPlaytime();
+
+                @Query("""
+                                select max(coalesce(game.communityMaxPlaytime, game.communityMinPlaytime, game.manufacturerPlaytime))
+                                from BoardGameRank game
+                                where coalesce(game.communityMaxPlaytime, game.communityMinPlaytime, game.manufacturerPlaytime) is not null
+                                        and coalesce(game.communityMaxPlaytime, game.communityMinPlaytime, game.manufacturerPlaytime) > 0
+                                """)
+                Integer findGlobalMaxPlaytime();
 }
