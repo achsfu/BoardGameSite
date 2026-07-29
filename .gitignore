@@ -1,2 +1,2 @@
-demo/resources.env
+demo/resources.env.properties
 demo/src/main/resources/application.properties
