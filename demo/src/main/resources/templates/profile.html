@@ -67,6 +67,7 @@
           <a href="/feed">Activity</a>
           <a href="/profile" class="active">Profile</a>
           <a href="/sessions">Sessions</a>
+          <a href="/collection">Collection</a>
         </nav>
 
         <div class="dashboard-layout">
@@ -375,13 +376,15 @@
 
     <script>
       window.addEventListener('DOMContentLoaded', function () {
+        var collectionEditStorageKey = 'profile.collectionEditMode';
+        var profileEditStorageKey = 'profile.profileEditMode';
         var pageBody = document.body;
         var editCollectionButton = document.getElementById('editCollectionToggle');
         var editToggleButton = document.getElementById('editProfileToggle');
         var collectionEditElements = document.querySelectorAll('.collection-edit-only');
         var profileEditElements = document.querySelectorAll('.profile-edit-only');
-        var isCollectionEditing = false;
-        var isProfileEditing = false;
+        var isCollectionEditing = localStorage.getItem(collectionEditStorageKey) === 'true';
+        var isProfileEditing = localStorage.getItem(profileEditStorageKey) === 'true';
 
         function applyCollectionEditingState() {
           collectionEditElements.forEach(function (element) {
@@ -420,6 +423,7 @@
         if (editCollectionButton) {
           editCollectionButton.addEventListener('click', function () {
             isCollectionEditing = !isCollectionEditing;
+            localStorage.setItem(collectionEditStorageKey, String(isCollectionEditing));
             applyCollectionEditingState();
           });
         }
@@ -427,6 +431,7 @@
         if (editToggleButton) {
           editToggleButton.addEventListener('click', function () {
             isProfileEditing = !isProfileEditing;
+            localStorage.setItem(profileEditStorageKey, String(isProfileEditing));
             applyProfileEditingState();
           });
         }
