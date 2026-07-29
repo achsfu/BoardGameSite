@@ -6,11 +6,16 @@ import java.util.Locale;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
+import java.time.LocalDateTime;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import com.cardboardboxed.demo.boardgames.BoardGameAutocompleteRepository;
+import com.cardboardboxed.demo.boardgames.BoardGameRank;
+import com.cardboardboxed.demo.boardgames.BoardGameRankRepository;
 import com.cardboardboxed.demo.reviews.Review;
 import com.cardboardboxed.demo.reviews.ReviewRepository;
 import com.cardboardboxed.demo.useracounts.UserRepository;
@@ -35,20 +40,26 @@ import com.cardboardboxed.demo.collections.CollectionItemRepository;
 @Controller
 public class ProfileController {
 
+    private static final int COLLECTION_PAGE_SIZE = 20;
+
     private final UserRepository userRepository;
     private final ReviewRepository reviewRepository;
     private final BoardGameAutocompleteRepository boardGameAutocompleteRepository;
+    private final BoardGameRankRepository boardGameRankRepository;
     //NEW FIELD FOR USER LOOKUP AND FOLLOW FUNCTION
     private final UserFollowRepository userFollowRepository;
     private final CollectionItemRepository collectionItemRepository;
 
     //add parameter for userfollowrepository in the constructor
     public ProfileController(UserRepository userRepository, ReviewRepository reviewRepository,
-            BoardGameAutocompleteRepository boardGameAutocompleteRepository, UserFollowRepository userFollowRepository,
+            BoardGameAutocompleteRepository boardGameAutocompleteRepository,
+            BoardGameRankRepository boardGameRankRepository,
+            UserFollowRepository userFollowRepository,
             CollectionItemRepository collectionItemRepository) {
         this.userRepository = userRepository;
         this.reviewRepository = reviewRepository;
         this.boardGameAutocompleteRepository = boardGameAutocompleteRepository;
+        this.boardGameRankRepository = boardGameRankRepository;
         this.userFollowRepository = userFollowRepository;
         this.collectionItemRepository = collectionItemRepository;
     }
@@ -160,6 +171,14 @@ public class ProfileController {
         ownedItems.sort(comparator);
         wishlistItems.sort(comparator);
 
+        List<User> followers = userFollowRepository.findByFollowed(user).stream()
+            .map(UserFollow::getFollower)
+            .toList();
+
+        List<User> following = userFollowRepository.findByFollower(user).stream()
+            .map(UserFollow::getFollowed)
+            .toList();
+
         model.addAttribute("username", username);
         model.addAttribute("role", user.getRole());
         model.addAttribute("bio", bio);
@@ -172,11 +191,267 @@ public class ProfileController {
         //for followers and following:
         model.addAttribute("followerCount", userFollowRepository.countByFollowed(user));
         model.addAttribute("followingCount", userFollowRepository.countByFollower(user));
+        model.addAttribute("followers", followers);
+        model.addAttribute("following", following);
         model.addAttribute("ownedItems", ownedItems);
         model.addAttribute("wishlistItems", wishlistItems);
         model.addAttribute("sort", sort);
 
         return "profile";
+    }
+
+    @GetMapping("/collection")
+    public String showCollection(
+            Model model,
+            HttpServletRequest request,
+            @RequestParam(name = "name", defaultValue = "") String name,
+            @RequestParam(name = "playersMin", required = false) Integer playersMin,
+            @RequestParam(name = "playersMax", required = false) Integer playersMax,
+            @RequestParam(name = "complexityMin", required = false) Double complexityMin,
+            @RequestParam(name = "complexityMax", required = false) Double complexityMax,
+            @RequestParam(name = "timeMin", required = false) Integer timeMin,
+            @RequestParam(name = "timeMax", required = false) Integer timeMax,
+            @RequestParam(name = "sort", defaultValue = "name") String sort,
+            @RequestParam(name = "dir", defaultValue = "asc") String dir,
+            @RequestParam(name = "page", defaultValue = "1") int page
+    ) {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("AUTH_USER") == null) {
+            return "redirect:/login?error=Please+log+in+to+view+your+collection";
+        }
+
+        String username = (String) session.getAttribute("AUTH_USER");
+        User user = userRepository.findByUsername(username);
+
+        String safeSort = sanitizeSort(sort);
+        String safeDir = sanitizeDirection(dir);
+        String normalizedNameFilter = name == null ? "" : name.trim().toLowerCase(Locale.ROOT);
+
+        List<CollectionItem> items = collectionItemRepository.findByUserOrderByAddedAtDesc(user);
+        List<Review> userReviews = reviewRepository.findByUserUsername(username);
+
+        Set<String> normalizedTitles = new HashSet<>();
+        for (CollectionItem item : items) {
+            String normalized = normalizeGameName(item.getGameName());
+            if (!normalized.isBlank()) {
+                normalizedTitles.add(normalized);
+            }
+        }
+
+        Map<String, BoardGameRank> gameByNormalizedTitle = new HashMap<>();
+        if (!normalizedTitles.isEmpty()) {
+            List<BoardGameRank> games = boardGameRankRepository.findByNormalizedTitles(new ArrayList<>(normalizedTitles));
+            for (BoardGameRank game : games) {
+                String normalized = normalizeGameName(game.getTitle());
+                gameByNormalizedTitle.putIfAbsent(normalized, game);
+            }
+        }
+
+        Map<String, CollectionReviewStats> reviewStatsByTitle = new HashMap<>();
+        for (Review review : userReviews) {
+            String reviewTitle = coalesceReviewGameTitle(review);
+            String normalizedTitle = normalizeGameName(reviewTitle);
+            if (normalizedTitle.isBlank()) {
+                continue;
+            }
+
+            CollectionReviewStats stats = reviewStatsByTitle.computeIfAbsent(
+                    normalizedTitle,
+                    key -> new CollectionReviewStats()
+            );
+
+            if (review.getRating() != null) {
+                stats.reviewCount += 1;
+                stats.ratingTotal += review.getRating();
+            }
+
+            if (review.getCreatedAt() != null
+                    && (stats.lastReviewDate == null || review.getCreatedAt().isAfter(stats.lastReviewDate))) {
+                stats.lastReviewDate = review.getCreatedAt();
+            }
+        }
+
+        List<CollectionRow> rows = new ArrayList<>();
+        for (CollectionItem item : items) {
+            String normalizedTitle = normalizeGameName(item.getGameName());
+            BoardGameRank game = gameByNormalizedTitle.get(normalizedTitle);
+            CollectionReviewStats stats = reviewStatsByTitle.get(normalizedTitle);
+
+            Double averageReviewScore = null;
+            LocalDateTime lastReviewDate = null;
+
+            if (stats != null) {
+                if (stats.reviewCount > 0) {
+                    averageReviewScore = (double) stats.ratingTotal / (double) stats.reviewCount;
+                }
+                lastReviewDate = stats.lastReviewDate;
+            }
+
+            rows.add(new CollectionRow(
+                    item.getId(),
+                    item.getGameName(),
+                    item.getAddedAt(),
+                    item.getCollectionType(),
+                    game == null ? null : game.getMinPlayers(),
+                    game == null ? null : game.getMaxPlayers(),
+                    game == null ? null : game.getGameWeight(),
+                    resolveSortablePlaytime(game),
+                    averageReviewScore,
+                    lastReviewDate,
+                    game == null ? "N/A" : safeDisplay(game.getPlayerCountDisplay()),
+                    game == null ? "N/A" : safeDisplay(game.getComplexityDisplay()),
+                    game == null ? "N/A" : safeDisplay(game.getPlaytimeDisplay())
+            ));
+        }
+
+        int globalPlayersMin = rows.stream()
+                .map(row -> row.getMinPlayers() == null ? row.getMaxPlayers() : row.getMinPlayers())
+                .filter(value -> value != null && value > 0)
+                .min(Integer::compareTo)
+                .orElse(1);
+
+        int globalPlayersMax = rows.stream()
+                .map(row -> row.getMaxPlayers() == null ? row.getMinPlayers() : row.getMaxPlayers())
+                .filter(value -> value != null && value > 0)
+                .max(Integer::compareTo)
+                .orElse(globalPlayersMin);
+        if (globalPlayersMax < globalPlayersMin) {
+            globalPlayersMax = globalPlayersMin;
+        }
+
+        double globalComplexityMin = rows.stream()
+                .map(CollectionRow::getComplexityValue)
+                .filter(value -> value != null && value > 0)
+                .min(Double::compareTo)
+                .orElse(0.0);
+
+        double globalComplexityMax = rows.stream()
+                .map(CollectionRow::getComplexityValue)
+                .filter(value -> value != null && value > 0)
+                .max(Double::compareTo)
+                .orElse(Math.max(globalComplexityMin, 5.0));
+        if (globalComplexityMax < globalComplexityMin) {
+            globalComplexityMax = globalComplexityMin;
+        }
+
+        int globalTimeMin = rows.stream()
+                .map(CollectionRow::getTimeToPlayValue)
+                .filter(value -> value != null && value > 0)
+                .min(Integer::compareTo)
+                .orElse(1);
+
+        int globalTimeMax = rows.stream()
+                .map(CollectionRow::getTimeToPlayValue)
+                .filter(value -> value != null && value > 0)
+                .max(Integer::compareTo)
+                .orElse(globalTimeMin);
+        if (globalTimeMax < globalTimeMin) {
+            globalTimeMax = globalTimeMin;
+        }
+
+        int safePlayersMinValue = clampInt(
+            playersMin == null ? globalPlayersMin : playersMin,
+            globalPlayersMin,
+            globalPlayersMax
+        );
+        int safePlayersMaxValue = clampInt(
+            playersMax == null ? globalPlayersMax : playersMax,
+            globalPlayersMin,
+            globalPlayersMax
+        );
+        if (safePlayersMinValue > safePlayersMaxValue) {
+            int temp = safePlayersMinValue;
+            safePlayersMinValue = safePlayersMaxValue;
+            safePlayersMaxValue = temp;
+        }
+
+        double safeComplexityMinValue = clampDouble(
+            complexityMin == null ? globalComplexityMin : complexityMin,
+            globalComplexityMin,
+            globalComplexityMax
+        );
+        double safeComplexityMaxValue = clampDouble(
+            complexityMax == null ? globalComplexityMax : complexityMax,
+            globalComplexityMin,
+            globalComplexityMax
+        );
+        if (safeComplexityMinValue > safeComplexityMaxValue) {
+            double temp = safeComplexityMinValue;
+            safeComplexityMinValue = safeComplexityMaxValue;
+            safeComplexityMaxValue = temp;
+        }
+
+        int safeTimeMinValue = clampInt(
+            timeMin == null ? globalTimeMin : timeMin,
+            globalTimeMin,
+            globalTimeMax
+        );
+        int safeTimeMaxValue = clampInt(
+            timeMax == null ? globalTimeMax : timeMax,
+            globalTimeMin,
+            globalTimeMax
+        );
+        if (safeTimeMinValue > safeTimeMaxValue) {
+            int temp = safeTimeMinValue;
+            safeTimeMinValue = safeTimeMaxValue;
+            safeTimeMaxValue = temp;
+        }
+
+        final int safePlayersMin = safePlayersMinValue;
+        final int safePlayersMax = safePlayersMaxValue;
+        final double safeComplexityMin = safeComplexityMinValue;
+        final double safeComplexityMax = safeComplexityMaxValue;
+        final int safeTimeMin = safeTimeMinValue;
+        final int safeTimeMax = safeTimeMaxValue;
+
+        List<CollectionRow> filteredRows = rows.stream()
+                .filter(row -> normalizedNameFilter.isBlank()
+                        || row.getName().toLowerCase(Locale.ROOT).contains(normalizedNameFilter))
+            .filter(row -> row.matchesPlayerRange(safePlayersMin, safePlayersMax))
+            .filter(row -> row.getComplexityValue() != null
+                && row.getComplexityValue() >= safeComplexityMin
+                && row.getComplexityValue() <= safeComplexityMax)
+            .filter(row -> row.getTimeToPlayValue() != null
+                && row.getTimeToPlayValue() >= safeTimeMin
+                && row.getTimeToPlayValue() <= safeTimeMax)
+                .toList();
+
+        List<CollectionRow> sortedRows = new ArrayList<>(filteredRows);
+        sortedRows.sort(buildCollectionComparator(safeSort, safeDir));
+
+        int totalItems = sortedRows.size();
+        int totalPages = Math.max(1, (int) Math.ceil(totalItems / (double) COLLECTION_PAGE_SIZE));
+        int currentPage = Math.min(Math.max(page, 1), totalPages);
+        int startIndex = (currentPage - 1) * COLLECTION_PAGE_SIZE;
+        int endIndex = Math.min(startIndex + COLLECTION_PAGE_SIZE, totalItems);
+
+        List<CollectionRow> pageRows = startIndex >= endIndex
+                ? List.of()
+                : sortedRows.subList(startIndex, endIndex);
+
+        model.addAttribute("username", username);
+        model.addAttribute("role", user.getRole());
+        model.addAttribute("rows", pageRows);
+        model.addAttribute("sort", safeSort);
+        model.addAttribute("dir", safeDir);
+        model.addAttribute("name", name == null ? "" : name.trim());
+        model.addAttribute("playersMin", safePlayersMin);
+        model.addAttribute("playersMax", safePlayersMax);
+        model.addAttribute("complexityMin", safeComplexityMin);
+        model.addAttribute("complexityMax", safeComplexityMax);
+        model.addAttribute("timeMin", safeTimeMin);
+        model.addAttribute("timeMax", safeTimeMax);
+        model.addAttribute("playersGlobalMin", globalPlayersMin);
+        model.addAttribute("playersGlobalMax", globalPlayersMax);
+        model.addAttribute("complexityGlobalMin", globalComplexityMin);
+        model.addAttribute("complexityGlobalMax", globalComplexityMax);
+        model.addAttribute("timeGlobalMin", globalTimeMin);
+        model.addAttribute("timeGlobalMax", globalTimeMax);
+        model.addAttribute("currentPage", currentPage);
+        model.addAttribute("totalPages", totalPages);
+        model.addAttribute("totalItems", totalItems);
+
+        return "collection";
     }
 
     @PostMapping("/profile/update-bio")
@@ -342,6 +617,262 @@ public class ProfileController {
         }
 
         return currentValue + ", " + gameName;
+    }
+
+    private Comparator<CollectionRow> buildCollectionComparator(String sort, String dir) {
+        Comparator<CollectionRow> comparator;
+
+        switch (sort) {
+            case "acquired":
+                comparator = Comparator.comparing(
+                        CollectionRow::getAcquiredAt,
+                        Comparator.nullsLast(Comparator.naturalOrder())
+                );
+                break;
+            case "players":
+                comparator = Comparator.comparing(
+                        CollectionRow::getMinPlayers,
+                        Comparator.nullsLast(Comparator.naturalOrder())
+                );
+                break;
+            case "complexity":
+                comparator = Comparator.comparing(
+                        CollectionRow::getComplexityValue,
+                        Comparator.nullsLast(Comparator.naturalOrder())
+                );
+                break;
+            case "time":
+                comparator = Comparator.comparing(
+                        CollectionRow::getTimeToPlayValue,
+                        Comparator.nullsLast(Comparator.naturalOrder())
+                );
+                break;
+            case "lastReview":
+                comparator = Comparator.comparing(
+                        CollectionRow::getLastReviewDate,
+                        Comparator.nullsLast(Comparator.naturalOrder())
+                );
+                break;
+            case "avgScore":
+                comparator = Comparator.comparing(
+                        CollectionRow::getAverageReviewScore,
+                        Comparator.nullsLast(Comparator.naturalOrder())
+                );
+                break;
+            case "name":
+            default:
+                comparator = Comparator.comparing(
+                        CollectionRow::getName,
+                        String.CASE_INSENSITIVE_ORDER
+                );
+                break;
+        }
+
+        if ("desc".equals(dir)) {
+            comparator = comparator.reversed();
+        }
+
+        return comparator.thenComparing(CollectionRow::getName, String.CASE_INSENSITIVE_ORDER);
+    }
+
+    private String sanitizeSort(String sort) {
+        Set<String> allowedSorts = Set.of(
+                "name",
+                "acquired",
+                "players",
+                "complexity",
+                "time",
+                "lastReview",
+                "avgScore"
+        );
+
+        return allowedSorts.contains(sort) ? sort : "name";
+    }
+
+    private String sanitizeDirection(String direction) {
+        return "desc".equalsIgnoreCase(direction) ? "desc" : "asc";
+    }
+
+    private String normalizeGameName(String name) {
+        if (name == null || name.isBlank()) {
+            return "";
+        }
+
+        return name.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private String coalesceReviewGameTitle(Review review) {
+        if (review.getGameTitle() != null && !review.getGameTitle().isBlank()) {
+            return review.getGameTitle();
+        }
+
+        if (review.getGame() != null) {
+            return review.getGame().getTitle();
+        }
+
+        return "";
+    }
+
+    private Integer resolveSortablePlaytime(BoardGameRank game) {
+        if (game == null) {
+            return null;
+        }
+
+        if (game.getCommunityMaxPlaytime() != null && game.getCommunityMaxPlaytime() > 0) {
+            return game.getCommunityMaxPlaytime();
+        }
+
+        if (game.getCommunityMinPlaytime() != null && game.getCommunityMinPlaytime() > 0) {
+            return game.getCommunityMinPlaytime();
+        }
+
+        if (game.getManufacturerPlaytime() != null && game.getManufacturerPlaytime() > 0) {
+            return game.getManufacturerPlaytime();
+        }
+
+        return null;
+    }
+
+    private int defaultIfNull(Integer value, int fallback) {
+        return value == null ? fallback : value;
+    }
+
+    private double defaultIfNull(Double value, double fallback) {
+        return value == null ? fallback : value;
+    }
+
+    private int clampInt(int value, int min, int max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    private double clampDouble(double value, double min, double max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    private String safeDisplay(String value) {
+        return value == null || value.isBlank() ? "N/A" : value;
+    }
+
+    private static class CollectionReviewStats {
+        private int reviewCount;
+        private int ratingTotal;
+        private LocalDateTime lastReviewDate;
+    }
+
+    public static class CollectionRow {
+        private final Integer itemId;
+        private final String name;
+        private final LocalDateTime acquiredAt;
+        private final CollectionType collectionType;
+        private final Integer minPlayers;
+        private final Integer maxPlayers;
+        private final Double complexityValue;
+        private final Integer timeToPlayValue;
+        private final Double averageReviewScore;
+        private final LocalDateTime lastReviewDate;
+        private final String playersDisplay;
+        private final String complexityDisplay;
+        private final String timeToPlayDisplay;
+
+        public CollectionRow(
+            Integer itemId,
+                String name,
+                LocalDateTime acquiredAt,
+                CollectionType collectionType,
+                Integer minPlayers,
+                Integer maxPlayers,
+                Double complexityValue,
+                Integer timeToPlayValue,
+                Double averageReviewScore,
+                LocalDateTime lastReviewDate,
+                String playersDisplay,
+                String complexityDisplay,
+                String timeToPlayDisplay
+        ) {
+            this.itemId = itemId;
+            this.name = name;
+            this.acquiredAt = acquiredAt;
+            this.collectionType = collectionType;
+            this.minPlayers = minPlayers;
+            this.maxPlayers = maxPlayers;
+            this.complexityValue = complexityValue;
+            this.timeToPlayValue = timeToPlayValue;
+            this.averageReviewScore = averageReviewScore;
+            this.lastReviewDate = lastReviewDate;
+            this.playersDisplay = playersDisplay;
+            this.complexityDisplay = complexityDisplay;
+            this.timeToPlayDisplay = timeToPlayDisplay;
+        }
+
+        public Integer getItemId() {
+            return itemId;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public LocalDateTime getAcquiredAt() {
+            return acquiredAt;
+        }
+
+        public CollectionType getCollectionType() {
+            return collectionType;
+        }
+
+        public Integer getMinPlayers() {
+            return minPlayers;
+        }
+
+        public Integer getMaxPlayers() {
+            return maxPlayers;
+        }
+
+        public Double getComplexityValue() {
+            return complexityValue;
+        }
+
+        public Integer getTimeToPlayValue() {
+            return timeToPlayValue;
+        }
+
+        public Double getAverageReviewScore() {
+            return averageReviewScore;
+        }
+
+        public LocalDateTime getLastReviewDate() {
+            return lastReviewDate;
+        }
+
+        public String getPlayersDisplay() {
+            return playersDisplay;
+        }
+
+        public String getComplexityDisplay() {
+            return complexityDisplay;
+        }
+
+        public String getTimeToPlayDisplay() {
+            return timeToPlayDisplay;
+        }
+
+        public boolean matchesPlayerRange(int selectedMinPlayers, int selectedMaxPlayers) {
+            if (minPlayers == null && maxPlayers == null) {
+                return false;
+            }
+
+            int gameMin = minPlayers == null ? selectedMinPlayers : minPlayers;
+            int gameMax = maxPlayers == null ? selectedMaxPlayers : maxPlayers;
+
+            if (gameMax < gameMin) {
+                int temp = gameMin;
+                gameMin = gameMax;
+                gameMax = temp;
+            }
+
+            return gameMax >= selectedMinPlayers
+                    && gameMin <= selectedMaxPlayers;
+        }
     }
 
 

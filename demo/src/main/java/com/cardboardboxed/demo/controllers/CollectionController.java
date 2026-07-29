@@ -33,9 +33,11 @@ public class CollectionController{
     public String addGame(
             @RequestParam String gameName,
             @RequestParam CollectionType collectionType,
+            @RequestParam(required = false) String redirect,
             HttpServletRequest request
     ){
         HttpSession session = request.getSession(false);
+        String redirectPath = normalizeRedirectPath(redirect);
         // User must be logged in
         if(session == null || session.getAttribute("AUTH_USER") == null)
             return "redirect:/login";
@@ -47,7 +49,7 @@ public class CollectionController{
         String resolvedName = boardGameAutocompleteRepository.resolveToExistingName(gameName).orElse(null);
         // Match with an existing game
         if(resolvedName == null || resolvedName.isBlank())
-            return "redirect:/profile?error=Game+not+found";
+            return "redirect:" + redirectPath;
         
 
         CollectionItem item = collectionItemRepository.findByUserAndGameNameIgnoreCase(user, resolvedName).orElse(null);
@@ -60,15 +62,17 @@ public class CollectionController{
 
         collectionItemRepository.save(item);
 
-        return "redirect:/profile?success=Collection+updated";
+        return "redirect:" + redirectPath;
     }
     // Removes a game 
     @PostMapping("/collection/remove")
     public String removeGame(
             @RequestParam Integer id,
+            @RequestParam(required = false) String redirect,
             HttpServletRequest request
     ){
         HttpSession session = request.getSession(false);
+        String redirectPath = normalizeRedirectPath(redirect);
 
         if(session == null || session.getAttribute("AUTH_USER") == null)
             return "redirect:/login";
@@ -78,7 +82,7 @@ public class CollectionController{
         User user = userRepository.findByUsername(username);
 
         collectionItemRepository.findByIdAndUser(id, user).ifPresent(collectionItemRepository::delete);
-        return "redirect:/profile?success=Game+removed";
+        return "redirect:" + redirectPath;
     }
 
     // Moves a game between Owned and Wishlist
@@ -86,9 +90,11 @@ public class CollectionController{
     public String moveGame(
             @RequestParam Integer id,
             @RequestParam CollectionType collectionType,
+            @RequestParam(required = false) String redirect,
             HttpServletRequest request
     ){
         HttpSession session = request.getSession(false);
+        String redirectPath = normalizeRedirectPath(redirect);
 
         if(session == null || session.getAttribute("AUTH_USER") == null)
             return "redirect:/login";
@@ -106,6 +112,19 @@ public class CollectionController{
             collectionItemRepository.save(item);
         }
 
-        return "redirect:/profile?success=Collection+updated";
+        return "redirect:" + redirectPath;
+    }
+
+    private String normalizeRedirectPath(String redirectPath) {
+        if (redirectPath == null || redirectPath.isBlank()) {
+            return "/profile";
+        }
+
+        String trimmed = redirectPath.trim();
+        if (!trimmed.startsWith("/") || trimmed.startsWith("//")) {
+            return "/profile";
+        }
+
+        return trimmed;
     }
 }

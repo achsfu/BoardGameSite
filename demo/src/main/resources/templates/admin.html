@@ -2,34 +2,64 @@
 <html lang="en" xmlns:th="http://thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel | BoardGameBoard</title>
     <link rel="stylesheet" href="/css/site.css">
 </head>
-<body>
-<div class="app-shell">
-    <nav class="top-nav">
-        <a href="/" class="brand">BoardGameBoard</a>
+<body class="dashboard-body">
+<div class="dashboard-shell">
+    <nav class="dashboard-nav">
+        <a href="/" class="dashboard-brand">BoardGameBoard</a>
 
-        <div class="nav-links">
-            <a href="/dashboard" class="text-link">Dashboard</a>
-            <form action="/logout" method="post">
-                <button type="submit" class="secondary-button">Logout</button>
+        <div class="dashboard-nav-links">
+            <a href="/dashboard" th:if="${session.AUTH_USER != null}">Dashboard</a>
+
+            <form class="dashboard-nav-search" action="/profile/search" method="get" th:if="${session.AUTH_USER != null}">
+                <button type="button" class="dashboard-nav-search-toggle">Users</button>
+                <input id="navUserSearch" name="q" type="search" placeholder="Search users" required>
+                <button type="submit">Search</button>
             </form>
+
+            <form class="dashboard-nav-search" action="/games/search" method="get" th:if="${session.AUTH_USER != null}">
+                <button type="button" class="dashboard-nav-search-toggle">Games</button>
+                <input id="navGameSearch" name="q" type="search" placeholder="Search games" required>
+                <button type="submit">Search</button>
+            </form>
+
+            <form action="/logout" method="post" th:if="${session.AUTH_USER != null}">
+                <button type="submit" class="dashboard-logout-button">Logout</button>
+            </form>
+
+            <a href="/login" th:if="${session.AUTH_USER == null}">Sign in</a>
+            <a href="/register" th:if="${session.AUTH_USER == null}">Register</a>
         </div>
     </nav>
 
-    <main class="dashboard">
-        <section class="hero-card">
-            <p class="eyebrow">ADMIN</p>
-            <h1>User Management</h1>
-            <p>Search users, view accounts by role, and manage account permissions.</p>
-        </section>
+    <main class="dashboard-page">
+        <header class="dashboard-profile-header">
+            <div class="dashboard-avatar">
+                <span>A</span>
+            </div>
 
-        <section class="feature-card">
-            <form action="/admin" method="get" class="admin-search-form">
+            <div class="dashboard-profile-copy">
+                <div class="dashboard-profile-title-row">
+                    <h1>User Management</h1>
+                    <span class="dashboard-role-badge">ADMIN</span>
+                </div>
+
+                <p>Search users, view accounts by role, and manage account permissions.</p>
+            </div>
+        </header>
+
+        <section class="dashboard-section">
+            <div class="dashboard-section-heading">
+                <h2>Search Accounts</h2>
+            </div>
+
+            <form action="/admin" method="get" class="dashboard-inline-search admin-dashboard-search">
                 <input type="text" name="keyword" placeholder="Search users..." th:value="${keyword}">
-                <button type="submit" class="primary-button">Search</button>
-                <a href="/admin" class="secondary-button">Clear</a>
+                <button type="submit">Search</button>
+                <a href="/admin" class="dashboard-inline-link">Clear</a>
             </form>
         </section>
 
@@ -157,5 +187,6 @@
         }
     });
 </script>
+    <script src="/js/nav-dropdown.js"></script>
 </body>
 </html>

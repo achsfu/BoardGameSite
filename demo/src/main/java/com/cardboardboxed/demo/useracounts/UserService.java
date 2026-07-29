@@ -29,8 +29,7 @@ public class UserService {
             throw new IllegalArgumentException("Username already exists");
         }
 
-        boolean adminExists = userRepository.findAll().stream()
-                .anyMatch(user -> "ADMIN".equalsIgnoreCase(user.getRole()));
+        boolean adminExists = userRepository.existsByRoleIgnoreCase("ADMIN");
 
         String role = (!adminExists && username.equalsIgnoreCase("admin"))
                 ? "ADMIN"

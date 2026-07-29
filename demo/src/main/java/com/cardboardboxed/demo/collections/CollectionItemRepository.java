@@ -17,6 +17,10 @@ import java.util.Optional;
 public interface CollectionItemRepository
         extends JpaRepository<CollectionItem, Integer>{
 
+    List<CollectionItem> findByUserOrderByAddedAtDesc(
+            User user
+    );
+
     List<CollectionItem> findByUserAndCollectionTypeOrderByAddedAtDesc(
             User user,
             CollectionType collectionType

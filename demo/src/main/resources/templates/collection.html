@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Collection | BoardGameBoard</title>
+    <link rel="stylesheet" th:href="@{/css/site.css}" href="/css/site.css" />
+  </head>
+
+  <body class="dashboard-body">
+    <div class="dashboard-shell">
+      <nav class="dashboard-nav">
+        <a href="/" class="dashboard-brand">BoardGameBoard</a>
+
+        <div class="dashboard-nav-links">
+          <a href="/dashboard" th:if="${session.AUTH_USER != null}">Dashboard</a>
+
+          <form class="dashboard-nav-search" action="/profile/search" method="get" th:if="${session.AUTH_USER != null}">
+            <button type="button" class="dashboard-nav-search-toggle">Users</button>
+            <input id="navUserSearch" name="q" type="search" placeholder="Search users" required>
+            <button type="submit">Search</button>
+          </form>
+
+          <form class="dashboard-nav-search" action="/games/search" method="get" th:if="${session.AUTH_USER != null}">
+            <button type="button" class="dashboard-nav-search-toggle">Games</button>
+            <input id="navGameSearch" name="q" type="search" placeholder="Search games" required>
+            <button type="submit">Search</button>
+          </form>
+
+          <form action="/logout" method="post" th:if="${session.AUTH_USER != null}">
+            <button type="submit" class="dashboard-logout-button">Logout</button>
+          </form>
+
+          <a href="/login" th:if="${session.AUTH_USER == null}">Sign in</a>
+          <a href="/register" th:if="${session.AUTH_USER == null}">Register</a>
+        </div>
+      </nav>
+
+      <main class="dashboard-page">
+        <header class="dashboard-profile-header profile-page-header">
+          <div class="dashboard-avatar">
+            <span th:text="${username != null and !username.isEmpty() ? #strings.toUpperCase(#strings.substring(username, 0, 1)) : 'U'}">U</span>
+          </div>
+
+          <div class="dashboard-profile-copy">
+            <div class="dashboard-profile-title-row">
+              <h1>Collection</h1>
+              <span class="dashboard-role-badge" th:text="${role}">USER</span>
+            </div>
+
+            <p>Browse your full collection with sorting, filtering, and review statistics based on your own posts.</p>
+
+            <div class="dashboard-profile-links">
+              <span th:text="|Showing ${rows.size()} of ${totalItems} games|">Showing 0 of 0 games</span>
+            </div>
+          </div>
+        </header>
+
+        <nav class="dashboard-tabs" aria-label="Collection navigation">
+          <a href="/dashboard">Overview</a>
+          <a href="/feed">Activity</a>
+          <a href="/profile">Profile</a>
+          <a href="/sessions">Sessions</a>
+          <a href="/collection" class="active">Collection</a>
+        </nav>
+
+        <section class="dashboard-section">
+          <div class="dashboard-section-heading">
+            <h2>Filters</h2>
+          </div>
+
+          <form class="collection-filter-form" action="/collection" method="get">
+            <div class="form-group">
+              <label for="name">Name</label>
+              <input id="name" name="name" type="search" th:value="${name}" placeholder="Search title" />
+            </div>
+
+            <div class="form-group">
+              <label for="playersMin">Players Range</label>
+              <div class="collection-slider-group">
+                <div class="collection-slider-value-row">
+                  <span>Min: <strong id="playersMinValue" th:text="${playersMin}">1</strong></span>
+                  <span>Max: <strong id="playersMaxValue" th:text="${playersMax}">8</strong></span>
+                </div>
+
+                <input
+                  id="playersMin"
+                  name="playersMin"
+                  type="range"
+                  th:min="${playersGlobalMin}"
+                  th:max="${playersGlobalMax}"
+                  th:value="${playersMin}"
+                  step="1"
+                />
+
+                <input
+                  id="playersMax"
+                  name="playersMax"
+                  type="range"
+                  th:min="${playersGlobalMin}"
+                  th:max="${playersGlobalMax}"
+                  th:value="${playersMax}"
+                  step="1"
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="complexityMin">Complexity Range</label>
+              <div class="collection-slider-group">
+                <div class="collection-slider-value-row">
+                  <span>Min: <strong id="complexityMinValue" th:text="${#numbers.formatDecimal(complexityMin, 1, 1)}">1.0</strong></span>
+                  <span>Max: <strong id="complexityMaxValue" th:text="${#numbers.formatDecimal(complexityMax, 1, 1)}">4.5</strong></span>
+                </div>
+
+                <input
+                  id="complexityMin"
+                  name="complexityMin"
+                  type="range"
+                  th:min="${complexityGlobalMin}"
+                  th:max="${complexityGlobalMax}"
+                  th:value="${complexityMin}"
+                  step="0.1"
+                />
+
+                <input
+                  id="complexityMax"
+                  name="complexityMax"
+                  type="range"
+                  th:min="${complexityGlobalMin}"
+                  th:max="${complexityGlobalMax}"
+                  th:value="${complexityMax}"
+                  step="0.1"
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="timeMin">Minutes Range</label>
+              <div class="collection-slider-group">
+                <div class="collection-slider-value-row">
+                  <span>Min: <strong id="timeMinValue" th:text="${timeMin}">15</strong></span>
+                  <span>Max: <strong id="timeMaxValue" th:text="${timeMax}">120</strong></span>
+                </div>
+
+                <input
+                  id="timeMin"
+                  name="timeMin"
+                  type="range"
+                  th:min="${timeGlobalMin}"
+                  th:max="${timeGlobalMax}"
+                  th:value="${timeMin}"
+                  step="1"
+                />
+
+                <input
+                  id="timeMax"
+                  name="timeMax"
+                  type="range"
+                  th:min="${timeGlobalMin}"
+                  th:max="${timeGlobalMax}"
+                  th:value="${timeMax}"
+                  step="1"
+                />
+              </div>
+            </div>
+
+            <input type="hidden" name="sort" th:value="${sort}" />
+            <input type="hidden" name="dir" th:value="${dir}" />
+
+            <button type="submit" class="primary-button collection-filter-submit">Apply</button>
+            <a class="secondary-button collection-filter-clear" href="/collection">Clear</a>
+          </form>
+        </section>
+
+        <section class="dashboard-section">
+          <div class="dashboard-section-heading">
+            <h2>Detailed Collection</h2>
+
+            <button id="collectionEditToggle" type="button" class="secondary-button small-button collection-edit-toggle" aria-pressed="false">
+              &#9998; Edit
+            </button>
+          </div>
+
+          <form action="/collection/add" method="post" class="collection-edit-only collection-add-form" hidden>
+            <div class="form-group">
+              <label for="collectionGameName">Add Game</label>
+              <input
+                id="collectionGameName"
+                name="gameName"
+                type="text"
+                placeholder="Search for a game"
+                list="collectionGameSuggestions"
+                required
+              />
+              <datalist id="collectionGameSuggestions"></datalist>
+            </div>
+
+            <div class="form-group">
+              <label for="collectionType">Collection Type</label>
+              <select id="collectionType" name="collectionType">
+                <option value="OWNED">Owned</option>
+                <option value="WISHLIST">Wishlist</option>
+              </select>
+            </div>
+
+            <input type="hidden" name="redirect" th:value="@{/collection(page=${currentPage}, sort=${sort}, dir=${dir}, name=${name}, playersMin=${playersMin}, playersMax=${playersMax}, complexityMin=${complexityMin}, complexityMax=${complexityMax}, timeMin=${timeMin}, timeMax=${timeMax})}" />
+
+            <button type="submit" class="primary-button">Add Game</button>
+          </form>
+
+          <p class="dashboard-empty-message" th:if="${rows.isEmpty()}">
+            No games match your current filters.
+          </p>
+
+          <div class="collection-table-wrap" th:if="${!rows.isEmpty()}">
+            <table class="admin-table collection-table">
+              <thead>
+                <tr>
+                  <th>
+                    <a
+                      th:href="@{/collection(sort='name', dir=${sort == 'name' and dir == 'asc' ? 'desc' : 'asc'}, name=${name}, playersMin=${playersMin}, playersMax=${playersMax}, complexityMin=${complexityMin}, complexityMax=${complexityMax}, timeMin=${timeMin}, timeMax=${timeMax}, page=1)}"
+                    >
+                      Name
+                      <span class="collection-sort-arrow" th:if="${sort == 'name' and dir == 'asc'}">&#8593;</span>
+                      <span class="collection-sort-arrow" th:if="${sort == 'name' and dir == 'desc'}">&#8595;</span>
+                      <span class="collection-sort-arrow" th:if="${sort != 'name'}">&#8597;</span>
+                    </a>
+                  </th>
+                  <th>
+                    <a
+                      th:href="@{/collection(sort='acquired', dir=${sort == 'acquired' and dir == 'asc' ? 'desc' : 'asc'}, name=${name}, playersMin=${playersMin}, playersMax=${playersMax}, complexityMin=${complexityMin}, complexityMax=${complexityMax}, timeMin=${timeMin}, timeMax=${timeMax}, page=1)}"
+                    >
+                      Date Acquired
+                      <span class="collection-sort-arrow" th:if="${sort == 'acquired' and dir == 'asc'}">&#8593;</span>
+                      <span class="collection-sort-arrow" th:if="${sort == 'acquired' and dir == 'desc'}">&#8595;</span>
+                      <span class="collection-sort-arrow" th:if="${sort != 'acquired'}">&#8597;</span>
+                    </a>
+                  </th>
+                  <th>
+                    <a
+                      th:href="@{/collection(sort='players', dir=${sort == 'players' and dir == 'asc' ? 'desc' : 'asc'}, name=${name}, playersMin=${playersMin}, playersMax=${playersMax}, complexityMin=${complexityMin}, complexityMax=${complexityMax}, timeMin=${timeMin}, timeMax=${timeMax}, page=1)}"
+                    >
+                      Number of Players
+                      <span class="collection-sort-arrow" th:if="${sort == 'players' and dir == 'asc'}">&#8593;</span>
+                      <span class="collection-sort-arrow" th:if="${sort == 'players' and dir == 'desc'}">&#8595;</span>
+                      <span class="collection-sort-arrow" th:if="${sort != 'players'}">&#8597;</span>
+                    </a>
+                  </th>
+                  <th>
+                    <a
+                      th:href="@{/collection(sort='complexity', dir=${sort == 'complexity' and dir == 'asc' ? 'desc' : 'asc'}, name=${name}, playersMin=${playersMin}, playersMax=${playersMax}, complexityMin=${complexityMin}, complexityMax=${complexityMax}, timeMin=${timeMin}, timeMax=${timeMax}, page=1)}"
+                    >
+                      Complexity
+                      <span class="collection-sort-arrow" th:if="${sort == 'complexity' and dir == 'asc'}">&#8593;</span>
+                      <span class="collection-sort-arrow" th:if="${sort == 'complexity' and dir == 'desc'}">&#8595;</span>
+                      <span class="collection-sort-arrow" th:if="${sort != 'complexity'}">&#8597;</span>
+                    </a>
+                  </th>
+                  <th>
+                    <a
+                      th:href="@{/collection(sort='time', dir=${sort == 'time' and dir == 'asc' ? 'desc' : 'asc'}, name=${name}, playersMin=${playersMin}, playersMax=${playersMax}, complexityMin=${complexityMin}, complexityMax=${complexityMax}, timeMin=${timeMin}, timeMax=${timeMax}, page=1)}"
+                    >
+                      Time to Play
+                      <span class="collection-sort-arrow" th:if="${sort == 'time' and dir == 'asc'}">&#8593;</span>
+                      <span class="collection-sort-arrow" th:if="${sort == 'time' and dir == 'desc'}">&#8595;</span>
+                      <span class="collection-sort-arrow" th:if="${sort != 'time'}">&#8597;</span>
+                    </a>
+                  </th>
+                  <th>
+                    <a
+                      th:href="@{/collection(sort='lastReview', dir=${sort == 'lastReview' and dir == 'asc' ? 'desc' : 'asc'}, name=${name}, playersMin=${playersMin}, playersMax=${playersMax}, complexityMin=${complexityMin}, complexityMax=${complexityMax}, timeMin=${timeMin}, timeMax=${timeMax}, page=1)}"
+                    >
+                      Last Review Date
+                      <span class="collection-sort-arrow" th:if="${sort == 'lastReview' and dir == 'asc'}">&#8593;</span>
+                      <span class="collection-sort-arrow" th:if="${sort == 'lastReview' and dir == 'desc'}">&#8595;</span>
+                      <span class="collection-sort-arrow" th:if="${sort != 'lastReview'}">&#8597;</span>
+                    </a>
+                  </th>
+                  <th>
+                    <a
+                      th:href="@{/collection(sort='avgScore', dir=${sort == 'avgScore' and dir == 'asc' ? 'desc' : 'asc'}, name=${name}, playersMin=${playersMin}, playersMax=${playersMax}, complexityMin=${complexityMin}, complexityMax=${complexityMax}, timeMin=${timeMin}, timeMax=${timeMax}, page=1)}"
+                    >
+                      Average Review Score
+                      <span class="collection-sort-arrow" th:if="${sort == 'avgScore' and dir == 'asc'}">&#8593;</span>
+                      <span class="collection-sort-arrow" th:if="${sort == 'avgScore' and dir == 'desc'}">&#8595;</span>
+                      <span class="collection-sort-arrow" th:if="${sort != 'avgScore'}">&#8597;</span>
+                    </a>
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr th:each="row : ${rows}">
+                  <td>
+                    <a th:href="@{/games/{title}(title=${row.name})}" th:text="${row.name}">Game name</a>
+
+                    <form action="/collection/remove" method="post" class="collection-edit-only inline-collection-edit collection-inline-delete" hidden>
+                      <input type="hidden" name="id" th:value="${row.itemId}" />
+                      <input type="hidden" name="redirect" th:value="@{/collection(page=${currentPage}, sort=${sort}, dir=${dir}, name=${name}, playersMin=${playersMin}, playersMax=${playersMax}, complexityMin=${complexityMin}, complexityMax=${complexityMax}, timeMin=${timeMin}, timeMax=${timeMax})}" />
+                      <button type="submit" class="danger-button small-button">Delete</button>
+                    </form>
+                  </td>
+                  <td th:text="${row.acquiredAt != null ? #temporals.format(row.acquiredAt, 'MMM d, yyyy') : 'N/A'}">Jul 1, 2026</td>
+                  <td th:text="${row.playersDisplay}">2-4 players</td>
+                  <td th:text="${row.complexityDisplay}">3.40 / 5</td>
+                  <td th:text="${row.timeToPlayDisplay}">45-90 min</td>
+                  <td th:text="${row.lastReviewDate != null ? #temporals.format(row.lastReviewDate, 'MMM d, yyyy') : 'N/A'}">Jul 8, 2026</td>
+                  <td th:text="${row.averageReviewScore != null ? #numbers.formatDecimal(row.averageReviewScore, 1, 2) : 'N/A'}">4.50</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="search-pagination" th:if="${totalPages > 1}">
+            <a class="secondary-button"
+               th:classappend="${currentPage == 1} ? ' disabled-pagination' : ''"
+              th:href="${currentPage == 1} ? '#' : @{/collection(page=${currentPage - 1}, sort=${sort}, dir=${dir}, name=${name}, playersMin=${playersMin}, playersMax=${playersMax}, complexityMin=${complexityMin}, complexityMax=${complexityMax}, timeMin=${timeMin}, timeMax=${timeMax})}">
+              Previous
+            </a>
+
+            <form th:action="@{/collection}" method="get" class="page-selector-form">
+              <input type="hidden" name="sort" th:value="${sort}">
+              <input type="hidden" name="dir" th:value="${dir}">
+              <input type="hidden" name="name" th:value="${name}">
+              <input type="hidden" name="playersMin" th:value="${playersMin}">
+              <input type="hidden" name="playersMax" th:value="${playersMax}">
+              <input type="hidden" name="complexityMin" th:value="${complexityMin}">
+              <input type="hidden" name="complexityMax" th:value="${complexityMax}">
+              <input type="hidden" name="timeMin" th:value="${timeMin}">
+              <input type="hidden" name="timeMax" th:value="${timeMax}">
+
+              <label for="resultsPage">Page</label>
+              <select id="resultsPage" name="page" onchange="this.form.submit()">
+                <option th:each="pageNumber : ${#numbers.sequence(1, totalPages)}"
+                        th:value="${pageNumber}"
+                        th:text="'Page ' + ${pageNumber}"
+                        th:selected="${pageNumber == currentPage}">Page 1</option>
+              </select>
+            </form>
+
+            <a class="secondary-button"
+               th:classappend="${currentPage == totalPages} ? ' disabled-pagination' : ''"
+               th:href="${currentPage == totalPages} ? '#' : @{/collection(page=${currentPage + 1}, sort=${sort}, dir=${dir}, name=${name}, playersMin=${playersMin}, playersMax=${playersMax}, complexityMin=${complexityMin}, complexityMax=${complexityMax}, timeMin=${timeMin}, timeMax=${timeMax})}">
+              Next
+            </a>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/js/game-autocomplete.js"></script>
+    <script>
+      function attachRangePair(minInputId, maxInputId, minValueId, maxValueId, options) {
+        var minInput = document.getElementById(minInputId);
+        var maxInput = document.getElementById(maxInputId);
+        var minValue = document.getElementById(minValueId);
+        var maxValue = document.getElementById(maxValueId);
+        var decimals = options && options.decimals ? options.decimals : 0;
+
+        if (!minInput || !maxInput || !minValue || !maxValue) {
+          return;
+        }
+
+        function formatValue(raw) {
+          var numeric = Number(raw);
+          if (decimals > 0) {
+            return numeric.toFixed(decimals);
+          }
+          return String(Math.round(numeric));
+        }
+
+        function sync() {
+          var min = Number(minInput.value);
+          var max = Number(maxInput.value);
+
+          if (min > max) {
+            if (document.activeElement === minInput) {
+              maxInput.value = minInput.value;
+              max = min;
+            } else {
+              minInput.value = maxInput.value;
+              min = max;
+            }
+          }
+
+          minValue.textContent = formatValue(minInput.value);
+          maxValue.textContent = formatValue(maxInput.value);
+        }
+
+        minInput.addEventListener('input', sync);
+        maxInput.addEventListener('input', sync);
+        sync();
+      }
+
+      window.addEventListener('DOMContentLoaded', function () {
+        var collectionEditStorageKey = 'collection.editMode';
+        var pageBody = document.body;
+        var editToggleButton = document.getElementById('collectionEditToggle');
+        var collectionEditElements = document.querySelectorAll('.collection-edit-only');
+        var isCollectionEditing = localStorage.getItem(collectionEditStorageKey) === 'true';
+
+        function applyCollectionEditingState() {
+          collectionEditElements.forEach(function (element) {
+            element.hidden = !isCollectionEditing;
+          });
+
+          if (pageBody) {
+            pageBody.classList.toggle('is-collection-editing', isCollectionEditing);
+          }
+
+          if (editToggleButton) {
+            editToggleButton.innerHTML = isCollectionEditing ? '&#9998; Done' : '&#9998; Edit';
+            editToggleButton.setAttribute('aria-pressed', String(isCollectionEditing));
+            editToggleButton.classList.toggle('primary-button', isCollectionEditing);
+            editToggleButton.classList.toggle('secondary-button', !isCollectionEditing);
+          }
+        }
+
+        if (editToggleButton) {
+          editToggleButton.addEventListener('click', function () {
+            isCollectionEditing = !isCollectionEditing;
+            localStorage.setItem(collectionEditStorageKey, String(isCollectionEditing));
+            applyCollectionEditingState();
+          });
+        }
+
+        attachRangePair('playersMin', 'playersMax', 'playersMinValue', 'playersMaxValue');
+        attachRangePair('complexityMin', 'complexityMax', 'complexityMinValue', 'complexityMaxValue', { decimals: 1 });
+        attachRangePair('timeMin', 'timeMax', 'timeMinValue', 'timeMaxValue');
+
+        applyCollectionEditingState();
+        attachGameAutocomplete('collectionGameName', 'collectionGameSuggestions');
+      });
+    </script>
+    <script src="/js/nav-dropdown.js"></script>
+  </body>
+</html>
