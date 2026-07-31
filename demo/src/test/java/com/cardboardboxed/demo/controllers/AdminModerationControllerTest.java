@@ -53,6 +53,24 @@ class AdminModerationControllerTest {
     }
 
     @Test
+    void organizerCannotOpenModerationPage() throws Exception {
+
+        User organizer = new User();
+        organizer.setUsername("organizer");
+        organizer.setRole("ORGANIZER");
+
+        when(userRepository.findByUsername("organizer"))
+                .thenReturn(organizer);
+
+        mockMvc.perform(
+                get("/moderation/reviews")
+                        .sessionAttr("AUTH_USER", "organizer")
+        )
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/dashboard"));
+    }
+
+    @Test
     void moderatorCanOpenModerationPage() throws Exception {
 
         User moderator = new User();
@@ -92,6 +110,90 @@ class AdminModerationControllerTest {
         )
                 .andExpect(status().isOk())
                 .andExpect(view().name("moderation-reviews"));
+    }
+
+    @Test
+    void adminCanOpenAdminPage() throws Exception {
+
+        User admin = new User();
+        admin.setUsername("admin");
+        admin.setRole("ADMIN");
+
+        when(userRepository.findByUsername("admin"))
+                .thenReturn(admin);
+
+        when(userRepository.findByRoleIgnoreCaseOrderByUsernameAsc("ADMIN"))
+                .thenReturn(java.util.List.of(admin));
+
+        when(userRepository.findByRoleIgnoreCaseOrderByUsernameAsc("MODERATOR"))
+                .thenReturn(java.util.List.of());
+
+        when(userRepository.findByRoleIgnoreCaseOrderByUsernameAsc("ORGANIZER"))
+                .thenReturn(java.util.List.of());
+
+        when(userRepository.findByRoleIgnoreCaseOrderByUsernameAsc("PLAYER"))
+                .thenReturn(java.util.List.of());
+
+        mockMvc.perform(
+                get("/admin")
+                        .sessionAttr("AUTH_USER", "admin")
+        )
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin"));
+    }
+
+    @Test
+    void moderatorCannotOpenAdminPage() throws Exception {
+
+        User moderator = new User();
+        moderator.setUsername("mod");
+        moderator.setRole("MODERATOR");
+
+        when(userRepository.findByUsername("mod"))
+                .thenReturn(moderator);
+
+        mockMvc.perform(
+                get("/admin")
+                        .sessionAttr("AUTH_USER", "mod")
+        )
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/dashboard"));
+    }
+
+    @Test
+    void organizerCannotOpenAdminPage() throws Exception {
+
+        User organizer = new User();
+        organizer.setUsername("organizer");
+        organizer.setRole("ORGANIZER");
+
+        when(userRepository.findByUsername("organizer"))
+                .thenReturn(organizer);
+
+        mockMvc.perform(
+                get("/admin")
+                        .sessionAttr("AUTH_USER", "organizer")
+        )
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/dashboard"));
+    }
+
+    @Test
+    void playerCannotOpenAdminPage() throws Exception {
+
+        User player = new User();
+        player.setUsername("player");
+        player.setRole("PLAYER");
+
+        when(userRepository.findByUsername("player"))
+                .thenReturn(player);
+
+        mockMvc.perform(
+                get("/admin")
+                        .sessionAttr("AUTH_USER", "player")
+        )
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/dashboard"));
     }
 
     @Test
