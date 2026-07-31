@@ -54,8 +54,8 @@ class CollectionControllerTest {
 
     @Test
     void addSavesNewGameToOwnedCollection() throws Exception {
-        User user = createUser("jun");
-        when(userRepository.findByUsername("jun")).thenReturn(user);
+        User user = createUser("testUser");
+        when(userRepository.findByUsername("testUser")).thenReturn(user);
         when(boardGameAutocompleteRepository.resolveToExistingName("Catan"))
                 .thenReturn(Optional.of("Catan"));
         when(collectionItemRepository.findByUserAndGameNameIgnoreCase(user, "Catan"))
@@ -63,7 +63,7 @@ class CollectionControllerTest {
 
         mockMvc.perform(
                         post("/collection/add")
-                                .sessionAttr("AUTH_USER", "jun")
+                                .sessionAttr("AUTH_USER", "testUser")
                                 .param("gameName", "Catan")
                                 .param("collectionType", "OWNED")
                 )
@@ -75,11 +75,11 @@ class CollectionControllerTest {
 
     @Test
     void addExistingGameMovesItToRequestedCollection() throws Exception {
-        User user = createUser("jun");
+        User user = createUser("testUser");
         CollectionItem item =
                 new CollectionItem(user, "Catan", CollectionType.WISHLIST);
 
-        when(userRepository.findByUsername("jun")).thenReturn(user);
+        when(userRepository.findByUsername("testUser")).thenReturn(user);
         when(boardGameAutocompleteRepository.resolveToExistingName("Catan"))
                 .thenReturn(Optional.of("Catan"));
         when(collectionItemRepository.findByUserAndGameNameIgnoreCase(user, "Catan"))
@@ -87,7 +87,7 @@ class CollectionControllerTest {
 
         mockMvc.perform(
                         post("/collection/add")
-                                .sessionAttr("AUTH_USER", "jun")
+                                .sessionAttr("AUTH_USER", "testUser")
                                 .param("gameName", "Catan")
                                 .param("collectionType", "OWNED")
                 )
@@ -100,14 +100,14 @@ class CollectionControllerTest {
 
     @Test
     void addDoesNotSaveUnknownGame() throws Exception {
-        User user = createUser("jun");
-        when(userRepository.findByUsername("jun")).thenReturn(user);
+        User user = createUser("testUser");
+        when(userRepository.findByUsername("testUser")).thenReturn(user);
         when(boardGameAutocompleteRepository.resolveToExistingName("Unknown Game"))
                 .thenReturn(Optional.empty());
 
         mockMvc.perform(
                         post("/collection/add")
-                                .sessionAttr("AUTH_USER", "jun")
+                                .sessionAttr("AUTH_USER", "testUser")
                                 .param("gameName", "Unknown Game")
                                 .param("collectionType", "OWNED")
                 )
@@ -119,17 +119,17 @@ class CollectionControllerTest {
 
     @Test
     void removeDeletesItemOwnedByLoggedInUser() throws Exception {
-        User user = createUser("jun");
+        User user = createUser("testUser");
         CollectionItem item =
                 new CollectionItem(user, "Catan", CollectionType.OWNED);
 
-        when(userRepository.findByUsername("jun")).thenReturn(user);
+        when(userRepository.findByUsername("testUser")).thenReturn(user);
         when(collectionItemRepository.findByIdAndUser(1, user))
                 .thenReturn(Optional.of(item));
 
         mockMvc.perform(
                         post("/collection/remove")
-                                .sessionAttr("AUTH_USER", "jun")
+                                .sessionAttr("AUTH_USER", "testUser")
                                 .param("id", "1")
                 )
                 .andExpect(status().is3xxRedirection())
@@ -140,15 +140,15 @@ class CollectionControllerTest {
 
     @Test
     void removeDoesNotDeleteAnotherUsersItem() throws Exception {
-        User user = createUser("jun");
+        User user = createUser("testUser");
 
-        when(userRepository.findByUsername("jun")).thenReturn(user);
+        when(userRepository.findByUsername("testUser")).thenReturn(user);
         when(collectionItemRepository.findByIdAndUser(1, user))
                 .thenReturn(Optional.empty());
 
         mockMvc.perform(
                         post("/collection/remove")
-                                .sessionAttr("AUTH_USER", "jun")
+                                .sessionAttr("AUTH_USER", "testUser")
                                 .param("id", "1")
                 )
                 .andExpect(status().is3xxRedirection())
@@ -159,17 +159,17 @@ class CollectionControllerTest {
 
     @Test
     void moveChangesItemCollectionType() throws Exception {
-        User user = createUser("jun");
+        User user = createUser("testUser");
         CollectionItem item =
                 new CollectionItem(user, "Catan", CollectionType.WISHLIST);
 
-        when(userRepository.findByUsername("jun")).thenReturn(user);
+        when(userRepository.findByUsername("testUser")).thenReturn(user);
         when(collectionItemRepository.findByIdAndUser(1, user))
                 .thenReturn(Optional.of(item));
 
         mockMvc.perform(
                         post("/collection/move")
-                                .sessionAttr("AUTH_USER", "jun")
+                                .sessionAttr("AUTH_USER", "testUser")
                                 .param("id", "1")
                                 .param("collectionType", "OWNED")
                 )
