@@ -47,8 +47,16 @@
 
       <main class="dashboard-page">
         <header class="dashboard-profile-header feed-dashboard-header">
-          <div class="dashboard-avatar">
+          <div class="dashboard-avatar dashboard-avatar-photo">
+            <img
+              th:if="${profilePictureUrl != null and !profilePictureUrl.isBlank()}"
+              th:src="${profilePictureUrl}"
+              alt="Avatar"
+              class="dashboard-avatar-image"
+            />
+
             <span
+              th:if="${profilePictureUrl == null or profilePictureUrl.isBlank()}"
               th:text="${username != null and !username.isEmpty() ? #strings.toUpperCase(#strings.substring(username, 0, 1)) : 'U'}"
             >
               U

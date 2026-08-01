@@ -101,6 +101,7 @@ class FeedControllerTest {
         assertEquals("feed", result);
 
         verify(model).addAttribute("username", "sommy");
+        verify(model).addAttribute("profilePictureUrl", null);
         verify(model).addAttribute("followingCount", 2L);
         verify(model).addAttribute("feedReviews", reviews);
 

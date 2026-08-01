@@ -60,8 +60,10 @@ public class FeedController {
                 reviewRepository.findFeedReviewsForUser(currentUser);
 
         model.addAttribute("username", username);
+        model.addAttribute("profilePictureUrl", currentUser.getProfilePictureUrl());
         model.addAttribute("followingCount", followingCount);
         model.addAttribute("feedReviews", feedReviews);
+
 
         return "feed";
     }
