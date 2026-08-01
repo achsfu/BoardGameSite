@@ -39,8 +39,12 @@
             <p class="eyebrow">GAME DAY</p>
             <h1 th:text="${gameSession.gameName}">Game Name</h1>
             <p th:text="${#temporals.format(gameSession.sessionTime, 'EEEE, MMM d, yyyy ''at'' HH:mm')}">Session time</p>
-            <p class="muted" th:if="${gameSession.location != null and !gameSession.location.isBlank()}"
-               th:text="'Location: ' + ${gameSession.location}">Location</p>
+            <p class="muted" th:if="${gameSession.location != null and !gameSession.location.isBlank()}">
+                Location:
+                <a class="text-link" target="_blank" rel="noopener"
+                    th:href="@{'https://www.google.com/maps/dir/?api=1&destination=' + ${#uris.escapePath(gameSession.location)}}"
+                    th:text="${gameSession.location}">Address</a>
+            </p>
             <p class="muted" th:if="${gameSession.notes != null and !gameSession.notes.isBlank()}" th:text="${gameSession.notes}">Notes</p>
             <p class="muted" th:text="'Hosted by ' + ${gameSession.host.username}">Hosted by</p>
             <p class="muted" th:if="${error != null}" th:text="${error}">Error message</p>
