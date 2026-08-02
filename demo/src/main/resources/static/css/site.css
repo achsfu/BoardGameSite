@@ -4067,3 +4067,340 @@ a.game-detail-review-author:hover {
         border-bottom: 0;
     }
 }
+
+/* =========================================================
+   Review likes
+   ========================================================= */
+
+.game-detail-review-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.game-detail-review-actions form {
+    margin: 0;
+}
+
+.game-detail-review-like-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 38px;
+    padding: 0.55rem 0.85rem;
+    border: 1px solid #403649;
+    border-radius: 999px;
+    background: transparent;
+    color: #aca1b5;
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        border-color 160ms ease,
+        background-color 160ms ease,
+        color 160ms ease,
+        transform 160ms ease;
+}
+
+.game-detail-review-like-button:hover {
+    border-color: #a78bfa;
+    background: rgba(167, 139, 250, 0.08);
+    color: #f3eef6;
+    transform: translateY(-1px);
+}
+
+.game-detail-review-like-button-active {
+    border-color: #a78bfa;
+    background: rgba(167, 139, 250, 0.14);
+    color: #c4b5fd;
+}
+
+.game-detail-review-like-count {
+    min-width: 1.25rem;
+    text-align: center;
+}
+
+.game-detail-review-like-summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: #8f8498;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+/* =========================================================
+   Review replies
+   ========================================================= */
+
+.game-detail-review-reply-toggle {
+    min-height: 38px;
+    padding: 0.55rem 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border: 1px solid #403649;
+    border-radius: 999px;
+    background: transparent;
+    color: #aca1b5;
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+        border-color 160ms ease,
+        background-color 160ms ease,
+        color 160ms ease,
+        transform 160ms ease;
+}
+
+.game-detail-review-reply-toggle:hover {
+    border-color: #a78bfa;
+    background: rgba(167, 139, 250, 0.08);
+    color: #f3eef6;
+    transform: translateY(-1px);
+}
+
+.game-detail-review-reply-toggle:focus-visible {
+    outline: 3px solid rgba(167, 139, 250, 0.45);
+    outline-offset: 2px;
+}
+
+/*
+ * Hidden until the Replies button is clicked.
+ */
+.game-detail-review-replies {
+    display: none;
+    margin-top: 1rem;
+    margin-left: 3.4rem;
+    padding: 1rem 0 0 1.15rem;
+    border-top: 1px solid #352d3e;
+    border-left: 2px solid #40344d;
+}
+
+.game-detail-review-replies-open {
+    display: block;
+}
+
+.game-detail-review-reply-list {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.game-detail-review-reply {
+    padding: 0.9rem 1rem;
+    border: 1px solid #393042;
+    border-radius: 8px;
+    background: rgba(22, 17, 29, 0.78);
+}
+
+.game-detail-review-reply-header {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    margin-bottom: 0.45rem;
+}
+
+.game-detail-review-reply-author {
+    color: #e9e2f2;
+    font-size: 0.84rem;
+    font-weight: 800;
+}
+
+a.game-detail-review-reply-author:hover {
+    color: #c4b5fd;
+}
+
+.game-detail-review-reply-date {
+    color: #7f7489;
+    font-size: 0.72rem;
+}
+
+.game-detail-review-reply-text {
+    margin: 0;
+    color: #bbb1c4;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.game-detail-review-no-replies {
+    margin: 0 0 0.9rem;
+    color: #857a8d;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+
+.game-detail-review-reply-form {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #352d3e;
+}
+
+.game-detail-review-reply-form textarea {
+    width: 100%;
+    min-height: 82px;
+    padding: 0.8rem 0.9rem;
+    border: 1px solid #4a3f56;
+    border-radius: 7px;
+    background: #100c16;
+    color: #f2edf6;
+    font: inherit;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    resize: vertical;
+    transition:
+        border-color 160ms ease,
+        box-shadow 160ms ease,
+        background-color 160ms ease;
+}
+
+.game-detail-review-reply-form textarea::placeholder {
+    color: #746a7d;
+}
+
+.game-detail-review-reply-form textarea:focus {
+    border-color: #9673cc;
+    background: #15101c;
+    box-shadow: 0 0 0 3px rgba(150, 115, 204, 0.12);
+    outline: none;
+}
+
+.game-detail-review-reply-form-actions {
+    margin-top: 0.7rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.game-detail-review-reply-form-actions .game-detail-silver-button {
+    min-height: 38px;
+    padding: 0 1rem;
+}
+
+.game-detail-review-sign-in-message {
+    margin: 0.8rem 0 0;
+    color: #8f8498;
+    font-size: 0.82rem;
+}
+
+.game-detail-review-sign-in-message a {
+    color: #bca5e7;
+    font-weight: 800;
+}
+
+.game-detail-review-sign-in-message a:hover {
+    color: #ffffff;
+}
+
+/* Keep the Like and Replies controls aligned. */
+
+.game-detail-review-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.game-detail-review-actions form {
+    margin: 0;
+}
+
+/* Responsive reply layout */
+
+@media (max-width: 700px) {
+    .game-detail-review-replies {
+        margin-left: 0;
+        padding-left: 0.85rem;
+    }
+}
+
+@media (max-width: 520px) {
+    .game-detail-review-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .game-detail-review-actions form,
+    .game-detail-review-like-button,
+    .game-detail-review-reply-toggle {
+        width: 100%;
+    }
+
+    .game-detail-review-like-button,
+    .game-detail-review-reply-toggle {
+        justify-content: center;
+    }
+
+    .game-detail-review-replies {
+        margin-top: 0.85rem;
+        padding-left: 0;
+        border-left: 0;
+    }
+
+    .game-detail-review-reply-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.2rem;
+    }
+
+    .game-detail-review-reply-form-actions,
+    .game-detail-review-reply-form-actions button {
+        width: 100%;
+    }
+}
+
+/* =========================================================
+   Improved reply interaction
+   ========================================================= */
+
+.game-detail-review-reply-action {
+    min-height: 38px;
+    padding: 0.55rem 0.85rem;
+    border: 0;
+    background: transparent;
+    color: #a995c9;
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition:
+        color 160ms ease,
+        background-color 160ms ease;
+}
+
+.game-detail-review-reply-action:hover {
+    color: #ffffff;
+    background: rgba(167, 139, 250, 0.08);
+    border-radius: 999px;
+}
+
+.game-detail-review-reply-action:focus-visible {
+    outline: 3px solid rgba(167, 139, 250, 0.45);
+    outline-offset: 2px;
+    border-radius: 999px;
+}
+
+/*
+ * The conversation can be expanded without showing
+ * the reply form automatically.
+ */
+.game-detail-review-reply-form {
+    display: none;
+}
+
+.game-detail-review-reply-form-open {
+    display: block;
+}
+
+@media (max-width: 520px) {
+    .game-detail-review-reply-action {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+    }
+}

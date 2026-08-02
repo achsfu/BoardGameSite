@@ -22,28 +22,86 @@
             </a>
 
             <div class="dashboard-nav-links">
-                <a href="/dashboard" th:if="${session.AUTH_USER != null}">Dashboard</a>
+                <a href="/dashboard" th:if="${session.AUTH_USER != null}">
+                    Dashboard
+                </a>
 
-                <form class="dashboard-nav-search" action="/profile/search" method="get" th:if="${session.AUTH_USER != null}">
-                    <button type="button" class="dashboard-nav-search-toggle">Users</button>
-                    <input id="navUserSearch" name="q" type="search" placeholder="Search users" required>
-                    <button type="submit">Search</button>
+                <form
+                    class="dashboard-nav-search"
+                    action="/profile/search"
+                    method="get"
+                    th:if="${session.AUTH_USER != null}">
+
+                    <button
+                        type="button"
+                        class="dashboard-nav-search-toggle">
+
+                        Users
+                    </button>
+
+                    <input
+                        id="navUserSearch"
+                        name="q"
+                        type="search"
+                        placeholder="Search users"
+                        required>
+
+                    <button type="submit">
+                        Search
+                    </button>
                 </form>
 
-                <form class="dashboard-nav-search" action="/games/search" method="get" th:if="${session.AUTH_USER != null}">
-                    <button type="button" class="dashboard-nav-search-toggle">Games</button>
-                    <input id="navGameSearch" name="q" type="search" placeholder="Search games" required>
-                    <button type="submit">Search</button>
+                <form
+                    class="dashboard-nav-search"
+                    action="/games/search"
+                    method="get"
+                    th:if="${session.AUTH_USER != null}">
+
+                    <button
+                        type="button"
+                        class="dashboard-nav-search-toggle">
+
+                        Games
+                    </button>
+
+                    <input
+                        id="navGameSearch"
+                        name="q"
+                        type="search"
+                        placeholder="Search games"
+                        required>
+
+                    <button type="submit">
+                        Search
+                    </button>
                 </form>
 
-                <form action="/logout" method="post" th:if="${session.AUTH_USER != null}">
-                    <button type="submit" class="dashboard-logout-button">
+                <form
+                    action="/logout"
+                    method="post"
+                    th:if="${session.AUTH_USER != null}">
+
+                    <button
+                        type="submit"
+                        class="dashboard-logout-button">
+
                         Logout
                     </button>
                 </form>
 
-                <a href="/login" th:if="${session.AUTH_USER == null}">Sign in</a>
-                <a href="/register" th:if="${session.AUTH_USER == null}">Register</a>
+                <a
+                    href="/login"
+                    th:if="${session.AUTH_USER == null}">
+
+                    Sign in
+                </a>
+
+                <a
+                    href="/register"
+                    th:if="${session.AUTH_USER == null}">
+
+                    Register
+                </a>
             </div>
         </nav>
 
@@ -53,6 +111,7 @@
                 class="game-detail-alert game-detail-success"
                 th:if="${successMessage != null}"
                 th:text="${successMessage}">
+
                 Description updated.
             </div>
 
@@ -60,6 +119,7 @@
                 class="game-detail-alert game-detail-error"
                 th:if="${errorMessage != null}"
                 th:text="${errorMessage}">
+
                 An error occurred.
             </div>
 
@@ -93,7 +153,10 @@
                         Review This Game
                     </button>
 
-                    <a href="/dashboard" class="game-detail-back-button">
+                    <a
+                        href="/dashboard"
+                        class="game-detail-back-button">
+
                         Back to Dashboard
                     </a>
 
@@ -115,7 +178,9 @@
                             class="game-detail-catalog-score"
                             th:if="${game.communityScore != null}">
 
-                            <span class="game-detail-star">★</span>
+                            <span class="game-detail-star">
+                                ★
+                            </span>
 
                             <span
                                 th:text="${#numbers.formatDecimal(
@@ -123,6 +188,7 @@
                                     1,
                                     2
                                 )}">
+
                                 8.50
                             </span>
                         </span>
@@ -138,7 +204,9 @@
                             th:if="${game.yearPublished != null
                                 && game.yearPublished > 0}">
 
-                            <span class="game-detail-separator">•</span>
+                            <span class="game-detail-separator">
+                                •
+                            </span>
 
                             <span th:text="${game.yearPublished}">
                                 2020
@@ -149,7 +217,9 @@
                         <th:block
                             th:if="${game.playerCountDisplay != null}">
 
-                            <span class="game-detail-separator">•</span>
+                            <span class="game-detail-separator">
+                                •
+                            </span>
 
                             <span th:text="${game.playerCountDisplay}">
                                 2–4 players
@@ -160,7 +230,9 @@
                         <th:block
                             th:if="${game.playtimeDisplay != null}">
 
-                            <span class="game-detail-separator">•</span>
+                            <span class="game-detail-separator">
+                                •
+                            </span>
 
                             <span th:text="${game.playtimeDisplay}">
                                 60–90 min
@@ -172,7 +244,9 @@
 
                     <div class="game-detail-description">
 
-                        <h2>About the game</h2>
+                        <h2>
+                            About the game
+                        </h2>
 
                         <p
                             class="formatted-description"
@@ -197,7 +271,9 @@
                                     Administration
                                 </p>
 
-                                <h2>Edit game description</h2>
+                                <h2>
+                                    Edit game description
+                                </h2>
                             </div>
 
                         </div>
@@ -248,7 +324,9 @@
                             Game Details
                         </p>
 
-                        <h2>At a glance</h2>
+                        <h2>
+                            At a glance
+                        </h2>
 
                     </div>
 
@@ -410,7 +488,9 @@
                             BoardGameGeek Community
                         </p>
 
-                        <h2>Community activity</h2>
+                        <h2>
+                            Community activity
+                        </h2>
                     </div>
 
                 </div>
@@ -427,10 +507,13 @@
                                 1,
                                 'COMMA'
                             )}">
+
                             100,000
                         </strong>
 
-                        <span>Ratings</span>
+                        <span>
+                            Ratings
+                        </span>
 
                     </div>
 
@@ -444,10 +527,13 @@
                                 1,
                                 'COMMA'
                             )}">
+
                             250,000
                         </strong>
 
-                        <span>Owners</span>
+                        <span>
+                            Owners
+                        </span>
 
                     </div>
 
@@ -461,10 +547,13 @@
                                 1,
                                 'COMMA'
                             )}">
+
                             50,000
                         </strong>
 
-                        <span>Wishlisted</span>
+                        <span>
+                            Wishlisted
+                        </span>
 
                     </div>
 
@@ -478,10 +567,12 @@
 
                     <div>
                         <p class="game-detail-eyebrow">
-                            Recent Reviews
+                            Top Reviews
                         </p>
 
-                        <h2>What players are saying</h2>
+                        <h2>
+                            What players are saying
+                        </h2>
                     </div>
 
                     <button
@@ -502,7 +593,9 @@
                         ★
                     </div>
 
-                    <h3>No reviews yet</h3>
+                    <h3>
+                        No reviews yet
+                    </h3>
 
                     <p>
                         Be the first player to review this game.
@@ -619,6 +712,221 @@
                             Review text
                         </p>
 
+                        <div class="game-detail-review-actions">
+
+                            <form
+                                th:if="${session.AUTH_USER != null}"
+                                th:action="@{/reviews/{id}/like(id=${review.id})}"
+                                method="post">
+
+                                <input
+                                    type="hidden"
+                                    name="redirectTo"
+                                    th:value="@{/games/id/{id}(id=${game.id})}">
+
+                                <button
+                                    type="submit"
+                                    class="game-detail-review-like-button"
+                                    th:classappend="${likedReviewIds.contains(review.id)}
+                                        ? ' game-detail-review-like-button-active'
+                                        : ''">
+
+                                    <span
+                                        class="game-detail-review-like-icon"
+                                        th:text="${likedReviewIds.contains(review.id)}
+                                            ? '♥'
+                                            : '♡'">
+
+                                        ♡
+                                    </span>
+
+                                    <span
+                                        th:text="${likedReviewIds.contains(review.id)}
+                                            ? 'Liked'
+                                            : 'Like'">
+
+                                        Like
+                                    </span>
+
+                                    <span
+                                        class="game-detail-review-like-count"
+                                        th:text="${reviewLikeCounts.get(review.id) != null
+                                            ? reviewLikeCounts.get(review.id)
+                                            : 0}">
+
+                                        0
+                                    </span>
+
+                                </button>
+
+                            </form>
+
+                            <div
+                                class="game-detail-review-like-summary"
+                                th:if="${session.AUTH_USER == null}">
+
+                                <span>♡</span>
+
+                                <span
+                                    th:text="${reviewLikeCounts.get(review.id) != null
+                                        ? reviewLikeCounts.get(review.id)
+                                        : 0}">
+
+                                    0
+                                </span>
+
+                                <span>likes</span>
+
+                            </div>
+
+                            <button
+                                type="button"
+                                class="game-detail-review-reply-toggle"
+                                th:onclick="|toggleReviewReplies(${review.id})|">
+
+                                <span>💬</span>
+
+                                <span
+                                    th:text="${reviewReplyCounts.get(review.id) != null
+                                        ? reviewReplyCounts.get(review.id)
+                                        : 0}">
+
+                                    0
+                                </span>
+
+                                <span
+                                    th:text="${reviewReplyCounts.get(review.id) == 1
+                                        ? 'Reply'
+                                        : 'Replies'}">
+
+                                    Replies
+                                </span>
+
+                            </button>
+
+                            <button
+                                type="button"
+                                class="game-detail-review-reply-action"
+                                th:if="${session.AUTH_USER != null}"
+                                th:onclick="|openReviewReplyForm(${review.id})|">
+
+                                Reply
+                            </button>
+
+                        </div>
+
+                        <div
+                            class="game-detail-review-replies"
+                            th:id="'reviewReplies-' + ${review.id}">
+
+                            <div
+                                class="game-detail-review-reply-list"
+                                th:if="${reviewReplies.get(review.id) != null
+                                    && !reviewReplies.get(review.id).isEmpty()}">
+
+                                <article
+                                    class="game-detail-review-reply"
+                                    th:each="reply : ${reviewReplies.get(review.id)}">
+
+                                    <div class="game-detail-review-reply-header">
+
+                                        <a
+                                            class="game-detail-review-reply-author"
+                                            th:if="${reply.user != null}"
+                                            th:href="@{'/profile/' + ${reply.user.username}}"
+                                            th:text="${reply.user.username}">
+
+                                            username
+                                        </a>
+
+                                        <span
+                                            class="game-detail-review-reply-author"
+                                            th:if="${reply.user == null}">
+
+                                            Unknown user
+                                        </span>
+
+                                        <span
+                                            class="game-detail-review-reply-date"
+                                            th:text="${#temporals.format(
+                                                reply.createdAt,
+                                                'MMM d, yyyy HH:mm'
+                                            )}">
+
+                                            Jan 1, 2026 12:00
+                                        </span>
+
+                                    </div>
+
+                                    <p
+                                        class="game-detail-review-reply-text"
+                                        th:text="${reply.replyText}">
+
+                                        Reply text
+                                    </p>
+
+                                </article>
+
+                            </div>
+
+                            <p
+                                class="game-detail-review-no-replies"
+                                th:if="${reviewReplies.get(review.id) == null
+                                    || reviewReplies.get(review.id).isEmpty()}">
+
+                                No replies yet. Start the conversation.
+                            </p>
+
+                            <form
+                                class="game-detail-review-reply-form"
+                                th:id="'reviewReplyForm-' + ${review.id}"
+                                th:if="${session.AUTH_USER != null}"
+                                th:action="@{/reviews/{id}/reply(id=${review.id})}"
+                                method="post">
+
+                                <input
+                                    type="hidden"
+                                    name="redirectTo"
+                                    th:value="@{/games/id/{id}(id=${game.id})}">
+
+                                <label
+                                    class="game-detail-visually-hidden"
+                                    th:for="'replyText-' + ${review.id}">
+
+                                    Reply to this review
+                                </label>
+
+                                <textarea
+                                    th:id="'replyText-' + ${review.id}"
+                                    name="replyText"
+                                    maxlength="1000"
+                                    rows="3"
+                                    placeholder="Write a reply..."
+                                    required></textarea>
+
+                                <div class="game-detail-review-reply-form-actions">
+
+                                    <button
+                                        type="submit"
+                                        class="game-detail-silver-button">
+
+                                        Post Reply
+                                    </button>
+
+                                </div>
+
+                            </form>
+
+                            <p
+                                class="game-detail-review-sign-in-message"
+                                th:if="${session.AUTH_USER == null}">
+
+                                <a href="/login">Sign in</a>
+                                to reply.
+                            </p>
+
+                        </div>
+
                     </article>
 
                 </div>
@@ -651,7 +959,9 @@
                 Share your experience with other players.
             </p>
 
-            <form action="/reviews" method="post">
+            <form
+                action="/reviews"
+                method="post">
 
                 <input
                     type="hidden"
@@ -779,6 +1089,48 @@
             }
         });
 
+        function toggleReviewReplies(reviewId) {
+            const replies = document.getElementById(
+                "reviewReplies-" + reviewId
+            );
+
+            if (replies) {
+                replies.classList.toggle(
+                    "game-detail-review-replies-open"
+                );
+            }
+        }
+
+        function openReviewReplyForm(reviewId) {
+            const replies = document.getElementById(
+                "reviewReplies-" + reviewId
+            );
+
+            const replyForm = document.getElementById(
+                "reviewReplyForm-" + reviewId
+            );
+
+            const replyText = document.getElementById(
+                "replyText-" + reviewId
+            );
+
+            if (replies) {
+                replies.classList.add(
+                    "game-detail-review-replies-open"
+                );
+            }
+
+            if (replyForm) {
+                replyForm.classList.add(
+                    "game-detail-review-reply-form-open"
+                );
+            }
+
+            if (replyText) {
+                replyText.focus();
+            }
+        }
+
         window.addEventListener("keydown", function (event) {
             if (event.key === "Escape") {
                 closeGameReviewModal();
@@ -787,5 +1139,6 @@
     </script>
 
     <script src="/js/nav-dropdown.js"></script>
+
 </body>
 </html>
