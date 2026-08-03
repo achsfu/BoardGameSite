@@ -600,6 +600,36 @@ class ReviewControllerTest {
     }
 
     @Test
+    void toggleReviewLike_profileRedirect_redirectsBackToProfilePage()
+            throws Exception {
+
+        User michael = createUser("michael");
+        BoardGameRank catan =
+                createGame(42, "Catan");
+
+        Review review = createReview(michael, catan);
+
+        when(userRepository.findByUsername("michael"))
+                .thenReturn(michael);
+
+        when(reviewRepository.findById(5))
+                .thenReturn(Optional.of(review));
+
+        when(reviewLikeRepository.findByReviewAndUser(
+                review,
+                michael
+        )).thenReturn(Optional.empty());
+
+        mockMvc.perform(
+                        post("/reviews/5/like")
+                                .sessionAttr("AUTH_USER", "michael")
+                                .param("redirectTo", "/profile/michael")
+                )
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/profile/michael"));
+    }
+
+    @Test
     void toggleReviewLike_alreadyLiked_removesExistingLike()
             throws Exception {
 
@@ -831,6 +861,35 @@ class ReviewControllerTest {
     }
 
     @Test
+    void postReply_profileRedirect_savesAndOpensReplyPanel()
+            throws Exception {
+
+        User michael = createUser("michael");
+        BoardGameRank catan = createGame(42, "Catan");
+
+        Review review = createReview(michael, catan);
+
+        when(userRepository.findByUsername("michael"))
+                .thenReturn(michael);
+
+        when(reviewRepository.findById(5))
+                .thenReturn(Optional.of(review));
+
+        mockMvc.perform(
+                        post("/reviews/5/reply")
+                                .sessionAttr("AUTH_USER", "michael")
+                                .param("replyText", "  I completely agree!  ")
+                                .param("redirectTo", "/profile/michael")
+                )
+                .andExpect(status().is3xxRedirection())
+                .andExpect(
+                        redirectedUrl(
+                                "/profile/michael?success=Reply+posted&openReply=5"
+                        )
+                );
+    }
+
+    @Test
     void postReply_validReply_savesAndRedirectsWithSuccess()
             throws Exception {
 
@@ -867,7 +926,7 @@ class ReviewControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(
                         redirectedUrl(
-                                "/games/id/42?success=Reply+posted"
+                                "/games/id/42?success=Reply+posted&openReply=5"
                         )
                 );
 

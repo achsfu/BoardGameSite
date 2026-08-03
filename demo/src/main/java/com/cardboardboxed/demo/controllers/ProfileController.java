@@ -1,5 +1,6 @@
 package com.cardboardboxed.demo.controllers;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -17,6 +18,9 @@ import com.cardboardboxed.demo.boardgames.BoardGameAutocompleteRepository;
 import com.cardboardboxed.demo.boardgames.BoardGameRank;
 import com.cardboardboxed.demo.boardgames.BoardGameRankRepository;
 import com.cardboardboxed.demo.reviews.Review;
+import com.cardboardboxed.demo.reviews.ReviewLikeRepository;
+import com.cardboardboxed.demo.reviews.ReviewReply;
+import com.cardboardboxed.demo.reviews.ReviewReplyRepository;
 import com.cardboardboxed.demo.reviews.ReviewRepository;
 import com.cardboardboxed.demo.useracounts.UserRepository;
 import com.cardboardboxed.demo.useracounts.User;
@@ -30,6 +34,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 //NEW IMPORTS FOR USER LOOKUP AND FOLLOW FUNCTION
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.web.util.UriUtils;
 import com.cardboardboxed.demo.useracounts.UserFollow;
 import com.cardboardboxed.demo.useracounts.UserFollowRepository;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -46,6 +51,8 @@ public class ProfileController {
     private final ReviewRepository reviewRepository;
     private final BoardGameAutocompleteRepository boardGameAutocompleteRepository;
     private final BoardGameRankRepository boardGameRankRepository;
+    private final ReviewLikeRepository reviewLikeRepository;
+    private final ReviewReplyRepository reviewReplyRepository;
     //NEW FIELD FOR USER LOOKUP AND FOLLOW FUNCTION
     private final UserFollowRepository userFollowRepository;
     private final CollectionItemRepository collectionItemRepository;
@@ -54,12 +61,16 @@ public class ProfileController {
     public ProfileController(UserRepository userRepository, ReviewRepository reviewRepository,
             BoardGameAutocompleteRepository boardGameAutocompleteRepository,
             BoardGameRankRepository boardGameRankRepository,
+            ReviewLikeRepository reviewLikeRepository,
+            ReviewReplyRepository reviewReplyRepository,
             UserFollowRepository userFollowRepository,
             CollectionItemRepository collectionItemRepository) {
         this.userRepository = userRepository;
         this.reviewRepository = reviewRepository;
         this.boardGameAutocompleteRepository = boardGameAutocompleteRepository;
         this.boardGameRankRepository = boardGameRankRepository;
+        this.reviewLikeRepository = reviewLikeRepository;
+        this.reviewReplyRepository = reviewReplyRepository;
         this.userFollowRepository = userFollowRepository;
         this.collectionItemRepository = collectionItemRepository;
     }
@@ -548,6 +559,13 @@ public class ProfileController {
         List<String> wishlistList = (viewedUser.getGameWishlist() != null && !viewedUser.getGameWishlist().isBlank())
             ? new ArrayList<>(List.of(viewedUser.getGameWishlist().split("\\s*,\\s*")))
             : new ArrayList<>();
+
+        Map<String, String> ownedGameDetailLinks = buildGameDetailLinks(ownedList);
+        Map<String, String> wishlistGameDetailLinks = buildGameDetailLinks(wishlistList);
+        Map<Integer, Long> reviewLikeCounts = buildReviewLikeCounts(userReviews);
+        Set<Integer> likedReviewIds = findLikedReviewIds(userReviews, currentUser);
+        Map<Integer, List<ReviewReply>> reviewReplies = buildReviewReplies(userReviews);
+        Map<Integer, Long> reviewReplyCounts = buildReviewReplyCounts(userReviews);
  
         boolean isFollowing = userFollowRepository.existsByFollowerAndFollowed(currentUser, viewedUser);
         model.addAttribute("username", viewedUser.getUsername());
@@ -557,10 +575,117 @@ public class ProfileController {
         model.addAttribute("reviews",userReviews);
         model.addAttribute("ownedList", ownedList);
         model.addAttribute("wishlistList",wishlistList);
+        model.addAttribute("ownedGameDetailLinks", ownedGameDetailLinks);
+        model.addAttribute("wishlistGameDetailLinks", wishlistGameDetailLinks);
+        model.addAttribute("reviewLikeCounts", reviewLikeCounts);
+        model.addAttribute("likedReviewIds", likedReviewIds);
+        model.addAttribute("reviewReplies", reviewReplies);
+        model.addAttribute("reviewReplyCounts", reviewReplyCounts);
         model.addAttribute("followerCount", userFollowRepository.countByFollowed(viewedUser));
         model.addAttribute("followingCount", userFollowRepository.countByFollower(viewedUser));
         model.addAttribute("isFollowing", isFollowing);
         return "profile-view";
+    }
+
+    private Map<String, String> buildGameDetailLinks(List<String> gameTitles) {
+        Map<String, String> detailLinks = new HashMap<>();
+
+        if (gameTitles == null) {
+            return detailLinks;
+        }
+
+        for (String gameTitle : gameTitles) {
+            if (gameTitle == null || gameTitle.isBlank()) {
+                continue;
+            }
+
+            String normalizedTitle = gameTitle.trim();
+            BoardGameRank matchingGame = boardGameRankRepository
+                    .findFirstByTitleIgnoreCaseOrderByRankPositionAsc(normalizedTitle)
+                    .orElse(null);
+
+            if (matchingGame != null && matchingGame.getId() != null) {
+                detailLinks.put(
+                        normalizedTitle,
+                        "/games/id/" + matchingGame.getId()
+                );
+            } else {
+                detailLinks.put(
+                        normalizedTitle,
+                        "/games/search?q=" + UriUtils.encodeQueryParam(
+                                normalizedTitle,
+                                StandardCharsets.UTF_8
+                        )
+                );
+            }
+        }
+
+        return detailLinks;
+    }
+
+    private Map<Integer, Long> buildReviewLikeCounts(List<Review> reviews) {
+        Map<Integer, Long> likeCounts = new HashMap<>();
+
+        for (Review review : reviews) {
+            if (review == null || review.getId() == null) {
+                continue;
+            }
+
+            likeCounts.put(review.getId(), reviewLikeRepository.countByReview(review));
+        }
+
+        return likeCounts;
+    }
+
+    private Set<Integer> findLikedReviewIds(List<Review> reviews, User currentUser) {
+        Set<Integer> likedReviewIds = new HashSet<>();
+
+        if (currentUser == null) {
+            return likedReviewIds;
+        }
+
+        for (Review review : reviews) {
+            if (review == null || review.getId() == null) {
+                continue;
+            }
+
+            if (reviewLikeRepository.existsByReviewAndUser(review, currentUser)) {
+                likedReviewIds.add(review.getId());
+            }
+        }
+
+        return likedReviewIds;
+    }
+
+    private Map<Integer, List<ReviewReply>> buildReviewReplies(List<Review> reviews) {
+        Map<Integer, List<ReviewReply>> repliesByReview = new HashMap<>();
+
+        for (Review review : reviews) {
+            if (review == null || review.getId() == null) {
+                continue;
+            }
+
+            repliesByReview.put(
+                    review.getId(),
+                    reviewReplyRepository.findByReviewOrderByCreatedAtAsc(review)
+            );
+        }
+
+        return repliesByReview;
+    }
+
+    private Map<Integer, Long> buildReviewReplyCounts(List<Review> reviews) {
+        Map<Integer, Long> replyCounts = new HashMap<>();
+
+        for (Review review : reviews) {
+            if (review == null || review.getId() == null) {
+                continue;
+            }
+
+            replyCounts.put(review.getId(), reviewReplyRepository.countByReview(review));
+        }
+
+        return replyCounts;
     }
     //CURRENT SECTION WORKING ON---------------------
     //FOLLOW USER
