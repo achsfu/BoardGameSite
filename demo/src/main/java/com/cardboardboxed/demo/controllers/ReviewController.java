@@ -15,6 +15,8 @@ import com.cardboardboxed.demo.useracounts.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
+import java.util.Locale;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -236,8 +238,10 @@ public class ReviewController {
         reviewReplyRepository.save(reply);
 
         return "redirect:"
-                + reviewRedirectTarget
-                + "?success=Reply+posted";
+                + buildReplyRedirectTarget(
+                        reviewRedirectTarget,
+                        id
+                );
     }
 
     /*
@@ -324,6 +328,12 @@ public class ReviewController {
             Review review,
             String redirectTo
     ) {
+        if (redirectTo != null
+                && !redirectTo.isBlank()) {
+
+            return resolveSafeRedirectTarget(redirectTo);
+        }
+
         if (review != null
                 && review.getGame() != null
                 && review.getGame().getId() != null) {
@@ -332,12 +342,41 @@ public class ReviewController {
                     + review.getGame().getId();
         }
 
-        return resolveSafeRedirectTarget(redirectTo);
+        return "/dashboard";
     }
 
     /*
      * Prevents arbitrary external redirects.
      */
+    private String buildReplyRedirectTarget(
+            String redirectTarget,
+            Integer reviewId
+    ) {
+        String target =
+                redirectTarget == null
+                        || redirectTarget.isBlank()
+                        ? "/dashboard"
+                        : redirectTarget;
+
+        StringBuilder builder =
+                new StringBuilder(target);
+
+        if (builder.indexOf("?") >= 0) {
+            builder.append("&");
+        } else {
+            builder.append("?");
+        }
+
+        builder.append("success=Reply+posted");
+
+        if (reviewId != null) {
+            builder.append("&openReply=")
+                    .append(reviewId);
+        }
+
+        return builder.toString();
+    }
+
     private String resolveSafeRedirectTarget(
             String redirectTo
     ) {
@@ -346,9 +385,13 @@ public class ReviewController {
 
             String trimmed =
                     redirectTo.trim();
+            String lowerCase =
+                    trimmed.toLowerCase(Locale.ROOT);
 
-            if (trimmed.startsWith("/games/id/")
-                    || trimmed.startsWith("/games/")) {
+            if (trimmed.startsWith("/")
+                    && !trimmed.startsWith("//")
+                    && !lowerCase.contains("://")
+                    && !lowerCase.startsWith("javascript:")) {
 
                 return trimmed;
             }

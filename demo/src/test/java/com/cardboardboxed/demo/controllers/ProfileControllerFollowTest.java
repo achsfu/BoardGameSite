@@ -28,6 +28,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.cardboardboxed.demo.boardgames.BoardGameAutocompleteRepository;
 import com.cardboardboxed.demo.boardgames.BoardGameRankRepository;
 import com.cardboardboxed.demo.collections.CollectionItemRepository;
+import com.cardboardboxed.demo.reviews.ReviewLikeRepository;
+import com.cardboardboxed.demo.reviews.ReviewReplyRepository;
 import com.cardboardboxed.demo.reviews.ReviewRepository;
 import com.cardboardboxed.demo.useracounts.User;
 import com.cardboardboxed.demo.useracounts.UserFollow;
@@ -45,6 +47,12 @@ class ProfileControllerFollowTest {
 
     @MockitoBean
     private ReviewRepository reviewRepository;
+
+    @MockitoBean
+    private ReviewLikeRepository reviewLikeRepository;
+
+    @MockitoBean
+    private ReviewReplyRepository reviewReplyRepository;
 
     @MockitoBean
     private BoardGameAutocompleteRepository boardGameAutocompleteRepository;

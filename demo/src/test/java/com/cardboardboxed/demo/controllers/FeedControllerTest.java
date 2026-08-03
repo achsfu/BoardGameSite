@@ -1,6 +1,8 @@
 package com.cardboardboxed.demo.controllers;
 
 import com.cardboardboxed.demo.reviews.Review;
+import com.cardboardboxed.demo.reviews.ReviewLikeRepository;
+import com.cardboardboxed.demo.reviews.ReviewReplyRepository;
 import com.cardboardboxed.demo.reviews.ReviewRepository;
 import com.cardboardboxed.demo.useracounts.User;
 import com.cardboardboxed.demo.useracounts.UserFollowRepository;
@@ -36,6 +38,12 @@ class FeedControllerTest {
     private ReviewRepository reviewRepository;
 
     @Mock
+    private ReviewLikeRepository reviewLikeRepository;
+
+    @Mock
+    private ReviewReplyRepository reviewReplyRepository;
+
+    @Mock
     private HttpServletRequest request;
 
     @Mock
@@ -51,7 +59,9 @@ class FeedControllerTest {
         feedController = new FeedController(
                 userRepository,
                 userFollowRepository,
-                reviewRepository
+                reviewRepository,
+                reviewLikeRepository,
+                reviewReplyRepository
         );
     }
 

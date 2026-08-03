@@ -90,7 +90,10 @@
                     <p class="muted" th:if="${ownedList.isEmpty()}">No games added yet.</p>
 
                     <div class="game-tag-container">
-                        <span th:each="game : ${ownedList}" class="game-tag" th:text="${game}">Owned game</span>
+                        <a th:each="game : ${ownedList}"
+                           class="game-tag"
+                           th:href="${ownedGameDetailLinks.containsKey(game) ? ownedGameDetailLinks.get(game) : '/games/search?q=' + #uris.escapeQueryParam(game)}"
+                           th:text="${game}">Owned game</a>
                     </div>
                 </div>
 
@@ -99,7 +102,10 @@
                     <p class="muted" th:if="${wishlistList.isEmpty()}">Wishlist is empty.</p>
 
                     <div class="game-tag-container">
-                        <span th:each="game : ${wishlistList}" class="game-tag wishlist-tag" th:text="${game}">Wishlist game</span>
+                        <a th:each="game : ${wishlistList}"
+                           class="game-tag wishlist-tag"
+                           th:href="${wishlistGameDetailLinks.containsKey(game) ? wishlistGameDetailLinks.get(game) : '/games/search?q=' + #uris.escapeQueryParam(game)}"
+                           th:text="${game}">Wishlist game</a>
                     </div>
                 </div>
             </div>
@@ -117,8 +123,66 @@
                     <div class="dashboard-activity-icon">★</div>
 
                     <div class="dashboard-activity-content">
-                        <strong th:text="${review.gameTitle}">Game Title</strong>
+                        <a th:if="${review.game != null && review.game.id != null}"
+                           th:href="@{/games/id/{id}(id=${review.game.id})}"
+                           class="profile-review-game-link"
+                           th:text="${review.gameTitle}">Game Title</a>
+                        <strong th:unless="${review.game != null && review.game.id != null}" th:text="${review.gameTitle}">Game Title</strong>
                         <p th:text="${review.reviewText}">Review details</p>
+
+                        <div class="game-detail-review-actions profile-review-actions">
+                            <form th:if="${session.AUTH_USER != null}" th:action="@{/reviews/{id}/like(id=${review.id})}" method="post">
+                                <input type="hidden" name="redirectTo" th:value="@{/profile/{username}(username=${username})}">
+                                <button type="submit" class="game-detail-review-like-button" th:classappend="${likedReviewIds.contains(review.id)} ? ' game-detail-review-like-button-active' : ''">
+                                    <span class="game-detail-review-like-icon" th:text="${likedReviewIds.contains(review.id)} ? '♥' : '♡'">♡</span>
+                                    <span th:text="${likedReviewIds.contains(review.id)} ? 'Liked' : 'Like'">Like</span>
+                                    <span class="game-detail-review-like-count" th:text="${reviewLikeCounts.get(review.id) != null ? reviewLikeCounts.get(review.id) : 0}">0</span>
+                                </button>
+                            </form>
+
+                            <div class="game-detail-review-like-summary" th:if="${session.AUTH_USER == null}">
+                                <span>♡</span>
+                                <span th:text="${reviewLikeCounts.get(review.id) != null ? reviewLikeCounts.get(review.id) : 0}">0</span>
+                                <span>likes</span>
+                            </div>
+
+                            <button type="button" class="game-detail-review-reply-toggle" th:onclick="|toggleReviewReplies(${review.id})|">
+                                <span>💬</span>
+                                <span th:text="${reviewReplyCounts.get(review.id) != null ? reviewReplyCounts.get(review.id) : 0}">0</span>
+                                <span th:text="${reviewReplyCounts.get(review.id) == 1 ? 'Reply' : 'Replies'}">Replies</span>
+                            </button>
+
+                            <button type="button" class="game-detail-review-reply-action" th:if="${session.AUTH_USER != null}" th:onclick="|openReviewReplyForm(${review.id})|">Reply</button>
+                        </div>
+
+                        <div class="game-detail-review-replies" th:id="'reviewReplies-' + ${review.id}">
+                            <div class="game-detail-review-reply-list" th:if="${reviewReplies.get(review.id) != null && !reviewReplies.get(review.id).isEmpty()}">
+                                <article class="game-detail-review-reply" th:each="reply : ${reviewReplies.get(review.id)}">
+                                    <div class="game-detail-review-reply-header">
+                                        <a class="game-detail-review-reply-author" th:if="${reply.user != null}" th:href="@{'/profile/' + ${reply.user.username}}" th:text="${reply.user.username}">username</a>
+                                        <span class="game-detail-review-reply-author" th:if="${reply.user == null}">Unknown user</span>
+                                        <span class="game-detail-review-reply-date" th:text="${#temporals.format(reply.createdAt, 'MMM d, yyyy HH:mm')}">Jan 1, 2026 12:00</span>
+                                    </div>
+                                    <p class="game-detail-review-reply-text" th:text="${reply.replyText}">Reply text</p>
+                                </article>
+                            </div>
+
+                            <p class="game-detail-review-no-replies" th:if="${reviewReplies.get(review.id) == null || reviewReplies.get(review.id).isEmpty()}">No replies yet. Start the conversation.</p>
+
+                            <form class="game-detail-review-reply-form" th:id="'reviewReplyForm-' + ${review.id}" th:if="${session.AUTH_USER != null}" th:action="@{/reviews/{id}/reply(id=${review.id})}" method="post">
+                                <input type="hidden" name="redirectTo" th:value="@{/profile/{username}(username=${username})}">
+                                <label class="game-detail-visually-hidden" th:for="'replyText-' + ${review.id}">Reply to this review</label>
+                                <textarea th:id="'replyText-' + ${review.id}" name="replyText" maxlength="1000" rows="3" placeholder="Write a reply..." required></textarea>
+                                <div class="game-detail-review-reply-form-actions">
+                                    <button type="submit" class="game-detail-silver-button">Post Reply</button>
+                                </div>
+                            </form>
+
+                            <p class="game-detail-review-sign-in-message" th:if="${session.AUTH_USER == null}">
+                                <a href="/login">Sign in</a>
+                                to reply.
+                            </p>
+                        </div>
                     </div>
 
                     <span class="dashboard-row-arrow profile-review-rating" th:text="${review.rating} + ' / 5'">5 / 5</span>
@@ -129,5 +193,49 @@
 </div>
 
 <script src="/js/nav-dropdown.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const params = new URLSearchParams(window.location.search);
+        const openReplyId = params.get('openReply');
+
+        if (openReplyId) {
+            const replies = document.getElementById('reviewReplies-' + openReplyId);
+            const replyForm = document.getElementById('reviewReplyForm-' + openReplyId);
+
+            if (replies) {
+                replies.classList.add('game-detail-review-replies-open');
+            }
+
+            if (replyForm) {
+                replyForm.classList.add('game-detail-review-reply-form-open');
+            }
+        }
+    });
+
+    function toggleReviewReplies(reviewId) {
+        const replies = document.getElementById('reviewReplies-' + reviewId);
+        if (replies) {
+            replies.classList.toggle('game-detail-review-replies-open');
+        }
+    }
+
+    function openReviewReplyForm(reviewId) {
+        const replies = document.getElementById('reviewReplies-' + reviewId);
+        const replyForm = document.getElementById('reviewReplyForm-' + reviewId);
+        const replyText = document.getElementById('replyText-' + reviewId);
+
+        if (replies) {
+            replies.classList.add('game-detail-review-replies-open');
+        }
+
+        if (replyForm) {
+            replyForm.classList.add('game-detail-review-reply-form-open');
+        }
+
+        if (replyText) {
+            replyText.focus();
+        }
+    }
+</script>
 </body>
 </html>

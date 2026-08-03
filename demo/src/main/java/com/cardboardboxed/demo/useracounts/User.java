@@ -1,5 +1,6 @@
 package com.cardboardboxed.demo.useracounts;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -23,7 +24,11 @@ public class User {
     private String bio; // New field for user bio
 
     private String profilePictureUrl;
+
+    @Column(name = "game_owned", length = 2000)
     private String gameOwned;
+
+    @Column(name = "game_wishlist", length = 2000)
     private String gameWishlist;
 
     

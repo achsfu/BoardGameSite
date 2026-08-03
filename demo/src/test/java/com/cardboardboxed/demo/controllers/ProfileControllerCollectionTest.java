@@ -6,6 +6,8 @@ import com.cardboardboxed.demo.boardgames.BoardGameRankRepository;
 import com.cardboardboxed.demo.collections.CollectionItem;
 import com.cardboardboxed.demo.collections.CollectionItem.CollectionType;
 import com.cardboardboxed.demo.collections.CollectionItemRepository;
+import com.cardboardboxed.demo.reviews.ReviewLikeRepository;
+import com.cardboardboxed.demo.reviews.ReviewReplyRepository;
 import com.cardboardboxed.demo.reviews.ReviewRepository;
 import com.cardboardboxed.demo.useracounts.User;
 import com.cardboardboxed.demo.useracounts.UserFollowRepository;
@@ -46,6 +48,12 @@ class ProfileControllerCollectionTest {
 
     @MockitoBean
     private ReviewRepository reviewRepository;
+
+    @MockitoBean
+    private ReviewLikeRepository reviewLikeRepository;
+
+    @MockitoBean
+    private ReviewReplyRepository reviewReplyRepository;
 
     @MockitoBean
     private BoardGameAutocompleteRepository boardGameAutocompleteRepository;
