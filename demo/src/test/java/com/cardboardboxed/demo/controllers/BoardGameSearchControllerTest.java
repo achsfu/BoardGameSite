@@ -4,6 +4,8 @@ import com.cardboardboxed.demo.boardgames.BoardGameAutocompleteRepository;
 import com.cardboardboxed.demo.boardgames.BoardGameRank;
 import com.cardboardboxed.demo.boardgames.BoardGameRankRepository;
 import com.cardboardboxed.demo.reviews.Review;
+import com.cardboardboxed.demo.reviews.ReviewLikeRepository;
+import com.cardboardboxed.demo.reviews.ReviewReplyRepository;
 import com.cardboardboxed.demo.reviews.ReviewRepository;
 import com.cardboardboxed.demo.useracounts.UserRepository;
 
@@ -31,7 +33,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
-@WebMvcTest({BoardGameController.class, BoardGameApiController.class})
+@WebMvcTest({
+        BoardGameController.class,
+        BoardGameApiController.class
+})
 class BoardGameSearchControllerTest {
 
     @Autowired
@@ -44,125 +49,340 @@ class BoardGameSearchControllerTest {
     private ReviewRepository reviewRepository;
 
     @MockitoBean
+    private ReviewLikeRepository reviewLikeRepository;
+
+    @MockitoBean
+    private ReviewReplyRepository reviewReplyRepository;
+
+    @MockitoBean
     private UserRepository userRepository;
 
     @MockitoBean
     private BoardGameAutocompleteRepository boardGameAutocompleteRepository;
 
     @Test
-    void gameSearchRedirectsToIdOnExactTitleMatch() throws Exception {
-        BoardGameRank game = createGame(42, "Catan");
+    void gameSearchRedirectsToIdOnExactTitleMatch()
+            throws Exception {
 
-        when(boardGameRankRepository.findFirstByTitleIgnoreCaseOrderByRankPositionAsc("Catan"))
-                .thenReturn(Optional.of(game));
+        BoardGameRank game =
+                createGame(42, "Catan");
 
-        mockMvc.perform(get("/games/search").param("q", "Catan"))
+        when(
+                boardGameRankRepository
+                        .findFirstByTitleIgnoreCaseOrderByRankPositionAsc(
+                                "Catan"
+                        )
+        ).thenReturn(Optional.of(game));
+
+        mockMvc.perform(
+                        get("/games/search")
+                                .param("q", "Catan")
+                )
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/games/id/42"));
+                .andExpect(
+                        redirectedUrl("/games/id/42")
+                );
     }
 
     @Test
-    void gameSearchRendersSimilarGamesWhenNoExactMatch() throws Exception {
-        BoardGameRank similarA = createGame(1, "Catan Junior");
-        BoardGameRank similarB = createGame(2, "Star Catan");
+    void gameSearchRendersSimilarGamesWhenNoExactMatch()
+            throws Exception {
 
-        PageRequest pageRequest = PageRequest.of(0, 12);
-        PageImpl<BoardGameRank> page = new PageImpl<>(
-                List.of(similarA, similarB),
-                pageRequest,
-                2
+        BoardGameRank similarA =
+                createGame(1, "Catan Junior");
+
+        BoardGameRank similarB =
+                createGame(2, "Star Catan");
+
+        PageRequest pageRequest =
+                PageRequest.of(0, 12);
+
+        PageImpl<BoardGameRank> page =
+                new PageImpl<>(
+                        List.of(
+                                similarA,
+                                similarB
+                        ),
+                        pageRequest,
+                        2
+                );
+
+        when(
+                boardGameRankRepository
+                        .findFirstByTitleIgnoreCaseOrderByRankPositionAsc(
+                                "catanx"
+                        )
+        ).thenReturn(Optional.empty());
+
+        when(
+                boardGameRankRepository.searchSimilarGames(
+                        eq("catanx"),
+                        any(PageRequest.class)
+                )
+        ).thenReturn(page);
+
+        mockMvc.perform(
+                        get("/games/search")
+                                .param("q", "catanx")
+                )
+                .andExpect(status().isOk())
+                .andExpect(
+                        view().name("game-search")
+                )
+                .andExpect(
+                        model().attribute(
+                                "query",
+                                "catanx"
+                        )
+                )
+                .andExpect(
+                        model().attribute(
+                                "similarGames",
+                                hasSize(2)
+                        )
+                )
+                .andExpect(
+                        model().attribute(
+                                "currentPage",
+                                1
+                        )
+                )
+                .andExpect(
+                        model().attribute(
+                                "totalPages",
+                                1
+                        )
+                );
+    }
+
+    @Test
+    void gameDetailByIdLoadsPageAndReviewStats()
+            throws Exception {
+
+        BoardGameRank game =
+                createGame(7, "Azul");
+
+        Review review = new Review();
+
+        when(
+                boardGameRankRepository.findById(7)
+        ).thenReturn(Optional.of(game));
+
+        when(
+                reviewRepository
+                        .findByGameOrderByCreatedAtDesc(
+                                game
+                        )
+        ).thenReturn(
+                List.of(review)
         );
 
-        when(boardGameRankRepository.findFirstByTitleIgnoreCaseOrderByRankPositionAsc("catanx"))
-                .thenReturn(Optional.empty());
+        when(
+                reviewRepository
+                        .findAverageRatingByGame(
+                                game
+                        )
+        ).thenReturn(4.25);
 
-        when(boardGameRankRepository.searchSimilarGames(eq("catanx"), any(PageRequest.class)))
-                .thenReturn(page);
+        when(
+                reviewRepository.countByGame(game)
+        ).thenReturn(3L);
 
-        mockMvc.perform(get("/games/search").param("q", "catanx"))
+        when(
+                reviewLikeRepository.countByReview(
+                        review
+                )
+        ).thenReturn(0L);
+
+        when(
+                reviewReplyRepository
+                        .findByReviewOrderByCreatedAtAsc(
+                                review
+                        )
+        ).thenReturn(List.of());
+
+        when(
+                reviewReplyRepository.countByReview(
+                        review
+                )
+        ).thenReturn(0L);
+
+        mockMvc.perform(
+                        get("/games/id/7")
+                )
                 .andExpect(status().isOk())
-                .andExpect(view().name("game-search"))
-                .andExpect(model().attribute("query", "catanx"))
-                .andExpect(model().attribute("similarGames", hasSize(2)))
-                .andExpect(model().attribute("currentPage", 1))
-                .andExpect(model().attribute("totalPages", 1));
+                .andExpect(
+                        view().name("game-detail")
+                )
+                .andExpect(
+                        model().attribute(
+                                "game",
+                                game
+                        )
+                )
+                .andExpect(
+                        model().attribute(
+                                "recentReviews",
+                                hasSize(1)
+                        )
+                )
+                .andExpect(
+                        model().attribute(
+                                "reviewCount",
+                                3L
+                        )
+                )
+                .andExpect(
+                        model().attribute(
+                                "averageReviewScore",
+                                4.25
+                        )
+                )
+                .andExpect(
+                        model().attribute(
+                                "canEditDescription",
+                                false
+                        )
+                );
     }
 
     @Test
-    void gameDetailByIdLoadsPageAndReviewStats() throws Exception {
-        BoardGameRank game = createGame(7, "Azul");
+    void gameDetailByTitleRedirectsToIdRoute()
+            throws Exception {
 
-        when(boardGameRankRepository.findById(7))
-                .thenReturn(Optional.of(game));
+        BoardGameRank game =
+                createGame(7, "Azul");
 
-        when(reviewRepository.findTop5ByGameOrderByCreatedAtDesc(game))
-                .thenReturn(List.of(new Review()));
+        when(
+                boardGameRankRepository
+                        .findFirstByTitleIgnoreCaseOrderByRankPositionAsc(
+                                "Azul"
+                        )
+        ).thenReturn(Optional.of(game));
 
-        when(reviewRepository.findAverageRatingByGame(game))
-                .thenReturn(4.25);
-
-        when(reviewRepository.countByGame(game))
-                .thenReturn(3L);
-
-        mockMvc.perform(get("/games/id/7"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("game-detail"))
-                .andExpect(model().attribute("game", game))
-                .andExpect(model().attribute("reviewCount", 3L))
-                .andExpect(model().attribute("averageReviewScore", 4.25))
-                .andExpect(model().attribute("canEditDescription", false));
-    }
-
-    @Test
-    void gameDetailByTitleRedirectsToIdRoute() throws Exception {
-        BoardGameRank game = createGame(7, "Azul");
-
-        when(boardGameRankRepository.findFirstByTitleIgnoreCaseOrderByRankPositionAsc("Azul"))
-                .thenReturn(Optional.of(game));
-
-        mockMvc.perform(get("/games/Azul"))
+        mockMvc.perform(
+                        get("/games/Azul")
+                )
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/games/id/7"));
+                .andExpect(
+                        redirectedUrl("/games/id/7")
+                );
     }
 
     @Test
-    void autocompleteReturnsSuggestions() throws Exception {
-        when(boardGameAutocompleteRepository.findByPrefix("ca", 8))
-                .thenReturn(List.of("Catan", "Carcassonne"));
+    void autocompleteReturnsSuggestions()
+            throws Exception {
 
-        mockMvc.perform(get("/api/boardgames/autocomplete").param("q", "ca"))
+        when(
+                boardGameAutocompleteRepository
+                        .findByPrefix(
+                                "ca",
+                                8
+                        )
+        ).thenReturn(
+                List.of(
+                        "Catan",
+                        "Carcassonne"
+                )
+        );
+
+        mockMvc.perform(
+                        get("/api/boardgames/autocomplete")
+                                .param("q", "ca")
+                )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0]", is("Catan")))
-                .andExpect(jsonPath("$[1]", is("Carcassonne")));
+                .andExpect(
+                        jsonPath("$", hasSize(2))
+                )
+                .andExpect(
+                        jsonPath(
+                                "$[0]",
+                                is("Catan")
+                        )
+                )
+                .andExpect(
+                        jsonPath(
+                                "$[1]",
+                                is("Carcassonne")
+                        )
+                );
     }
 
     @Test
-    void resolveReturnsExactMatchTrueWhenResolvedNameMatchesQuery() throws Exception {
-        when(boardGameAutocompleteRepository.resolveToExistingName("Catan"))
-                .thenReturn(Optional.of("Catan"));
+    void resolveReturnsExactMatchTrueWhenResolvedNameMatchesQuery()
+            throws Exception {
 
-        mockMvc.perform(get("/api/boardgames/resolve").param("q", "Catan"))
+        when(
+                boardGameAutocompleteRepository
+                        .resolveToExistingName(
+                                "Catan"
+                        )
+        ).thenReturn(
+                Optional.of("Catan")
+        );
+
+        mockMvc.perform(
+                        get("/api/boardgames/resolve")
+                                .param("q", "Catan")
+                )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.resolvedName", is("Catan")))
-                .andExpect(jsonPath("$.exactMatch", is(true)));
+                .andExpect(
+                        jsonPath(
+                                "$.resolvedName",
+                                is("Catan")
+                        )
+                )
+                .andExpect(
+                        jsonPath(
+                                "$.exactMatch",
+                                is(true)
+                        )
+                );
     }
 
     @Test
-    void resolveReturnsExactMatchFalseWhenNoResolvedName() throws Exception {
-        when(boardGameAutocompleteRepository.resolveToExistingName("does-not-exist"))
-                .thenReturn(Optional.empty());
+    void resolveReturnsExactMatchFalseWhenNoResolvedName()
+            throws Exception {
 
-        mockMvc.perform(get("/api/boardgames/resolve").param("q", "does-not-exist"))
+        when(
+                boardGameAutocompleteRepository
+                        .resolveToExistingName(
+                                "does-not-exist"
+                        )
+        ).thenReturn(Optional.empty());
+
+        mockMvc.perform(
+                        get("/api/boardgames/resolve")
+                                .param(
+                                        "q",
+                                        "does-not-exist"
+                                )
+                )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.resolvedName", is("")))
-                .andExpect(jsonPath("$.exactMatch", is(false)));
+                .andExpect(
+                        jsonPath(
+                                "$.resolvedName",
+                                is("")
+                        )
+                )
+                .andExpect(
+                        jsonPath(
+                                "$.exactMatch",
+                                is(false)
+                        )
+                );
     }
 
-    private BoardGameRank createGame(int id, String title) {
-        BoardGameRank game = new BoardGameRank();
+    private BoardGameRank createGame(
+            int id,
+            String title
+    ) {
+        BoardGameRank game =
+                new BoardGameRank();
+
         game.setId(id);
         game.setTitle(title);
+
         return game;
     }
 }
