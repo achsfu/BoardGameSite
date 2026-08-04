@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -6,9 +6,10 @@
     <title th:text="${username} + ' - Profile'">Profile</title>
     <link rel="stylesheet" th:href="@{/css/site.css}" href="/css/site.css">
 </head>
-<body class="dashboard-body">
 
+<body class="dashboard-body premium-profile-body">
 <div class="dashboard-shell">
+
     <nav class="dashboard-nav">
         <a href="/" class="dashboard-brand">BoardGameBoard</a>
 
@@ -30,48 +31,76 @@
             <form action="/logout" method="post" th:if="${session.AUTH_USER != null}">
                 <button type="submit" class="dashboard-logout-button">Logout</button>
             </form>
-
             <a href="/login" th:if="${session.AUTH_USER == null}">Sign in</a>
             <a href="/register" th:if="${session.AUTH_USER == null}">Register</a>
         </div>
     </nav>
 
-    <main class="dashboard-page">
-        <header class="dashboard-profile-header profile-page-header">
-            <div class="dashboard-avatar dashboard-avatar-photo">
+    <main class="premium-profile-page">
+
+        <section class="premium-profile-hero">
+            <div class="premium-profile-avatar-wrap">
                 <img
-                        th:src="${avatar}"
-                        alt="Profile picture"
-                        class="dashboard-avatar-image"
+                    th:src="${avatar}"
+                    alt="Profile picture"
+                    class="premium-profile-avatar"
                 >
             </div>
 
-            <div class="dashboard-profile-copy">
-                <div class="dashboard-profile-title-row">
+            <div class="premium-profile-hero-copy">
+                <div class="premium-profile-name-row">
                     <h1 th:text="${username}">Username</h1>
                     <span class="dashboard-role-badge" th:text="${role}">USER</span>
                 </div>
 
-                <p th:text="${bio}">No bio added yet.</p>
+                <p class="premium-profile-bio profile-view-only" th:text="${bio}">
+                    No bio added yet.
+                </p>
 
-                <div class="dashboard-profile-links">
-                    <span th:text="${followerCount} + ' Followers'"></span>
-                    <span th:text="${followingCount} + ' Following'"></span>
-                </div>
+                <div class="premium-profile-inline-stats">
+                    <a href="/profile/followers">
+                        <strong th:text="${followerCount}">0</strong>
+                        <span>Followers</span>
+                    </a>
 
-                <div class="profile-view-follow-actions">
-                    <form th:if="${!isFollowing}" th:action="@{'/profile/' + ${username} + '/follow'}" method="post">
-                        <button type="submit" class="primary-button">Follow</button>
-                    </form>
+                    <a href="/profile/following">
+                        <strong th:text="${followingCount}">0</strong>
+                        <span>Following</span>
+                    </a>
 
-                    <form th:if="${isFollowing}" th:action="@{'/profile/' + ${username} + '/unfollow'}" method="post">
-                        <button type="submit" class="secondary-button">Unfollow</button>
-                    </form>
+                    <div>
+                        <strong th:text="${ownedCount}">0</strong>
+                        <span>Owned</span>
+                    </div>
+
+                    <div>
+                        <strong th:text="${wishlistCount}">0</strong>
+                        <span>Wishlist</span>
+                    </div>
+
+                    <div>
+                        <strong th:text="${reviewCount}">0</strong>
+                        <span>Reviews</span>
+                    </div>
                 </div>
             </div>
-        </header>
 
-        <nav class="dashboard-tabs" aria-label="Profile navigation">
+            <div class="premium-profile-hero-actions profile-view-follow-actions">
+                <form th:if="${!isFollowing}"
+                      th:action="@{'/profile/' + ${username} + '/follow'}"
+                      method="post">
+                    <button type="submit" class="primary-button">Follow</button>
+                </form>
+
+                <form th:if="${isFollowing}"
+                      th:action="@{'/profile/' + ${username} + '/unfollow'}"
+                      method="post">
+                    <button type="submit" class="secondary-button">Unfollow</button>
+                </form>
+            </div>
+        </section>
+
+        <nav class="dashboard-tabs premium-profile-tabs" aria-label="Profile navigation">
             <a href="/dashboard">Overview</a>
             <a href="/feed">Activity</a>
             <a th:href="@{'/profile/' + ${username}}" class="active">Profile</a>
@@ -79,114 +108,314 @@
             <a href="/collection">Collection</a>
         </nav>
 
-        <section class="dashboard-section">
-            <div class="dashboard-section-heading">
-                <h2>Collection</h2>
+
+        <section class="premium-profile-section premium-library-section">
+            <div class="premium-section-header">
+                <div>
+                    <p class="premium-section-eyebrow">Library</p>
+                    <h2>Your board game collection</h2>
+                </div>
+
             </div>
 
-            <div class="profile-lists-section">
-                <div>
-                    <h3>Games Owned</h3>
-                    <p class="muted" th:if="${ownedList.isEmpty()}">No games added yet.</p>
+            <div class="premium-library-group">
+                <div class="premium-library-group-heading">
+                    <div>
+                        <h3>Games Owned</h3>
+                        <span th:text="${ownedCount} + ' games'">0 games</span>
+                    </div>
+                    <a href="/collection">View full collection</a>
+                </div>
 
-                    <div class="game-tag-container">
-                        <a th:each="game : ${ownedList}"
-                           class="game-tag"
-                           th:href="${ownedGameDetailLinks.containsKey(game) ? ownedGameDetailLinks.get(game) : '/games/search?q=' + #uris.escapeQueryParam(game)}"
-                           th:text="${game}">Owned game</a>
+                <p class="dashboard-empty-message" th:if="${ownedItems.isEmpty()}">
+                    No games added yet.
+                </p>
+
+                <div class="premium-poster-rail" th:if="${!ownedItems.isEmpty()}">
+                    <article
+                        class="premium-poster-card"
+                        th:each="item : ${ownedItems}"
+                        th:with="game=${ownedGameCatalog.get(item.id)}">
+
+                        <a
+                            class="premium-poster-card-link"
+                            th:href="${game != null && game.id != null
+                                ? '/games/id/' + game.id
+                                : '/games/search?q=' + #uris.escapeQueryParam(item.gameName)}">
+
+                            <div class="premium-poster-media">
+                                <img
+                                    th:if="${game != null && game.hasImage()}"
+                                    th:src="${game.preferredImageUrl}"
+                                    th:alt="${item.gameName} + ' cover'">
+
+                                <div
+                                    class="premium-poster-placeholder"
+                                    th:unless="${game != null && game.hasImage()}">
+
+                                    <span th:text="${item.gameName}">Game</span>
+                                </div>
+                            </div>
+
+                            <h4 th:text="${item.gameName}">Game title</h4>
+
+                            <p th:if="${game != null && game.communityScore != null}">
+                                <span>★</span>
+                                <span th:text="${#numbers.formatDecimal(game.communityScore, 1, 2)}">
+                                    8.50
+                                </span>
+                            </p>
+                        </a>
+
+                    </article>
+                </div>
+            </div>
+
+            <div class="premium-library-group">
+                <div class="premium-library-group-heading">
+                    <div>
+                        <h3>Wishlist</h3>
+                        <span th:text="${wishlistCount} + ' games'">0 games</span>
                     </div>
                 </div>
 
-                <div>
-                    <h3>Wishlist</h3>
-                    <p class="muted" th:if="${wishlistList.isEmpty()}">Wishlist is empty.</p>
+                <p class="dashboard-empty-message" th:if="${wishlistItems.isEmpty()}">
+                    Wishlist is empty.
+                </p>
 
-                    <div class="game-tag-container">
-                        <a th:each="game : ${wishlistList}"
-                           class="game-tag wishlist-tag"
-                           th:href="${wishlistGameDetailLinks.containsKey(game) ? wishlistGameDetailLinks.get(game) : '/games/search?q=' + #uris.escapeQueryParam(game)}"
-                           th:text="${game}">Wishlist game</a>
-                    </div>
+                <div class="premium-poster-rail" th:if="${!wishlistItems.isEmpty()}">
+                    <article
+                        class="premium-poster-card"
+                        th:each="item : ${wishlistItems}"
+                        th:with="game=${wishlistGameCatalog.get(item.id)}">
+
+                        <a
+                            class="premium-poster-card-link"
+                            th:href="${game != null && game.id != null
+                                ? '/games/id/' + game.id
+                                : '/games/search?q=' + #uris.escapeQueryParam(item.gameName)}">
+
+                            <div class="premium-poster-media">
+                                <img
+                                    th:if="${game != null && game.hasImage()}"
+                                    th:src="${game.preferredImageUrl}"
+                                    th:alt="${item.gameName} + ' cover'">
+
+                                <div
+                                    class="premium-poster-placeholder"
+                                    th:unless="${game != null && game.hasImage()}">
+
+                                    <span th:text="${item.gameName}">Game</span>
+                                </div>
+                            </div>
+
+                            <h4 th:text="${item.gameName}">Game title</h4>
+
+                            <p th:if="${game != null && game.communityScore != null}">
+                                <span>★</span>
+                                <span th:text="${#numbers.formatDecimal(game.communityScore, 1, 2)}">
+                                    8.50
+                                </span>
+                            </p>
+                        </a>
+
+                    </article>
                 </div>
             </div>
         </section>
 
-        <section class="dashboard-section">
-            <div class="dashboard-section-heading">
-                <h2>Posted Reviews</h2>
+
+        <section class="premium-profile-section">
+            <div class="premium-section-header">
+                <div>
+                    <p class="premium-section-eyebrow">Recent writing</p>
+                    <h2>Posted Reviews</h2>
+                </div>
+                <span class="premium-section-count" th:text="${reviewCount} + ' reviews'">0 reviews</span>
             </div>
 
-            <p class="dashboard-empty-message" th:if="${reviews.isEmpty()}">No reviews yet.</p>
+            <p class="dashboard-empty-message" th:if="${reviews.isEmpty()}">
+                You haven't shared any reviews yet.
+            </p>
 
-            <div class="dashboard-activity-list">
-                <article th:each="review : ${reviews}" class="dashboard-activity-row profile-review-row">
-                    <div class="dashboard-activity-icon">★</div>
+            <div class="compact-profile-review-list" th:if="${!reviews.isEmpty()}">
+                <article
+                    class="compact-profile-review-row compact-profile-review-row-public"
+                    th:each="review : ${reviews}"
+                    th:with="game=${reviewGameCatalog.get(review.id)}">
 
-                    <div class="dashboard-activity-content">
-                        <a th:if="${review.game != null && review.game.id != null}"
-                           th:href="@{/games/id/{id}(id=${review.game.id})}"
-                           class="profile-review-game-link"
-                           th:text="${review.gameTitle}">Game Title</a>
-                        <strong th:unless="${review.game != null && review.game.id != null}" th:text="${review.gameTitle}">Game Title</strong>
-                        <p th:text="${review.reviewText}">Review details</p>
+                    <a class="compact-profile-review-thumb"
+                       th:href="${game != null && game.id != null
+                           ? '/games/id/' + game.id
+                           : '/games/search?q=' + #uris.escapeQueryParam(review.gameTitle)}">
+                        <img th:if="${game != null && game.hasImage()}"
+                             th:src="${game.preferredImageUrl}"
+                             th:alt="${review.gameTitle} + ' cover'">
+                        <div class="compact-profile-review-placeholder"
+                             th:unless="${game != null && game.hasImage()}">★</div>
+                    </a>
 
-                        <div class="game-detail-review-actions profile-review-actions">
-                            <form th:if="${session.AUTH_USER != null}" th:action="@{/reviews/{id}/like(id=${review.id})}" method="post">
-                                <input type="hidden" name="redirectTo" th:value="@{/profile/{username}(username=${username})}">
-                                <button type="submit" class="game-detail-review-like-button" th:classappend="${likedReviewIds.contains(review.id)} ? ' game-detail-review-like-button-active' : ''">
-                                    <span class="game-detail-review-like-icon" th:text="${likedReviewIds.contains(review.id)} ? '♥' : '♡'">♡</span>
+                    <div class="compact-profile-review-content">
+                        <a class="compact-profile-review-title"
+                           th:href="${game != null && game.id != null
+                               ? '/games/id/' + game.id
+                               : '/games/search?q=' + #uris.escapeQueryParam(review.gameTitle)}"
+                           th:text="${review.gameTitle}">Game title</a>
+
+                        <p th:text="${review.reviewText}">Review text</p>
+
+                        <time th:if="${review.createdAt != null}"
+                              th:text="${#temporals.format(review.createdAt, 'MMM d, yyyy')}">
+                            Jan 1, 2026
+                        </time>
+
+                        <div class="game-detail-review-actions compact-profile-review-actions">
+                            <form th:if="${session.AUTH_USER != null}"
+                                  th:action="@{/reviews/{id}/like(id=${review.id})}"
+                                  method="post">
+                                <input type="hidden"
+                                       name="redirectTo"
+                                       th:value="@{/profile/{username}(username=${username})}">
+                                <button type="submit"
+                                        class="game-detail-review-like-button"
+                                        th:classappend="${likedReviewIds.contains(review.id)}
+                                            ? ' game-detail-review-like-button-active'
+                                            : ''">
+                                    <span th:text="${likedReviewIds.contains(review.id)} ? '♥' : '♡'">♡</span>
                                     <span th:text="${likedReviewIds.contains(review.id)} ? 'Liked' : 'Like'">Like</span>
-                                    <span class="game-detail-review-like-count" th:text="${reviewLikeCounts.get(review.id) != null ? reviewLikeCounts.get(review.id) : 0}">0</span>
+                                    <span th:text="${reviewLikeCounts.get(review.id) != null
+                                        ? reviewLikeCounts.get(review.id)
+                                        : 0}">0</span>
                                 </button>
                             </form>
 
-                            <div class="game-detail-review-like-summary" th:if="${session.AUTH_USER == null}">
-                                <span>♡</span>
-                                <span th:text="${reviewLikeCounts.get(review.id) != null ? reviewLikeCounts.get(review.id) : 0}">0</span>
-                                <span>likes</span>
-                            </div>
-
-                            <button type="button" class="game-detail-review-reply-toggle" th:onclick="|toggleReviewReplies(${review.id})|">
+                            <button type="button"
+                                    class="game-detail-review-reply-toggle"
+                                    th:onclick="|toggleReviewReplies(${review.id})|">
                                 <span>💬</span>
-                                <span th:text="${reviewReplyCounts.get(review.id) != null ? reviewReplyCounts.get(review.id) : 0}">0</span>
-                                <span th:text="${reviewReplyCounts.get(review.id) == 1 ? 'Reply' : 'Replies'}">Replies</span>
+                                <span th:text="${reviewReplyCounts.get(review.id) != null
+                                    ? reviewReplyCounts.get(review.id)
+                                    : 0}">0</span>
+                                <span>Replies</span>
                             </button>
 
-                            <button type="button" class="game-detail-review-reply-action" th:if="${session.AUTH_USER != null}" th:onclick="|openReviewReplyForm(${review.id})|">Reply</button>
+                            <button type="button"
+                                    class="game-detail-review-reply-action"
+                                    th:if="${session.AUTH_USER != null}"
+                                    th:onclick="|openReviewReplyForm(${review.id})|">
+                                Reply
+                            </button>
                         </div>
 
-                        <div class="game-detail-review-replies" th:id="'reviewReplies-' + ${review.id}">
-                            <div class="game-detail-review-reply-list" th:if="${reviewReplies.get(review.id) != null && !reviewReplies.get(review.id).isEmpty()}">
-                                <article class="game-detail-review-reply" th:each="reply : ${reviewReplies.get(review.id)}">
+                        <div class="game-detail-review-replies"
+                             th:id="'reviewReplies-' + ${review.id}">
+                            <div class="game-detail-review-reply-list"
+                                 th:if="${reviewReplies.get(review.id) != null
+                                    && !reviewReplies.get(review.id).isEmpty()}">
+                                <article class="game-detail-review-reply"
+                                         th:each="reply : ${reviewReplies.get(review.id)}">
                                     <div class="game-detail-review-reply-header">
-                                        <a class="game-detail-review-reply-author" th:if="${reply.user != null}" th:href="@{'/profile/' + ${reply.user.username}}" th:text="${reply.user.username}">username</a>
-                                        <span class="game-detail-review-reply-author" th:if="${reply.user == null}">Unknown user</span>
-                                        <span class="game-detail-review-reply-date" th:text="${#temporals.format(reply.createdAt, 'MMM d, yyyy HH:mm')}">Jan 1, 2026 12:00</span>
+                                        <a class="game-detail-review-reply-author"
+                                           th:if="${reply.user != null}"
+                                           th:href="@{'/profile/' + ${reply.user.username}}"
+                                           th:text="${reply.user.username}">
+                                            username
+                                        </a>
+                                        <span class="game-detail-review-reply-date"
+                                              th:text="${#temporals.format(reply.createdAt, 'MMM d, yyyy HH:mm')}">
+                                            Jan 1, 2026
+                                        </span>
                                     </div>
-                                    <p class="game-detail-review-reply-text" th:text="${reply.replyText}">Reply text</p>
+                                    <p class="game-detail-review-reply-text"
+                                       th:text="${reply.replyText}">Reply</p>
                                 </article>
                             </div>
 
-                            <p class="game-detail-review-no-replies" th:if="${reviewReplies.get(review.id) == null || reviewReplies.get(review.id).isEmpty()}">No replies yet. Start the conversation.</p>
+                            <p class="game-detail-review-no-replies"
+                               th:if="${reviewReplies.get(review.id) == null
+                                    || reviewReplies.get(review.id).isEmpty()}">
+                                No replies yet.
+                            </p>
 
-                            <form class="game-detail-review-reply-form" th:id="'reviewReplyForm-' + ${review.id}" th:if="${session.AUTH_USER != null}" th:action="@{/reviews/{id}/reply(id=${review.id})}" method="post">
-                                <input type="hidden" name="redirectTo" th:value="@{/profile/{username}(username=${username})}">
-                                <label class="game-detail-visually-hidden" th:for="'replyText-' + ${review.id}">Reply to this review</label>
-                                <textarea th:id="'replyText-' + ${review.id}" name="replyText" maxlength="1000" rows="3" placeholder="Write a reply..." required></textarea>
+                            <form class="game-detail-review-reply-form"
+                                  th:id="'reviewReplyForm-' + ${review.id}"
+                                  th:if="${session.AUTH_USER != null}"
+                                  th:action="@{/reviews/{id}/reply(id=${review.id})}"
+                                  method="post">
+                                <input type="hidden"
+                                       name="redirectTo"
+                                       th:value="@{/profile/{username}(username=${username})}">
+                                <textarea th:id="'replyText-' + ${review.id}"
+                                          name="replyText"
+                                          maxlength="1000"
+                                          rows="3"
+                                          placeholder="Write a reply..."
+                                          required></textarea>
                                 <div class="game-detail-review-reply-form-actions">
-                                    <button type="submit" class="game-detail-silver-button">Post Reply</button>
+                                    <button type="submit" class="game-detail-silver-button">
+                                        Post Reply
+                                    </button>
                                 </div>
                             </form>
-
-                            <p class="game-detail-review-sign-in-message" th:if="${session.AUTH_USER == null}">
-                                <a href="/login">Sign in</a>
-                                to reply.
-                            </p>
                         </div>
                     </div>
 
-                    <span class="dashboard-row-arrow profile-review-rating" th:text="${review.rating} + ' / 5'">5 / 5</span>
+                    <span class="compact-profile-review-rating"
+                          th:text="${review.rating} + ' / 5'">5 / 5</span>
                 </article>
+            </div>
+        </section>
+
+        <section class="premium-profile-section">
+            <div class="premium-section-header">
+                <div>
+                    <p class="premium-section-eyebrow">Community</p>
+                    <h2>Connections</h2>
+                </div>
+            </div>
+
+            <div class="premium-connections-grid">
+                <div>
+                    <div class="profile-connection-heading-row">
+                        <h3>Followers</h3>
+                        <a href="/profile/followers">View all</a>
+                    </div>
+
+                    <p class="dashboard-empty-message" th:if="${followers == null || followers.isEmpty()}">
+                        No followers yet.
+                    </p>
+
+                    <div class="premium-connection-list" th:if="${followers != null && !followers.isEmpty()}">
+                        <a
+                            th:each="person : ${followers}"
+                            th:href="@{'/profile/' + ${person.username}}">
+
+                            <span th:text="${person.username}">Username</span>
+                            <span>→</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="profile-connection-heading-row">
+                        <h3>Following</h3>
+                        <a href="/profile/following">View all</a>
+                    </div>
+
+                    <p class="dashboard-empty-message" th:if="${following == null || following.isEmpty()}">
+                        You are not following anyone yet.
+                    </p>
+
+                    <div class="premium-connection-list" th:if="${following != null && !following.isEmpty()}">
+                        <a
+                            th:each="person : ${following}"
+                            th:href="@{'/profile/' + ${person.username}}">
+
+                            <span th:text="${person.username}">Username</span>
+                            <span>→</span>
+                        </a>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
@@ -194,48 +423,31 @@
 
 <script src="/js/nav-dropdown.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const params = new URLSearchParams(window.location.search);
-        const openReplyId = params.get('openReply');
+function toggleReviewReplies(reviewId) {
+    const replies = document.getElementById("reviewReplies-" + reviewId);
 
-        if (openReplyId) {
-            const replies = document.getElementById('reviewReplies-' + openReplyId);
-            const replyForm = document.getElementById('reviewReplyForm-' + openReplyId);
+    if (replies) {
+        replies.classList.toggle("game-detail-review-replies-open");
+    }
+}
 
-            if (replies) {
-                replies.classList.add('game-detail-review-replies-open');
-            }
+function openReviewReplyForm(reviewId) {
+    const replies = document.getElementById("reviewReplies-" + reviewId);
+    const form = document.getElementById("reviewReplyForm-" + reviewId);
+    const text = document.getElementById("replyText-" + reviewId);
 
-            if (replyForm) {
-                replyForm.classList.add('game-detail-review-reply-form-open');
-            }
-        }
-    });
-
-    function toggleReviewReplies(reviewId) {
-        const replies = document.getElementById('reviewReplies-' + reviewId);
-        if (replies) {
-            replies.classList.toggle('game-detail-review-replies-open');
-        }
+    if (replies) {
+        replies.classList.add("game-detail-review-replies-open");
     }
 
-    function openReviewReplyForm(reviewId) {
-        const replies = document.getElementById('reviewReplies-' + reviewId);
-        const replyForm = document.getElementById('reviewReplyForm-' + reviewId);
-        const replyText = document.getElementById('replyText-' + reviewId);
-
-        if (replies) {
-            replies.classList.add('game-detail-review-replies-open');
-        }
-
-        if (replyForm) {
-            replyForm.classList.add('game-detail-review-reply-form-open');
-        }
-
-        if (replyText) {
-            replyText.focus();
-        }
+    if (form) {
+        form.classList.add("game-detail-review-reply-form-open");
     }
+
+    if (text) {
+        text.focus();
+    }
+}
 </script>
 </body>
 </html>

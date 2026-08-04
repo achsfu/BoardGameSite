@@ -182,6 +182,15 @@ public class ProfileController {
         ownedItems.sort(comparator);
         wishlistItems.sort(comparator);
 
+        Map<Integer, BoardGameRank> ownedGameCatalog =
+                buildCollectionGameCatalog(ownedItems);
+
+        Map<Integer, BoardGameRank> wishlistGameCatalog =
+                buildCollectionGameCatalog(wishlistItems);
+
+        Map<Integer, BoardGameRank> reviewGameCatalog =
+                buildReviewGameCatalog(userReviews);
+
         List<User> followers = userFollowRepository.findByFollowed(user).stream()
             .map(UserFollow::getFollower)
             .toList();
@@ -206,6 +215,12 @@ public class ProfileController {
         model.addAttribute("following", following);
         model.addAttribute("ownedItems", ownedItems);
         model.addAttribute("wishlistItems", wishlistItems);
+        model.addAttribute("ownedGameCatalog", ownedGameCatalog);
+        model.addAttribute("wishlistGameCatalog", wishlistGameCatalog);
+        model.addAttribute("reviewGameCatalog", reviewGameCatalog);
+        model.addAttribute("ownedCount", ownedItems.size());
+        model.addAttribute("wishlistCount", wishlistItems.size());
+        model.addAttribute("reviewCount", userReviews.size());
         model.addAttribute("sort", sort);
 
         return "profile";
@@ -560,13 +575,52 @@ public class ProfileController {
             ? new ArrayList<>(List.of(viewedUser.getGameWishlist().split("\\s*,\\s*")))
             : new ArrayList<>();
 
+        List<CollectionItem> ownedItems = new ArrayList<>(
+                collectionItemRepository
+                        .findByUserAndCollectionTypeOrderByAddedAtDesc(
+                                viewedUser,
+                                CollectionType.OWNED
+                        )
+        );
+
+        List<CollectionItem> wishlistItems = new ArrayList<>(
+                collectionItemRepository
+                        .findByUserAndCollectionTypeOrderByAddedAtDesc(
+                                viewedUser,
+                                CollectionType.WISHLIST
+                        )
+        );
+
+        Map<Integer, BoardGameRank> ownedGameCatalog =
+                buildCollectionGameCatalog(ownedItems);
+
+        Map<Integer, BoardGameRank> wishlistGameCatalog =
+                buildCollectionGameCatalog(wishlistItems);
+
+        Map<Integer, BoardGameRank> reviewGameCatalog =
+                buildReviewGameCatalog(userReviews);
+
         Map<String, String> ownedGameDetailLinks = buildGameDetailLinks(ownedList);
         Map<String, String> wishlistGameDetailLinks = buildGameDetailLinks(wishlistList);
         Map<Integer, Long> reviewLikeCounts = buildReviewLikeCounts(userReviews);
         Set<Integer> likedReviewIds = findLikedReviewIds(userReviews, currentUser);
         Map<Integer, List<ReviewReply>> reviewReplies = buildReviewReplies(userReviews);
         Map<Integer, Long> reviewReplyCounts = buildReviewReplyCounts(userReviews);
- 
+
+        List<User> followers = userFollowRepository
+                .findByFollowed(viewedUser)
+                .stream()
+                .map(UserFollow::getFollower)
+                .filter(java.util.Objects::nonNull)
+                .toList();
+
+        List<User> following = userFollowRepository
+                .findByFollower(viewedUser)
+                .stream()
+                .map(UserFollow::getFollowed)
+                .filter(java.util.Objects::nonNull)
+                .toList();
+
         boolean isFollowing = userFollowRepository.existsByFollowerAndFollowed(currentUser, viewedUser);
         model.addAttribute("username", viewedUser.getUsername());
         model.addAttribute("role", viewedUser.getRole());
@@ -575,6 +629,14 @@ public class ProfileController {
         model.addAttribute("reviews",userReviews);
         model.addAttribute("ownedList", ownedList);
         model.addAttribute("wishlistList",wishlistList);
+        model.addAttribute("ownedItems", ownedItems);
+        model.addAttribute("wishlistItems", wishlistItems);
+        model.addAttribute("ownedGameCatalog", ownedGameCatalog);
+        model.addAttribute("wishlistGameCatalog", wishlistGameCatalog);
+        model.addAttribute("reviewGameCatalog", reviewGameCatalog);
+        model.addAttribute("ownedCount", ownedItems.size());
+        model.addAttribute("wishlistCount", wishlistItems.size());
+        model.addAttribute("reviewCount", userReviews.size());
         model.addAttribute("ownedGameDetailLinks", ownedGameDetailLinks);
         model.addAttribute("wishlistGameDetailLinks", wishlistGameDetailLinks);
         model.addAttribute("reviewLikeCounts", reviewLikeCounts);
@@ -583,8 +645,106 @@ public class ProfileController {
         model.addAttribute("reviewReplyCounts", reviewReplyCounts);
         model.addAttribute("followerCount", userFollowRepository.countByFollowed(viewedUser));
         model.addAttribute("followingCount", userFollowRepository.countByFollower(viewedUser));
+        model.addAttribute("followers", followers);
+        model.addAttribute("following", following);
         model.addAttribute("isFollowing", isFollowing);
         return "profile-view";
+    }
+
+    private Map<Integer, BoardGameRank> buildCollectionGameCatalog(
+            List<CollectionItem> collectionItems
+    ) {
+        Map<Integer, BoardGameRank> gameCatalog = new HashMap<>();
+
+        if (collectionItems == null || collectionItems.isEmpty()) {
+            return gameCatalog;
+        }
+
+        Set<String> normalizedTitles = new HashSet<>();
+
+        for (CollectionItem item : collectionItems) {
+            if (item == null
+                    || item.getGameName() == null
+                    || item.getGameName().isBlank()) {
+                continue;
+            }
+
+            normalizedTitles.add(normalizeGameName(item.getGameName()));
+        }
+
+        Map<String, BoardGameRank> gamesByTitle = new HashMap<>();
+
+        if (!normalizedTitles.isEmpty()) {
+            List<BoardGameRank> games = boardGameRankRepository
+                    .findByNormalizedTitles(new ArrayList<>(normalizedTitles));
+
+            for (BoardGameRank game : games) {
+                if (game == null || game.getTitle() == null) {
+                    continue;
+                }
+
+                gamesByTitle.putIfAbsent(
+                        normalizeGameName(game.getTitle()),
+                        game
+                );
+            }
+        }
+
+        for (CollectionItem item : collectionItems) {
+            if (item == null || item.getId() == null) {
+                continue;
+            }
+
+            BoardGameRank game = gamesByTitle.get(
+                    normalizeGameName(item.getGameName())
+            );
+
+            if (game == null
+                    && item.getGameName() != null
+                    && !item.getGameName().isBlank()) {
+                game = boardGameRankRepository
+                        .findFirstByTitleIgnoreCaseOrderByRankPositionAsc(
+                                item.getGameName().trim()
+                        )
+                        .orElse(null);
+            }
+
+            gameCatalog.put(item.getId(), game);
+        }
+
+        return gameCatalog;
+    }
+
+    private Map<Integer, BoardGameRank> buildReviewGameCatalog(
+            List<Review> reviews
+    ) {
+        Map<Integer, BoardGameRank> gameCatalog = new HashMap<>();
+
+        if (reviews == null || reviews.isEmpty()) {
+            return gameCatalog;
+        }
+
+        for (Review review : reviews) {
+            if (review == null || review.getId() == null) {
+                continue;
+            }
+
+            BoardGameRank game = review.getGame();
+
+            if (game == null
+                    && review.getGameTitle() != null
+                    && !review.getGameTitle().isBlank()) {
+                game = boardGameRankRepository
+                        .findFirstByTitleIgnoreCaseOrderByRankPositionAsc(
+                                review.getGameTitle().trim()
+                        )
+                        .orElse(null);
+            }
+
+            gameCatalog.put(review.getId(), game);
+        }
+
+        return gameCatalog;
     }
 
     private Map<String, String> buildGameDetailLinks(List<String> gameTitles) {
