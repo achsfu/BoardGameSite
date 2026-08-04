@@ -1,447 +1,592 @@
 <!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Profile | BoardGameBoard</title>
-    <link rel="stylesheet" th:href="@{/css/site.css}" href="/css/site.css" />
-  </head>
+    <link rel="stylesheet" th:href="@{/css/site.css}" href="/css/site.css">
+</head>
 
-  <body class="dashboard-body">
-    <div class="dashboard-shell">
-      <nav class="dashboard-nav">
+<body class="dashboard-body premium-profile-body">
+<div class="dashboard-shell">
+
+    <nav class="dashboard-nav">
         <a href="/" class="dashboard-brand">BoardGameBoard</a>
 
         <div class="dashboard-nav-links">
-          <a href="/dashboard" th:if="${session.AUTH_USER != null}">Dashboard</a>
+            <a href="/dashboard">Dashboard</a>
 
-          <form class="dashboard-nav-search" action="/profile/search" method="get" th:if="${session.AUTH_USER != null}">
-            <button type="button" class="dashboard-nav-search-toggle">Users</button>
-            <input id="navUserSearch" name="q" type="search" placeholder="Search users" required>
-            <button type="submit">Search</button>
-          </form>
+            <form class="dashboard-nav-search" action="/profile/search" method="get">
+                <button type="button" class="dashboard-nav-search-toggle">Users</button>
+                <input id="navUserSearch" name="q" type="search" placeholder="Search users" required>
+                <button type="submit">Search</button>
+            </form>
 
-          <form class="dashboard-nav-search" action="/games/search" method="get" th:if="${session.AUTH_USER != null}">
-            <button type="button" class="dashboard-nav-search-toggle">Games</button>
-            <input id="navGameSearch" name="q" type="search" placeholder="Search games" required>
-            <button type="submit">Search</button>
-          </form>
+            <form class="dashboard-nav-search" action="/games/search" method="get">
+                <button type="button" class="dashboard-nav-search-toggle">Games</button>
+                <input id="navGameSearch" name="q" type="search" placeholder="Search games" required>
+                <button type="submit">Search</button>
+            </form>
 
-          <form action="/logout" method="post" th:if="${session.AUTH_USER != null}">
-            <button type="submit" class="dashboard-logout-button">Logout</button>
-          </form>
-
-          <a href="/login" th:if="${session.AUTH_USER == null}">Sign in</a>
-          <a href="/register" th:if="${session.AUTH_USER == null}">Register</a>
+            <form action="/logout" method="post">
+                <button type="submit" class="dashboard-logout-button">Logout</button>
+            </form>
         </div>
-      </nav>
+    </nav>
 
-      <main class="dashboard-page">
-        <header class="dashboard-profile-header profile-page-header">
-          <div class="dashboard-avatar dashboard-avatar-photo">
-            <img
-              th:src="${avatar}"
-              src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150&q=80"
-              alt="Avatar"
-              class="dashboard-avatar-image"
-            />
-          </div>
+    <main class="premium-profile-page">
 
-          <div class="dashboard-profile-copy">
-            <div class="dashboard-profile-title-row">
-              <h1 th:text="|${username}'s Profile|">User's Profile</h1>
-              <span class="dashboard-role-badge" th:text="${role}">USER</span>
+        <section class="premium-profile-hero">
+            <div class="premium-profile-avatar-wrap">
+                <img
+                    th:src="${avatar}"
+                    alt="Profile picture"
+                    class="premium-profile-avatar"
+                >
             </div>
 
-            <p class="profile-view-only" th:text="${bio}">No bio added yet!</p>
+            <div class="premium-profile-hero-copy">
+                <div class="premium-profile-name-row">
+                    <h1 th:text="${username}">Username</h1>
+                    <span class="dashboard-role-badge" th:text="${role}">USER</span>
+                </div>
 
-            <div class="dashboard-profile-links">
-              <a th:href="@{/profile/followers}" th:text="${followerCount} + ' Followers'"></a>
-              <a th:href="@{/profile/following}" th:text="${followingCount} + ' Following'"></a>
+                <p class="premium-profile-bio profile-view-only" th:text="${bio}">
+                    No bio added yet.
+                </p>
+
+                <div class="premium-profile-inline-stats">
+                    <a href="/profile/followers">
+                        <strong th:text="${followerCount}">0</strong>
+                        <span>Followers</span>
+                    </a>
+
+                    <a href="/profile/following">
+                        <strong th:text="${followingCount}">0</strong>
+                        <span>Following</span>
+                    </a>
+
+                    <div>
+                        <strong th:text="${ownedCount}">0</strong>
+                        <span>Owned</span>
+                    </div>
+
+                    <div>
+                        <strong th:text="${wishlistCount}">0</strong>
+                        <span>Wishlist</span>
+                    </div>
+
+                    <div>
+                        <strong th:text="${reviewCount}">0</strong>
+                        <span>Reviews</span>
+                    </div>
+                </div>
             </div>
-          </div>
-        </header>
 
-        <nav class="dashboard-tabs" aria-label="Profile navigation">
-          <a href="/dashboard">Overview</a>
-          <a href="/feed">Activity</a>
-          <a href="/profile" class="active">Profile</a>
-          <a href="/sessions">Sessions</a>
-          <a href="/collection">Collection</a>
+            <div class="premium-profile-hero-actions">
+                <button
+                    id="editCollectionToggle"
+                    type="button"
+                    class="secondary-button"
+                    aria-pressed="false">
+
+                    Edit Collection
+                </button>
+
+                <button
+                    id="editProfileToggle"
+                    type="button"
+                    class="secondary-button"
+                    aria-pressed="false">
+
+                    Edit Profile
+                </button>
+            </div>
+        </section>
+
+        <nav class="dashboard-tabs premium-profile-tabs" aria-label="Profile navigation">
+            <a href="/dashboard">Overview</a>
+            <a href="/feed">Activity</a>
+            <a href="/profile" class="active">Profile</a>
+            <a href="/sessions">Sessions</a>
+            <a href="/collection">Collection</a>
         </nav>
 
-        <div class="dashboard-layout">
-          <div class="dashboard-main-column">
-            <section class="dashboard-section">
-              <div class="dashboard-section-heading">
-                <h2>Collection</h2>
+        <form
+            action="/profile/update-bio"
+            method="post"
+            class="profile-edit-only premium-profile-editor"
+            hidden>
 
-                <div class="profile-toggle-actions">
-                  <button id="editCollectionToggle" type="button" class="secondary-button" aria-pressed="false">
-                    Edit Collection
-                  </button>
-
-                  <button id="editProfileToggle" type="button" class="secondary-button" aria-pressed="false">
-                    Edit Profile
-                  </button>
-                </div>
-              </div>
-
-              <div class="dashboard-search-panel profile-sort-panel">
-                <form action="/profile" method="get" class="profile-sort-form">
-                  <label for="sort">Sort Collection</label>
-
-                  <select name="sort" id="sort">
-                    <option value="added" th:selected="${sort == 'added'}">
-                      Recently Added
-                    </option>
-
-                    <option value="rating" th:selected="${sort == 'rating'}">
-                      Highest Rated
-                    </option>
-
-                    <option value="reviewed" th:selected="${sort == 'reviewed'}">
-                      Recently Reviewed
-                    </option>
-                  </select>
-
-                  <button type="submit" class="secondary-button">Sort</button>
-                </form>
-              </div>
-
-              <form action="/profile/update-bio" method="post" class="profile-edit-only profile-edit-inline-form profile-edit-panel" hidden>
-                <div class="form-group">
-                  <label for="bio">Bio</label>
-
-                  <textarea
+            <div class="form-group">
+                <label for="bio">Bio</label>
+                <textarea
                     name="bio"
                     id="bio"
-                    placeholder="Tell us about your favourite board games"
+                    placeholder="Tell other players about yourself"
                     required
-                    th:text="${bio == 'No bio added yet.' ? '' : bio}"
-                  ></textarea>
-                </div>
+                    th:text="${bio == 'No bio added yet.' ? '' : bio}">
+                </textarea>
+            </div>
 
-                <div class="form-group">
-                  <label for="profilePictureUrl">Profile Picture URL</label>
-
-                  <input
+            <div class="form-group">
+                <label for="profilePictureUrl">Profile Picture URL</label>
+                <input
                     type="url"
                     name="profilePictureUrl"
                     id="profilePictureUrl"
-                    placeholder="Paste a link"
-                    th:value="${avatar.contains('unsplash.com') ? '' : avatar}"
-                  />
+                    placeholder="Paste an image link"
+                    th:value="${avatar.contains('unsplash.com') ? '' : avatar}">
+            </div>
+
+            <button type="submit" class="primary-button">
+                Save Profile Changes
+            </button>
+        </form>
+
+        <section class="premium-profile-section premium-library-section">
+            <div class="premium-section-header">
+                <div>
+                    <p class="premium-section-eyebrow">Library</p>
+                    <h2>Your board game collection</h2>
                 </div>
 
-                <button type="submit" class="primary-button profile-sidebar-submit-button">
-                  Save Profile Changes
-                </button>
-              </form>
+                <form action="/profile" method="get" class="premium-library-sort">
+                    <label for="sort">Sort by</label>
+                    <select name="sort" id="sort">
+                        <option value="added" th:selected="${sort == 'added'}">
+                            Recently Added
+                        </option>
+                        <option value="rating" th:selected="${sort == 'rating'}">
+                            Highest Rated
+                        </option>
+                        <option value="reviewed" th:selected="${sort == 'reviewed'}">
+                            Recently Reviewed
+                        </option>
+                    </select>
+                    <button type="submit" class="secondary-button small-button">
+                        Apply
+                    </button>
+                </form>
+            </div>
 
-              <p class="dashboard-empty-message profile-view-only profile-edit-help-text">
-                Toggle profile editing to update your bio and picture.
-              </p>
+            <div class="premium-library-group">
+                <div class="premium-library-group-heading">
+                    <div>
+                        <h3>Games Owned</h3>
+                        <span th:text="${ownedCount} + ' games'">0 games</span>
+                    </div>
+                    <a href="/collection">View full collection</a>
+                </div>
 
-              <div class="profile-lists-section">
-                <div>
-                  <h3>Games Owned</h3>
-
-                  <p class="muted" th:if="${ownedItems.isEmpty()}">
+                <p class="dashboard-empty-message" th:if="${ownedItems.isEmpty()}">
                     No games added yet.
-                  </p>
+                </p>
 
-                  <div class="game-tag-container">
-                    <div th:each="item : ${ownedItems}" class="game-tag profile-collection-row">
-                      <a th:href="@{/games/{title}(title=${item.gameName})}"><span th:text="${item.gameName}">Catan</span></a>
+                <div class="premium-poster-rail" th:if="${!ownedItems.isEmpty()}">
+                    <article
+                        class="premium-poster-card"
+                        th:each="item : ${ownedItems}"
+                        th:with="game=${ownedGameCatalog.get(item.id)}">
 
-                      <form
-                        action="/collection/move"
-                        method="post"
-                        class="collection-edit-only inline-collection-edit"
-                        hidden
-                      >
-                        <input type="hidden" name="id" th:value="${item.id}" />
-                        <input type="hidden" name="collectionType" value="WISHLIST" />
+                        <a
+                            class="premium-poster-card-link"
+                            th:href="${game != null && game.id != null
+                                ? '/games/id/' + game.id
+                                : '/games/search?q=' + #uris.escapeQueryParam(item.gameName)}">
 
-                        <button type="submit" class="secondary-button small-button">
-                          Move to Wishlist
-                        </button>
-                      </form>
+                            <div class="premium-poster-media">
+                                <img
+                                    th:if="${game != null && game.hasImage()}"
+                                    th:src="${game.preferredImageUrl}"
+                                    th:alt="${item.gameName} + ' cover'">
 
-                      <form
-                        action="/collection/remove"
-                        method="post"
-                        class="collection-edit-only inline-collection-edit"
-                        hidden
-                      >
-                        <input type="hidden" name="id" th:value="${item.id}" />
+                                <div
+                                    class="premium-poster-placeholder"
+                                    th:unless="${game != null && game.hasImage()}">
 
-                        <button type="submit" class="secondary-button small-button">
-                          Remove
-                        </button>
-                      </form>
+                                    <span th:text="${item.gameName}">Game</span>
+                                </div>
+                            </div>
+
+                            <h4 th:text="${item.gameName}">Game title</h4>
+
+                            <p th:if="${game != null && game.communityScore != null}">
+                                <span>★</span>
+                                <span th:text="${#numbers.formatDecimal(game.communityScore, 1, 2)}">
+                                    8.50
+                                </span>
+                            </p>
+                        </a>
+
+                        <div class="collection-edit-only premium-poster-edit-actions" hidden>
+                            <form action="/collection/move" method="post">
+                                <input type="hidden" name="id" th:value="${item.id}">
+                                <input type="hidden" name="collectionType" value="WISHLIST">
+                                <button type="submit" class="secondary-button small-button">
+                                    Move to Wishlist
+                                </button>
+                            </form>
+
+                            <form action="/collection/remove" method="post">
+                                <input type="hidden" name="id" th:value="${item.id}">
+                                <button type="submit" class="danger-button small-button">
+                                    Remove
+                                </button>
+                            </form>
+                        </div>
+                    </article>
+                </div>
+            </div>
+
+            <div class="premium-library-group">
+                <div class="premium-library-group-heading">
+                    <div>
+                        <h3>Wishlist</h3>
+                        <span th:text="${wishlistCount} + ' games'">0 games</span>
                     </div>
-                  </div>
+                </div>
+
+                <p class="dashboard-empty-message" th:if="${wishlistItems.isEmpty()}">
+                    Wishlist is empty.
+                </p>
+
+                <div class="premium-poster-rail" th:if="${!wishlistItems.isEmpty()}">
+                    <article
+                        class="premium-poster-card"
+                        th:each="item : ${wishlistItems}"
+                        th:with="game=${wishlistGameCatalog.get(item.id)}">
+
+                        <a
+                            class="premium-poster-card-link"
+                            th:href="${game != null && game.id != null
+                                ? '/games/id/' + game.id
+                                : '/games/search?q=' + #uris.escapeQueryParam(item.gameName)}">
+
+                            <div class="premium-poster-media">
+                                <img
+                                    th:if="${game != null && game.hasImage()}"
+                                    th:src="${game.preferredImageUrl}"
+                                    th:alt="${item.gameName} + ' cover'">
+
+                                <div
+                                    class="premium-poster-placeholder"
+                                    th:unless="${game != null && game.hasImage()}">
+
+                                    <span th:text="${item.gameName}">Game</span>
+                                </div>
+                            </div>
+
+                            <h4 th:text="${item.gameName}">Game title</h4>
+
+                            <p th:if="${game != null && game.communityScore != null}">
+                                <span>★</span>
+                                <span th:text="${#numbers.formatDecimal(game.communityScore, 1, 2)}">
+                                    8.50
+                                </span>
+                            </p>
+                        </a>
+
+                        <div class="collection-edit-only premium-poster-edit-actions" hidden>
+                            <form action="/collection/move" method="post">
+                                <input type="hidden" name="id" th:value="${item.id}">
+                                <input type="hidden" name="collectionType" value="OWNED">
+                                <button type="submit" class="secondary-button small-button">
+                                    Move to Owned
+                                </button>
+                            </form>
+
+                            <form action="/collection/remove" method="post">
+                                <input type="hidden" name="id" th:value="${item.id}">
+                                <button type="submit" class="danger-button small-button">
+                                    Remove
+                                </button>
+                            </form>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section
+            class="collection-edit-only premium-profile-section premium-add-games-panel"
+            hidden>
+
+            <div class="premium-section-header">
+                <div>
+                    <p class="premium-section-eyebrow">Collection tools</p>
+                    <h2>Add a game</h2>
+                </div>
+            </div>
+
+            <div class="premium-add-games-grid">
+                <form action="/collection/add" method="post">
+                    <div class="form-group">
+                        <label for="ownedGames">Add to Games Owned</label>
+                        <input
+                            type="text"
+                            name="gameName"
+                            id="ownedGames"
+                            placeholder="Search for a game"
+                            list="ownedGameSuggestions"
+                            required>
+                        <datalist id="ownedGameSuggestions"></datalist>
+                        <input type="hidden" name="collectionType" value="OWNED">
+                    </div>
+                    <button type="submit" class="primary-button">
+                        Add to Owned
+                    </button>
+                </form>
+
+                <form action="/collection/add" method="post">
+                    <div class="form-group">
+                        <label for="wishlistGames">Add to Wishlist</label>
+                        <input
+                            type="text"
+                            name="gameName"
+                            id="wishlistGames"
+                            placeholder="Search for a game"
+                            list="wishlistGameSuggestions"
+                            required>
+                        <datalist id="wishlistGameSuggestions"></datalist>
+                        <input type="hidden" name="collectionType" value="WISHLIST">
+                    </div>
+                    <button type="submit" class="primary-button">
+                        Add to Wishlist
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <section class="premium-profile-section">
+            <div class="premium-section-header">
+                <div>
+                    <p class="premium-section-eyebrow">Recent writing</p>
+                    <h2>Posted Reviews</h2>
+                </div>
+                <span class="premium-section-count" th:text="${reviewCount} + ' reviews'">0 reviews</span>
+            </div>
+
+            <p class="dashboard-empty-message" th:if="${reviews.isEmpty()}">
+                You haven't shared any reviews yet.
+            </p>
+
+            <div class="compact-profile-review-list" th:if="${!reviews.isEmpty()}">
+                <article class="compact-profile-review-row"
+                         th:each="review : ${reviews}"
+                         th:with="game=${reviewGameCatalog.get(review.id)}">
+
+                    <a class="compact-profile-review-thumb"
+                       th:href="${game != null && game.id != null
+                           ? '/games/id/' + game.id
+                           : '/games/search?q=' + #uris.escapeQueryParam(review.gameTitle)}">
+                        <img th:if="${game != null && game.hasImage()}"
+                             th:src="${game.preferredImageUrl}"
+                             th:alt="${review.gameTitle} + ' cover'">
+                        <div class="compact-profile-review-placeholder"
+                             th:unless="${game != null && game.hasImage()}">★</div>
+                    </a>
+
+                    <div class="compact-profile-review-content">
+                        <a class="compact-profile-review-title"
+                           th:href="${game != null && game.id != null
+                               ? '/games/id/' + game.id
+                               : '/games/search?q=' + #uris.escapeQueryParam(review.gameTitle)}"
+                           th:text="${review.gameTitle}">Game title</a>
+
+                        <p th:text="${review.reviewText}">Review text</p>
+
+                        <time th:if="${review.createdAt != null}"
+                              th:text="${#temporals.format(review.createdAt, 'MMM d, yyyy')}">
+                            Jan 1, 2026
+                        </time>
+
+                        <form class="profile-edit-only"
+                              th:action="@{/reviews/{id}/delete(id=${review.id})}"
+                              method="post"
+                              onsubmit="return confirm('Delete this review?');"
+                              hidden>
+                            <button type="submit" class="danger-button small-button">
+                                Delete Review
+                            </button>
+                        </form>
+                    </div>
+
+                    <span class="compact-profile-review-rating"
+                          th:text="${review.rating} + ' / 5'">5 / 5</span>
+                </article>
+            </div>
+        </section>
+
+        <section class="premium-profile-section">
+            <div class="premium-section-header">
+                <div>
+                    <p class="premium-section-eyebrow">Community</p>
+                    <h2>Connections</h2>
+                </div>
+            </div>
+
+            <div class="premium-connections-grid">
+                <div>
+                    <div class="profile-connection-heading-row">
+                        <h3>Followers</h3>
+                        <a href="/profile/followers">View all</a>
+                    </div>
+
+                    <p class="dashboard-empty-message" th:if="${followers.isEmpty()}">
+                        No followers yet.
+                    </p>
+
+                    <div class="premium-connection-list" th:if="${!followers.isEmpty()}">
+                        <a
+                            th:each="person : ${followers}"
+                            th:href="@{'/profile/' + ${person.username}}">
+
+                            <span th:text="${person.username}">Username</span>
+                            <span>→</span>
+                        </a>
+                    </div>
                 </div>
 
                 <div>
-                  <h3>Wishlist</h3>
-
-                  <p class="muted" th:if="${wishlistItems.isEmpty()}">
-                    Wishlist is empty.
-                  </p>
-
-                  <div class="game-tag-container">
-                    <div th:each="item : ${wishlistItems}" class="game-tag wishlist-tag profile-collection-row">
-                      <a th:href="@{/games/{title}(title=${item.gameName})}"><span th:text="${item.gameName}">Carcassonne</span></a>
-
-                      <form
-                        action="/collection/move"
-                        method="post"
-                        class="collection-edit-only inline-collection-edit"
-                        hidden
-                      >
-                        <input type="hidden" name="id" th:value="${item.id}" />
-                        <input type="hidden" name="collectionType" value="OWNED" />
-
-                        <button type="submit" class="secondary-button small-button">
-                          Move to Owned
-                        </button>
-                      </form>
-
-                      <form
-                        action="/collection/remove"
-                        method="post"
-                        class="collection-edit-only inline-collection-edit"
-                        hidden
-                      >
-                        <input type="hidden" name="id" th:value="${item.id}" />
-
-                        <button type="submit" class="secondary-button small-button">
-                          Remove
-                        </button>
-                      </form>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <section class="collection-edit-only profile-main-add-section" hidden>
-                <div class="dashboard-section-heading">
-                  <h2>Add to Collection</h2>
-                </div>
-
-                <div class="profile-lists-section profile-add-forms-grid">
-                  <form action="/collection/add" method="post" class="profile-add-form">
-                    <div class="form-group">
-                      <label for="ownedGames">Add Owned Game</label>
-
-                      <input
-                        type="text"
-                        name="gameName"
-                        id="ownedGames"
-                        placeholder="Enter your game."
-                        list="ownedGameSuggestions"
-                        required
-                      />
-
-                      <datalist id="ownedGameSuggestions"></datalist>
-
-                      <input type="hidden" name="collectionType" value="OWNED" />
+                    <div class="profile-connection-heading-row">
+                        <h3>Following</h3>
+                        <a href="/profile/following">View all</a>
                     </div>
 
-                    <button type="submit" class="primary-button profile-sidebar-submit-button">
-                      Add to Owned
-                    </button>
-                  </form>
+                    <p class="dashboard-empty-message" th:if="${following.isEmpty()}">
+                        You are not following anyone yet.
+                    </p>
 
-                  <form action="/collection/add" method="post" class="profile-add-form">
-                    <div class="form-group">
-                      <label for="wishlistGames">Add Wishlist Game</label>
+                    <div class="premium-connection-list" th:if="${!following.isEmpty()}">
+                        <a
+                            th:each="person : ${following}"
+                            th:href="@{'/profile/' + ${person.username}}">
 
-                      <input
-                        type="text"
-                        name="gameName"
-                        id="wishlistGames"
-                        placeholder="Enter your game."
-                        list="wishlistGameSuggestions"
-                        required
-                      />
-
-                      <datalist id="wishlistGameSuggestions"></datalist>
-
-                      <input type="hidden" name="collectionType" value="WISHLIST" />
+                            <span th:text="${person.username}">Username</span>
+                            <span>→</span>
+                        </a>
                     </div>
-
-                    <button type="submit" class="primary-button profile-sidebar-submit-button">
-                      Add to Wishlist
-                    </button>
-                  </form>
                 </div>
-              </section>
-            </section>
+            </div>
+        </section>
+    </main>
+</div>
 
-            <section class="dashboard-section">
-              <div class="dashboard-section-heading">
-                <h2>Posted Reviews</h2>
-              </div>
+<script src="/js/game-autocomplete.js"></script>
+<script>
+window.addEventListener("DOMContentLoaded", function () {
+    const collectionKey = "profile.collectionEditMode";
+    const profileKey = "profile.profileEditMode";
 
-              <p class="dashboard-empty-message" th:if="${reviews.isEmpty()}">
-                You haven't shared any reviews yet!
-              </p>
+    const collectionButton = document.getElementById("editCollectionToggle");
+    const profileButton = document.getElementById("editProfileToggle");
+    const collectionElements = document.querySelectorAll(".collection-edit-only");
+    const profileElements = document.querySelectorAll(".profile-edit-only");
+    let collectionEditing = localStorage.getItem(collectionKey) === "true";
+    let profileEditing = localStorage.getItem(profileKey) === "true";
 
-              <div class="dashboard-activity-list">
-                <article th:each="review : ${reviews}" class="dashboard-activity-row profile-review-row">
-                  <div class="dashboard-activity-icon">★</div>
+    function applyCollectionState() {
+        collectionElements.forEach(function (element) {
+            element.hidden = !collectionEditing;
+        });
 
-                  <div class="dashboard-activity-content">
-                    <strong>
-                      <a th:if="${review.gameTitle != null}" th:href="@{/games/{title}(title=${review.gameTitle})}" th:text="${review.gameTitle}">Game Title</a>
-                      <span th:if="${review.gameTitle == null}">Game Title</span>
-                    </strong>
+        document.body.classList.toggle(
+            "is-collection-editing",
+            collectionEditing
+        );
 
-                    <p th:text="${review.reviewText}">Review details</p>
+        if (collectionButton) {
+            collectionButton.textContent = collectionEditing
+                ? "Done Editing Collection"
+                : "Edit Collection";
 
-                    <form
-                      class="profile-edit-only"
-                      th:action="@{/reviews/{id}/delete(id=${review.id})}"
-                      method="post"
-                      onsubmit="return confirm('Delete this review?');"
-                      hidden
-                    >
-                      <button type="submit" class="danger-button small-button profile-review-delete-button">
-                        Delete Review
-                      </button>
-                    </form>
-                  </div>
+            collectionButton.setAttribute(
+                "aria-pressed",
+                String(collectionEditing)
+            );
 
-                  <span class="dashboard-row-arrow profile-review-rating" th:text="${review.rating} + ' / 5'">5 / 5</span>
-                </article>
-              </div>
-            </section>
-          </div>
+            collectionButton.classList.toggle(
+                "primary-button",
+                collectionEditing
+            );
 
-          <aside class="dashboard-sidebar">
-            <section class="dashboard-sidebar-section">
-              <div class="dashboard-section-heading">
-                <h2>Connections</h2>
-              </div>
-
-              <div class="profile-connections-grid">
-                <div class="profile-connection-column">
-                  <div class="profile-connection-heading-row">
-                    <h3>Followers</h3>
-                    <a href="/profile/followers">View all</a>
-                  </div>
-
-                  <p class="dashboard-empty-message" th:if="${followers.isEmpty()}">
-                    No followers yet.
-                  </p>
-
-                  <div class="dashboard-sidebar-links profile-connection-list" th:if="${!followers.isEmpty()}">
-                    <a th:each="person : ${followers}" th:href="@{'/profile/' + ${person.username}}">
-                      <span th:text="${person.username}">Username</span>
-                      <span>→</span>
-                    </a>
-                  </div>
-                </div>
-
-                <div class="profile-connection-column">
-                  <div class="profile-connection-heading-row">
-                    <h3>Following</h3>
-                    <a href="/profile/following">View all</a>
-                  </div>
-
-                  <p class="dashboard-empty-message" th:if="${following.isEmpty()}">
-                    You are not following anyone yet.
-                  </p>
-
-                  <div class="dashboard-sidebar-links profile-connection-list" th:if="${!following.isEmpty()}">
-                    <a th:each="person : ${following}" th:href="@{'/profile/' + ${person.username}}">
-                      <span th:text="${person.username}">Username</span>
-                      <span>→</span>
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-          </aside>
-        </div>
-      </main>
-    </div>
-
-    <script src="/js/game-autocomplete.js"></script>
-
-    <script>
-      window.addEventListener('DOMContentLoaded', function () {
-        var collectionEditStorageKey = 'profile.collectionEditMode';
-        var profileEditStorageKey = 'profile.profileEditMode';
-        var pageBody = document.body;
-        var editCollectionButton = document.getElementById('editCollectionToggle');
-        var editToggleButton = document.getElementById('editProfileToggle');
-        var collectionEditElements = document.querySelectorAll('.collection-edit-only');
-        var profileEditElements = document.querySelectorAll('.profile-edit-only');
-        var isCollectionEditing = localStorage.getItem(collectionEditStorageKey) === 'true';
-        var isProfileEditing = localStorage.getItem(profileEditStorageKey) === 'true';
-
-        function applyCollectionEditingState() {
-          collectionEditElements.forEach(function (element) {
-            element.hidden = !isCollectionEditing;
-          });
-
-          if (pageBody) {
-            pageBody.classList.toggle('is-collection-editing', isCollectionEditing);
-          }
-
-          if (editCollectionButton) {
-            editCollectionButton.textContent = isCollectionEditing ? 'Done Collection Editing' : 'Edit Collection';
-            editCollectionButton.setAttribute('aria-pressed', String(isCollectionEditing));
-            editCollectionButton.classList.toggle('primary-button', isCollectionEditing);
-            editCollectionButton.classList.toggle('secondary-button', !isCollectionEditing);
-          }
+            collectionButton.classList.toggle(
+                "secondary-button",
+                !collectionEditing
+            );
         }
+    }
 
-        function applyProfileEditingState() {
-          profileEditElements.forEach(function (element) {
-            element.hidden = !isProfileEditing;
-          });
+    function applyProfileState() {
+        profileElements.forEach(function (element) {
+            element.hidden = !profileEditing;
+        });
 
-          if (pageBody) {
-            pageBody.classList.toggle('is-profile-editing', isProfileEditing);
-          }
+        document.body.classList.toggle(
+            "is-profile-editing",
+            profileEditing
+        );
 
-          if (editToggleButton) {
-            editToggleButton.textContent = isProfileEditing ? 'Done Profile Editing' : 'Edit Profile';
-            editToggleButton.setAttribute('aria-pressed', String(isProfileEditing));
-            editToggleButton.classList.toggle('primary-button', isProfileEditing);
-            editToggleButton.classList.toggle('secondary-button', !isProfileEditing);
-          }
+        if (profileButton) {
+            profileButton.textContent = profileEditing
+                ? "Done Editing Profile"
+                : "Edit Profile";
+
+            profileButton.setAttribute(
+                "aria-pressed",
+                String(profileEditing)
+            );
+
+            profileButton.classList.toggle(
+                "primary-button",
+                profileEditing
+            );
+
+            profileButton.classList.toggle(
+                "secondary-button",
+                !profileEditing
+            );
         }
+    }
 
-        if (editCollectionButton) {
-          editCollectionButton.addEventListener('click', function () {
-            isCollectionEditing = !isCollectionEditing;
-            localStorage.setItem(collectionEditStorageKey, String(isCollectionEditing));
-            applyCollectionEditingState();
-          });
-        }
+    if (collectionButton) {
+        collectionButton.addEventListener("click", function () {
+            collectionEditing = !collectionEditing;
+            localStorage.setItem(
+                collectionKey,
+                String(collectionEditing)
+            );
+            applyCollectionState();
+        });
+    }
 
-        if (editToggleButton) {
-          editToggleButton.addEventListener('click', function () {
-            isProfileEditing = !isProfileEditing;
-            localStorage.setItem(profileEditStorageKey, String(isProfileEditing));
-            applyProfileEditingState();
-          });
-        }
+    if (profileButton) {
+        profileButton.addEventListener("click", function () {
+            profileEditing = !profileEditing;
+            localStorage.setItem(
+                profileKey,
+                String(profileEditing)
+            );
+            applyProfileState();
+        });
+    }
 
-        applyCollectionEditingState();
-        applyProfileEditingState();
-        attachGameAutocomplete('ownedGames', 'ownedGameSuggestions');
-        attachGameAutocomplete('wishlistGames', 'wishlistGameSuggestions');
-      });
-    </script>
-    <script src="/js/nav-dropdown.js"></script>
-  </body>
+
+    applyCollectionState();
+    applyProfileState();
+
+    attachGameAutocomplete(
+        "ownedGames",
+        "ownedGameSuggestions"
+    );
+
+    attachGameAutocomplete(
+        "wishlistGames",
+        "wishlistGameSuggestions"
+    );
+});
+</script>
+<script src="/js/nav-dropdown.js"></script>
+</body>
 </html>
