@@ -4835,31 +4835,26 @@ a.game-detail-review-reply-author:hover {
 .premium-profile-page {
     width: min(1180px, calc(100% - 36px));
     margin: 0 auto;
-    padding: 58px 0 80px;
+    padding: 48px 0 80px;
 }
 
 .premium-profile-hero {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    min-height: 150px;
+    display: flex;
     align-items: center;
-    gap: 28px;
-    padding: 10px 6px 42px;
+    gap: 26px;
+    margin-bottom: 20px;
 }
 
 .premium-profile-avatar-wrap {
-    width: 132px;
-    height: 132px;
-    padding: 4px;
+    width: 105px;
+    height: 105px;
+    padding: 0;
+    overflow: hidden;
     border-radius: 50%;
-    background:
-        linear-gradient(
-            145deg,
-            #9a75df,
-            #3b2c51
-        );
-    box-shadow:
-        0 16px 38px rgba(0, 0, 0, 0.34),
-        0 0 0 7px rgba(154, 117, 223, 0.08);
+    border: 1px solid #7a6f8f;
+    background: #211b2f;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3);
 }
 
 .premium-profile-avatar {
@@ -4868,7 +4863,6 @@ a.game-detail-review-reply-author:hover {
     display: block;
     object-fit: cover;
     border-radius: 50%;
-    border: 3px solid #17101f;
 }
 
 .premium-profile-name-row {
@@ -4881,24 +4875,23 @@ a.game-detail-review-reply-author:hover {
 .premium-profile-name-row h1 {
     margin: 0;
     color: #ffffff;
-    font-size: clamp(2.5rem, 5vw, 4rem);
-    letter-spacing: -0.055em;
+    font-size: clamp(1.8rem, 4vw, 2.7rem);
+    letter-spacing: -0.045em;
 }
 
 .premium-profile-bio {
-    max-width: 680px;
-    margin: 9px 0 0;
-    color: #bfb3ca;
-    font-size: 1.05rem;
-    line-height: 1.65;
+    max-width: 660px;
+    margin: 10px 0 12px;
+    color: #aaa1bd;
+    line-height: 1.55;
 }
 
 .premium-profile-inline-stats {
-    margin-top: 19px;
+    margin-top: 0;
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 22px;
+    gap: 18px;
 }
 
 .premium-profile-inline-stats > * {
@@ -4911,21 +4904,20 @@ a.game-detail-review-reply-author:hover {
 .premium-profile-inline-stats > *:not(:last-child)::after {
     content: "";
     width: 1px;
-    height: 18px;
-    margin-left: 16px;
-    background: #3b3143;
+    height: 14px;
+    margin-left: 12px;
+    background: #494054;
 }
 
 .premium-profile-inline-stats strong {
     color: #ffffff;
-    font-size: 1rem;
+    font-size: 0.92rem;
 }
 
 .premium-profile-inline-stats span {
-    color: #9b8da7;
-    font-size: 0.78rem;
-    font-weight: 800;
-    letter-spacing: 0.05em;
+    color: #b8a7d8;
+    font-size: 0.82rem;
+    font-weight: 700;
 }
 
 .premium-profile-hero-actions {
@@ -5261,11 +5253,11 @@ a.game-detail-review-reply-author:hover {
 
 @media (max-width: 900px) {
     .premium-profile-hero {
-        grid-template-columns: auto minmax(0, 1fr);
+        flex-wrap: wrap;
     }
 
     .premium-profile-hero-actions {
-        grid-column: 1 / -1;
+        width: 100%;
     }
 
     .premium-profile-inline-stats > *:not(:last-child)::after {
@@ -5293,8 +5285,8 @@ a.game-detail-review-reply-author:hover {
     }
 
     .premium-profile-hero {
-        grid-template-columns: 1fr;
-        padding-bottom: 30px;
+        flex-direction: column;
+        align-items: flex-start;
     }
 
     .premium-profile-avatar-wrap {
@@ -5303,7 +5295,7 @@ a.game-detail-review-reply-author:hover {
     }
 
     .premium-profile-name-row h1 {
-        font-size: 2.5rem;
+        font-size: clamp(1.8rem, 8vw, 2.4rem);
     }
 
     .premium-profile-hero-actions,
